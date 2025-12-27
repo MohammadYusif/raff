@@ -28,11 +28,15 @@ export function HowItWorksSection() {
 
         <div className="grid gap-8 md:grid-cols-3">
           {steps.map(({ icon: Icon, step }, index) => (
-            <div key={step} className="text-center">
-              <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-raff-accent/10">
-                <Icon className="h-8 w-8 text-raff-accent" />
+            <div key={step} className="group text-center">
+              <div className="relative mb-6 inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-white shadow-sm transition-all group-hover:shadow-md">
+                <Icon className="h-9 w-9 text-raff-primary" />
+                {/* Step number badge */}
+                <div className="absolute -end-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-raff-primary text-sm font-bold text-white">
+                  {index + 1}
+                </div>
               </div>
-              <h3 className="mb-2 text-xl font-semibold text-raff-primary">
+              <h3 className="mb-3 text-xl font-semibold text-raff-primary">
                 {t(`${step}.title`)}
               </h3>
               <p className="text-raff-neutral-600">

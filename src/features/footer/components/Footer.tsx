@@ -10,29 +10,19 @@ export function Footer() {
   const navT = useTranslations("nav");
 
   return (
-    <footer className="border-t border-raff-neutral-200 bg-raff-neutral-50">
+    <footer className="border-t border-raff-neutral-200 bg-white">
       <Container>
-        <div className="grid gap-8 py-12 md:grid-cols-4">
-          {/* Brand */}
-          <div>
-            <div className="mb-4 text-2xl font-bold text-raff-primary">
-              رَفّ
-            </div>
-            <p className="text-sm text-raff-neutral-600">
-              {t("description")}
-            </p>
-          </div>
-
+        <div className="grid gap-8 py-12 sm:grid-cols-2 md:grid-cols-4">
           {/* Quick Links */}
           <div>
-            <h3 className="mb-4 font-semibold text-raff-primary">
+            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-raff-primary">
               {t("quickLinks")}
             </h3>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-3">
               <li>
                 <Link
                   href="/"
-                  className="text-raff-neutral-600 hover:text-raff-accent"
+                  className="text-sm text-raff-neutral-600 transition-colors hover:text-raff-primary"
                 >
                   {navT("home")}
                 </Link>
@@ -40,15 +30,23 @@ export function Footer() {
               <li>
                 <Link
                   href="/products"
-                  className="text-raff-neutral-600 hover:text-raff-accent"
+                  className="text-sm text-raff-neutral-600 transition-colors hover:text-raff-primary"
                 >
                   {navT("products")}
                 </Link>
               </li>
               <li>
                 <Link
+                  href="/trending"
+                  className="text-sm text-raff-neutral-600 transition-colors hover:text-raff-primary"
+                >
+                  {navT("trending")}
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/categories"
-                  className="text-raff-neutral-600 hover:text-raff-accent"
+                  className="text-sm text-raff-neutral-600 transition-colors hover:text-raff-primary"
                 >
                   {navT("categories")}
                 </Link>
@@ -58,14 +56,14 @@ export function Footer() {
 
           {/* For Merchants */}
           <div>
-            <h3 className="mb-4 font-semibold text-raff-primary">
+            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-raff-primary">
               {t("forMerchants")}
             </h3>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-3">
               <li>
                 <Link
                   href="/merchant/join"
-                  className="text-raff-neutral-600 hover:text-raff-accent"
+                  className="text-sm text-raff-neutral-600 transition-colors hover:text-raff-primary"
                 >
                   {t("joinAsStore")}
                 </Link>
@@ -73,7 +71,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/merchant/dashboard"
-                  className="text-raff-neutral-600 hover:text-raff-accent"
+                  className="text-sm text-raff-neutral-600 transition-colors hover:text-raff-primary"
                 >
                   {t("merchantDashboard")}
                 </Link>
@@ -83,14 +81,14 @@ export function Footer() {
 
           {/* Support */}
           <div>
-            <h3 className="mb-4 font-semibold text-raff-primary">
+            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-raff-primary">
               {t("support")}
             </h3>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-3">
               <li>
                 <Link
                   href="/help"
-                  className="text-raff-neutral-600 hover:text-raff-accent"
+                  className="text-sm text-raff-neutral-600 transition-colors hover:text-raff-primary"
                 >
                   {t("helpCenter")}
                 </Link>
@@ -98,15 +96,24 @@ export function Footer() {
               <li>
                 <Link
                   href="/contact"
-                  className="text-raff-neutral-600 hover:text-raff-accent"
+                  className="text-sm text-raff-neutral-600 transition-colors hover:text-raff-primary"
                 >
                   {t("contactUs")}
                 </Link>
               </li>
+            </ul>
+          </div>
+
+          {/* Legal */}
+          <div>
+            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-raff-primary">
+              {t("legal")}
+            </h3>
+            <ul className="space-y-3">
               <li>
                 <Link
                   href="/terms"
-                  className="text-raff-neutral-600 hover:text-raff-accent"
+                  className="text-sm text-raff-neutral-600 transition-colors hover:text-raff-primary"
                 >
                   {t("termsOfService")}
                 </Link>
@@ -114,7 +121,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/privacy"
-                  className="text-raff-neutral-600 hover:text-raff-accent"
+                  className="text-sm text-raff-neutral-600 transition-colors hover:text-raff-primary"
                 >
                   {t("privacyPolicy")}
                 </Link>
@@ -124,8 +131,10 @@ export function Footer() {
         </div>
 
         {/* Copyright */}
-        <div className="border-t border-raff-neutral-200 py-6 text-center text-sm text-raff-neutral-600">
-          © 2024 Raff. {t("allRightsReserved")}
+        <div className="border-t border-raff-neutral-200 py-6">
+          <p className="text-center text-sm text-raff-neutral-600">
+            © 2024 Raff. {t("allRightsReserved")}
+          </p>
         </div>
       </Container>
     </footer>

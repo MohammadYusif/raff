@@ -5,32 +5,42 @@ import { ReactNode, useEffect, useState } from "react";
 import { IntlProvider } from "next-intl";
 import { getLocale } from "../utils";
 
+// Import messages statically
+import arMessages from "@/../public/messages/ar.json";
+import enMessages from "@/../public/messages/en.json";
+
+const MESSAGES = {
+  ar: arMessages,
+  en: enMessages,
+};
+
 interface LocaleProviderProps {
   children: ReactNode;
 }
 
 export function LocaleProvider({ children }: LocaleProviderProps) {
-  const [locale, setLocale] = useState("ar");
-  const [messages, setMessages] = useState<any>(null);
+  const [locale, setLocale] = useState<"ar" | "en">("ar");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const currentLocale = getLocale();
-    setLocale(currentLocale);
+    const validLocale =
+      currentLocale === "ar" || currentLocale === "en" ? currentLocale : "ar";
+    setLocale(validLocale);
 
-    // Load messages
-    import(`../../../../public/messages/${currentLocale}.json`).then((m) => {
-      setMessages(m.default);
-      setMounted(true);
-    });
+    // Update document attributes immediately
+    document.documentElement.lang = validLocale;
+    document.documentElement.dir = validLocale === "ar" ? "rtl" : "ltr";
+
+    setMounted(true);
   }, []);
 
-  if (!mounted || !messages) {
-    return null; // or a loading spinner
+  if (!mounted) {
+    return null;
   }
 
   return (
-    <IntlProvider locale={locale} messages={messages}>
+    <IntlProvider locale={locale} messages={MESSAGES[locale]}>
       {children}
     </IntlProvider>
   );

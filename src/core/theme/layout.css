@@ -9,13 +9,13 @@
   --raff-container-padding: 1rem;
   --raff-section-padding-y: 5rem;
   --raff-section-padding-y-mobile: 3rem;
-  
+
   /* ==========================================
      NAVIGATION
      ========================================== */
   --raff-nav-height: 4rem;
   --raff-nav-height-mobile: 3.5rem;
-  
+
   /* ==========================================
      Z-INDEX LAYERS
      ========================================== */
@@ -28,7 +28,7 @@
   --z-modal: 400;
   --z-toast: 500;
   --z-tooltip: 600;
-  
+
   /* ==========================================
      BREAKPOINTS (for reference in JS)
      ========================================== */

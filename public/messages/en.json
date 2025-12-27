@@ -116,17 +116,18 @@
     "books": "Books",
     "food": "Food"
   },
-  "footer": {
-    "description": "Raff Platform - Discover the best products from Saudi stores",
-    "quickLinks": "Quick Links",
-    "forMerchants": "For Merchants",
-    "joinAsStore": "Join as Store",
-    "merchantDashboard": "Merchant Dashboard",
-    "support": "Support",
-    "helpCenter": "Help Center",
-    "contactUs": "Contact Us",
-    "termsOfService": "Terms of Service",
-    "privacyPolicy": "Privacy Policy",
-    "allRightsReserved": "All rights reserved"
-  }
+    "footer": {
+  "description": "Raff Platform - Discover the best products from Saudi stores",
+  "quickLinks": "Quick Links",
+  "forMerchants": "For Merchants",
+  "joinAsStore": "Join as Store",
+  "merchantDashboard": "Merchant Dashboard",
+  "support": "Support",
+  "legal": "Legal",
+  "helpCenter": "Help Center",
+  "contactUs": "Contact Us",
+  "termsOfService": "Terms of Service",
+  "privacyPolicy": "Privacy Policy",
+  "allRightsReserved": "All rights reserved"
+}
 }

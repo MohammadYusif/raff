@@ -3,16 +3,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
-import { useLocale } from "@/core/i18n";
+import { useTranslations, useLocale } from "next-intl";
+import { useLocale as useLocaleHook } from "@/core/i18n";
 import { Button, Container } from "@/shared/components/ui";
 import { Menu, X, Search, Globe } from "lucide-react";
-import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 export function Navbar() {
   const t = useTranslations("nav");
   const commonT = useTranslations("common");
-  const { locale, switchLocale } = useLocale();
+  const currentLocale = useLocale();
+  const { switchLocale } = useLocaleHook();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
@@ -24,15 +25,16 @@ export function Navbar() {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-raff-neutral-200 bg-white/95 backdrop-blur ">
+    <nav className="sticky top-0 z-50 w-full border-b border-raff-neutral-200 bg-white/95 backdrop-blur">
       <Container>
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="text-2xl font-bold text-raff-primary">رَفّ</div>
-            <div className="hidden text-sm text-raff-neutral-600 sm:block">
-              Raff
-            </div>
+          <Link href="/" className="flex items-center py-2">
+            <img
+              src="/logo.png"
+              alt="Raff Logo"
+              className="h-auto w-28 object-contain sm:w-32 md:w-36"
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -41,7 +43,7 @@ export function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-sm font-medium text-raff-neutral-700 transition-colors hover:text-raff-accent"
+                className="text-sm font-medium text-raff-neutral-700 transition-colors hover:text-raff-primary"
               >
                 {item.label}
               </Link>
@@ -54,7 +56,7 @@ export function Navbar() {
             <Button
               variant="ghost"
               size="icon"
-              aria-label={commonT("actions.search")}
+              className="hover:bg-raff-neutral-100"
             >
               <Search className="h-5 w-5" />
             </Button>
@@ -63,8 +65,8 @@ export function Navbar() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => switchLocale(locale === "ar" ? "en" : "ar")}
-              aria-label="Switch language"
+              onClick={() => switchLocale(currentLocale === "ar" ? "en" : "ar")}
+              className="hover:bg-raff-neutral-100"
             >
               <Globe className="h-5 w-5" />
             </Button>
@@ -73,7 +75,7 @@ export function Navbar() {
             <Button
               variant="outline"
               size="sm"
-              className="hidden sm:inline-flex"
+              className="hidden border-raff-primary text-raff-primary hover:bg-raff-primary hover:text-white sm:inline-flex"
             >
               {commonT("actions.login")}
             </Button>
@@ -104,13 +106,17 @@ export function Navbar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="text-sm font-medium text-raff-neutral-700 transition-colors hover:text-raff-accent"
+                  className="text-sm font-medium text-raff-neutral-700 hover:text-raff-primary"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {item.label}
                 </Link>
               ))}
-              <Button variant="outline" size="sm" className="w-full">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full border-raff-primary text-raff-primary"
+              >
                 {commonT("actions.login")}
               </Button>
             </div>

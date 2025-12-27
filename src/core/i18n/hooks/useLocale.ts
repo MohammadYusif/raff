@@ -63,13 +63,11 @@ export function useLocale() {
         targetLocale = AVAILABLE_LOCALE_CODES[nextIndex];
       }
 
+      // Save to storage
       persistLocale(targetLocale);
-      setCurrentLocale(targetLocale);
 
-      // Delay applying direction to allow transitions
-      setTimeout(() => {
-        setDir(LOCALES[targetLocale].dir);
-      }, 200);
+      // Reload the page to apply new locale
+      window.location.reload();
     },
     [locale]
   );

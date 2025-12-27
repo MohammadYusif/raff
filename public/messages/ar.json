@@ -117,16 +117,17 @@
     "food": "طعام"
   },
   "footer": {
-    "description": "منصة رَفّ - اكتشف أفضل المنتجات من المتاجر السعودية",
-    "quickLinks": "روابط سريعة",
-    "forMerchants": "للمتاجر",
-    "joinAsStore": "انضم كمتجر",
-    "merchantDashboard": "لوحة التحكم",
-    "support": "الدعم",
-    "helpCenter": "مركز المساعدة",
-    "contactUs": "تواصل معنا",
-    "termsOfService": "شروط الخدمة",
-    "privacyPolicy": "سياسة الخصوصية",
-    "allRightsReserved": "جميع الحقوق محفوظة"
-  }
+  "description": "منصة رَفّ - اكتشف أفضل المنتجات من المتاجر السعودية",
+  "quickLinks": "روابط سريعة",
+  "forMerchants": "للمتاجر",
+  "joinAsStore": "انضم كمتجر",
+  "merchantDashboard": "لوحة التحكم",
+  "support": "الدعم",
+  "legal": "قانوني",
+  "helpCenter": "مركز المساعدة",
+  "contactUs": "تواصل معنا",
+  "termsOfService": "شروط الخدمة",
+  "privacyPolicy": "سياسة الخصوصية",
+  "allRightsReserved": "جميع الحقوق محفوظة"
+}
 }

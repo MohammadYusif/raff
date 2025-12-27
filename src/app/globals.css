@@ -1,30 +1,9 @@
 /* src/app/globals.css */
-
-/* ========================================
-   IMPORTS
-   ======================================== */
-@import url("../core/theme/colors.css");
-@import url("../core/theme/layout.css");
-@import url("../core/theme/animations.css");
-
 @import "tailwindcss";
 
-/* ========================================
-   DARK MODE VARIANT
-   ======================================== */
 @custom-variant dark (&:is(.dark *));
 
-/* ========================================
-   TAILWIND THEME CONFIGURATION
-   
-   This @theme block registers CSS variables
-   with Tailwind so you can use them in classes.
-   
-   DO NOT delete this section - it's required
-   for Tailwind to recognize your custom colors.
-   ======================================== */
 @theme inline {
-  /* ShadCN Variable Mappings */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -49,96 +28,78 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --radius-full: 9999px;
 
-  /* Raff Custom Theme Registration for Tailwind */
-
-  /* Primary Colors - Calm, intelligent blue-grey */
-  --color-raff-primary: var(--raff-primary);
-  --color-raff-primary-light: var(--raff-primary-light);
-  --color-raff-primary-dark: var(--raff-primary-dark);
-
-  /* Accent Colors - Subtle teal for CTAs */
-  --color-raff-accent: var(--raff-accent);
-  --color-raff-accent-light: var(--raff-accent-light);
-  --color-raff-accent-dark: var(--raff-accent-dark);
-
-  /* Neutral Palette */
-  --color-raff-neutral-50: var(--raff-neutral-50);
-  --color-raff-neutral-100: var(--raff-neutral-100);
-  --color-raff-neutral-200: var(--raff-neutral-200);
-  --color-raff-neutral-300: var(--raff-neutral-300);
-  --color-raff-neutral-400: var(--raff-neutral-400);
-  --color-raff-neutral-500: var(--raff-neutral-500);
-  --color-raff-neutral-600: var(--raff-neutral-600);
-  --color-raff-neutral-700: var(--raff-neutral-700);
-  --color-raff-neutral-800: var(--raff-neutral-800);
-  --color-raff-neutral-900: var(--raff-neutral-900);
-
-  /* Semantic Colors */
-  --color-raff-success: var(--raff-success);
-  --color-raff-warning: var(--raff-warning);
-  --color-raff-error: var(--raff-error);
-  --color-raff-info: var(--raff-info);
-
-  /* Spacing */
-  --spacing-18: 4.5rem;
-  --spacing-88: 22rem;
-  --spacing-112: 28rem;
-  --spacing-128: 32rem;
+  /* Raff Custom Colors - Matching Logo Aesthetic */
+  --color-raff-primary: #3d4554;
+  --color-raff-primary-light: #525b6b;
+  --color-raff-primary-dark: #2a2f3a;
+  --color-raff-accent: #3d4554;
+  --color-raff-accent-light: #525b6b;
+  --color-raff-accent-dark: #2a2f3a;
+  --color-raff-neutral-50: #f8f9fa;
+  --color-raff-neutral-100: #f1f3f5;
+  --color-raff-neutral-200: #e9ecef;
+  --color-raff-neutral-300: #dee2e6;
+  --color-raff-neutral-400: #ced4da;
+  --color-raff-neutral-500: #adb5bd;
+  --color-raff-neutral-600: #6c757d;
+  --color-raff-neutral-700: #495057;
+  --color-raff-neutral-800: #343a40;
+  --color-raff-neutral-900: #212529;
+  --color-raff-success: #27ae60;
+  --color-raff-warning: #f39c12;
+  --color-raff-error: #e74c3c;
+  --color-raff-info: #3498db;
 }
 
-/* ========================================
-   BASE STYLES
-   ======================================== */
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+}
+
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border outline-ring/50;
   }
-
-  html {
-    scroll-behavior: smooth;
-  }
-
   body {
-    @apply bg-background text-foreground antialiased;
-    font-feature-settings:
-      "rlig" 1,
-      "calt" 1;
-  }
-
-  /* RTL Support */
-  [dir="rtl"] {
-    direction: rtl;
-  }
-
-  [dir="ltr"] {
-    direction: ltr;
-  }
-}
-
-/* ========================================
-   CUSTOM UTILITIES
-   ======================================== */
-@layer utilities {
-  /* Text Balance */
-  .text-balance {
-    text-wrap: balance;
-  }
-
-  /* Hide Scrollbar */
-  .hide-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* Custom Container */
-  .container-raff {
-    @apply w-full mx-auto px-4 sm:px-6 lg:px-8;
-    max-width: var(--raff-container-max-width);
+    @apply bg-background text-foreground;
   }
 }

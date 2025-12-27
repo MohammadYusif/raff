@@ -1,62 +1,57 @@
 // src/features/homepage/components/TrendingSection.tsx
 "use client";
 
-import { useTranslations } from "next-intl";
-import { Container, Card, CardContent, Button, Badge } from "@/shared/components/ui";
-import { TrendingUp, ArrowRight } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
+import {
+  Container,
+  Card,
+  CardContent,
+  Button,
+  Badge,
+} from "@/shared/components/ui";
+import { TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { ArrowForward } from "@/core/i18n";
 
-// Mock data - will be replaced with real data later
+// Mock data with both languages
 const mockProducts = [
   {
     id: "1",
-    title: "سماعات لاسلكية",
-    titleEn: "Wireless Headphones",
+    title: { ar: "سماعات لاسلكية", en: "Wireless Headphones" },
+    merchant: { ar: "متجر الإلكترونيات", en: "Electronics Store" },
     price: 299,
-    image: "/placeholder-product.jpg",
-    merchant: "متجر الإلكترونيات",
-    trending: true,
   },
   {
     id: "2",
-    title: "حقيبة جلدية فاخرة",
-    titleEn: "Luxury Leather Bag",
+    title: { ar: "حقيبة جلدية فاخرة", en: "Luxury Leather Bag" },
+    merchant: { ar: "بوتيك الأزياء", en: "Fashion Boutique" },
     price: 599,
-    image: "/placeholder-product.jpg",
-    merchant: "بوتيك الأزياء",
-    trending: true,
   },
   {
     id: "3",
-    title: "ساعة ذكية",
-    titleEn: "Smart Watch",
+    title: { ar: "ساعة ذكية", en: "Smart Watch" },
+    merchant: { ar: "تك ستور", en: "Tech Store" },
     price: 899,
-    image: "/placeholder-product.jpg",
-    merchant: "تك ستور",
-    trending: true,
   },
   {
     id: "4",
-    title: "كاميرا رقمية",
-    titleEn: "Digital Camera",
+    title: { ar: "كاميرا رقمية", en: "Digital Camera" },
+    merchant: { ar: "عالم التصوير", en: "Photography World" },
     price: 1299,
-    image: "/placeholder-product.jpg",
-    merchant: "عالم التصوير",
-    trending: true,
   },
 ];
 
 export function TrendingSection() {
   const t = useTranslations("homepage.trending");
   const commonT = useTranslations("common");
+  const locale = useLocale();
 
   return (
-    <section className="py-16 sm:py-24">
+    <section className="border-y border-raff-neutral-200 bg-white py-16 sm:py-24">
       <Container>
         {/* Section Header */}
         <div className="mb-12 text-center">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-raff-accent/10 px-4 py-2 text-sm font-medium text-raff-accent">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-raff-primary/5 px-4 py-2 text-sm font-medium text-raff-primary">
             <TrendingUp className="h-4 w-4" />
             {commonT("labels.trending")}
           </div>
@@ -69,42 +64,38 @@ export function TrendingSection() {
         </div>
 
         {/* Products Grid */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {mockProducts.map((product) => (
             <Card
               key={product.id}
-              className="group overflow-hidden transition-all hover:shadow-lg"
+              className="group overflow-hidden border-raff-neutral-200"
             >
-              {/* Product Image */}
-              <div className="relative aspect-square overflow-hidden bg-raff-neutral-100">
-                <div className="flex h-full items-center justify-center text-raff-neutral-400">
-                  {/* Placeholder - will be replaced with actual image */}
-                  <div className="text-6xl">📦</div>
+              {/* Product Image Placeholder */}
+              <div className="relative aspect-square overflow-hidden from-raff-neutral-50 to-raff-neutral-100">
+                <div className="flex h-full items-center justify-center">
+                  <div className="text-center">
+                    <div className="mb-3 text-6xl opacity-40">📦</div>
+                    <Badge variant="default" className="gap-1 bg-raff-primary">
+                      <TrendingUp className="h-3 w-3" />
+                      {commonT("labels.trending")}
+                    </Badge>
+                  </div>
                 </div>
-                {product.trending && (
-                  <Badge
-                    variant="accent"
-                    className="absolute start-3 top-3 gap-1"
-                  >
-                    <TrendingUp className="h-3 w-3" />
-                    {commonT("labels.trending")}
-                  </Badge>
-                )}
               </div>
 
               <CardContent className="p-4">
                 {/* Merchant */}
-                <div className="mb-2 text-xs text-raff-neutral-500">
-                  {product.merchant}
+                <div className="mb-2 text-xs font-medium uppercase tracking-wide text-raff-neutral-500">
+                  {product.merchant[locale as "ar" | "en"]}
                 </div>
 
                 {/* Product Title */}
-                <h3 className="mb-2 line-clamp-2 font-semibold text-raff-primary">
-                  {product.title}
+                <h3 className="mb-3 line-clamp-2 text-base font-semibold text-raff-primary">
+                  {product.title[locale as "ar" | "en"]}
                 </h3>
 
                 {/* Price */}
-                <div className="mb-4 text-lg font-bold text-raff-accent">
+                <div className="mb-4 text-xl font-bold text-raff-primary">
                   {product.price} {commonT("labels.sar")}
                 </div>
 
@@ -120,12 +111,12 @@ export function TrendingSection() {
 
         {/* View All Button */}
         <div className="mt-12 text-center">
-          <Button size="lg" variant="outline" asChild>
-            <Link href="/trending" className="gap-2">
+          <Link href="/trending">
+            <Button size="lg" variant="outline" className="gap-2">
               {t("viewAll")}
               <ArrowForward className="h-5 w-5" />
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         </div>
       </Container>
     </section>

@@ -5,35 +5,35 @@
   /* ==========================================
      RAFF BRAND COLORS
      ========================================== */
-  
+
   /* Primary - Calm, intelligent blue-grey */
-  --raff-primary: #2C3E50;
-  --raff-primary-light: #34495E;
-  --raff-primary-dark: #1C2833;
-  
+  --raff-primary: #2c3e50;
+  --raff-primary-light: #34495e;
+  --raff-primary-dark: #1c2833;
+
   /* Accent - Subtle teal for CTAs */
-  --raff-accent: #16A085;
-  --raff-accent-light: #1ABC9C;
-  --raff-accent-dark: #138D75;
-  
+  --raff-accent: #16a085;
+  --raff-accent-light: #1abc9c;
+  --raff-accent-dark: #138d75;
+
   /* Neutral Palette */
-  --raff-neutral-50: #F8F9FA;
-  --raff-neutral-100: #F1F3F5;
-  --raff-neutral-200: #E9ECEF;
-  --raff-neutral-300: #DEE2E6;
-  --raff-neutral-400: #CED4DA;
-  --raff-neutral-500: #ADB5BD;
-  --raff-neutral-600: #6C757D;
+  --raff-neutral-50: #f8f9fa;
+  --raff-neutral-100: #f1f3f5;
+  --raff-neutral-200: #e9ecef;
+  --raff-neutral-300: #dee2e6;
+  --raff-neutral-400: #ced4da;
+  --raff-neutral-500: #adb5bd;
+  --raff-neutral-600: #6c757d;
   --raff-neutral-700: #495057;
-  --raff-neutral-800: #343A40;
+  --raff-neutral-800: #343a40;
   --raff-neutral-900: #212529;
-  
+
   /* Semantic Colors */
-  --raff-success: #27AE60;
-  --raff-warning: #F39C12;
-  --raff-error: #E74C3C;
-  --raff-info: #3498DB;
-  
+  --raff-success: #27ae60;
+  --raff-warning: #f39c12;
+  --raff-error: #e74c3c;
+  --raff-info: #3498db;
+
   /* ==========================================
      SHADCN BASE COLORS (Light Mode)
      ========================================== */
@@ -43,18 +43,18 @@
   --card-foreground: 222.2 84% 4.9%;
   --popover: 0 0% 100%;
   --popover-foreground: 222.2 84% 4.9%;
-  --primary: 201 46% 24%;          /* Raff primary */
+  --primary: 201 46% 24%; /* Raff primary */
   --primary-foreground: 210 40% 98%;
   --secondary: 210 40% 96.1%;
   --secondary-foreground: 222.2 47.4% 11.2%;
   --muted: 210 40% 96.1%;
   --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 168 76% 42%;           /* Raff accent */
+  --accent: 168 76% 42%; /* Raff accent */
   --accent-foreground: 222.2 47.4% 11.2%;
   --destructive: 0 84.2% 60.2%;
   --border: 214.3 31.8% 91.4%;
   --input: 214.3 31.8% 91.4%;
-  --ring: 168 76% 42%;             /* Raff accent */
+  --ring: 168 76% 42%; /* Raff accent */
   --radius: 0.5rem;
 }
 
@@ -68,13 +68,13 @@
   --card-foreground: 210 40% 98%;
   --popover: 222.2 84% 4.9%;
   --popover-foreground: 210 40% 98%;
-  --primary: 168 76% 42%;          /* Raff accent in dark mode */
+  --primary: 168 76% 42%; /* Raff accent in dark mode */
   --primary-foreground: 222.2 47.4% 11.2%;
   --secondary: 217.2 32.6% 17.5%;
   --secondary-foreground: 210 40% 98%;
   --muted: 217.2 32.6% 17.5%;
   --muted-foreground: 215 20.2% 65.1%;
-  --accent: 168 76% 42%;           /* Raff accent */
+  --accent: 168 76% 42%; /* Raff accent */
   --accent-foreground: 210 40% 98%;
   --destructive: 0 62.8% 30.6%;
   --border: 217.2 32.6% 17.5%;
