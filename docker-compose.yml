@@ -1,0 +1,46 @@
+# docker-compose.yml
+# Easy PostgreSQL setup for Raff development
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: raff-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: raff
+      POSTGRES_PASSWORD: raff_dev_password_2024
+      POSTGRES_DB: raff
+    ports:
+      - "5432:5432"
+    volumes:
+      - raff_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U raff"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Prisma Studio (Database GUI)
+  # Uncomment to run Prisma Studio in Docker
+  # prisma-studio:
+  #   image: node:20-alpine
+  #   container_name: raff-prisma-studio
+  #   working_dir: /app
+  #   command: npx prisma studio
+  #   ports:
+  #     - "5555:5555"
+  #   volumes:
+  #     - ./prisma:/app/prisma
+  #   depends_on:
+  #     - postgres
+
+volumes:
+  raff_postgres_data:
+    driver: local
+
+networks:
+  default:
+    name: raff-network

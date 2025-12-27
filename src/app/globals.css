@@ -1,0 +1,144 @@
+/* src/app/globals.css */
+
+/* ========================================
+   IMPORTS
+   ======================================== */
+@import url("../core/theme/colors.css");
+@import url("../core/theme/layout.css");
+@import url("../core/theme/animations.css");
+
+@import "tailwindcss";
+
+/* ========================================
+   DARK MODE VARIANT
+   ======================================== */
+@custom-variant dark (&:is(.dark *));
+
+/* ========================================
+   TAILWIND THEME CONFIGURATION
+   
+   This @theme block registers CSS variables
+   with Tailwind so you can use them in classes.
+   
+   DO NOT delete this section - it's required
+   for Tailwind to recognize your custom colors.
+   ======================================== */
+@theme inline {
+  /* ShadCN Variable Mappings */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-full: 9999px;
+
+  /* Raff Custom Theme Registration for Tailwind */
+
+  /* Primary Colors - Calm, intelligent blue-grey */
+  --color-raff-primary: var(--raff-primary);
+  --color-raff-primary-light: var(--raff-primary-light);
+  --color-raff-primary-dark: var(--raff-primary-dark);
+
+  /* Accent Colors - Subtle teal for CTAs */
+  --color-raff-accent: var(--raff-accent);
+  --color-raff-accent-light: var(--raff-accent-light);
+  --color-raff-accent-dark: var(--raff-accent-dark);
+
+  /* Neutral Palette */
+  --color-raff-neutral-50: var(--raff-neutral-50);
+  --color-raff-neutral-100: var(--raff-neutral-100);
+  --color-raff-neutral-200: var(--raff-neutral-200);
+  --color-raff-neutral-300: var(--raff-neutral-300);
+  --color-raff-neutral-400: var(--raff-neutral-400);
+  --color-raff-neutral-500: var(--raff-neutral-500);
+  --color-raff-neutral-600: var(--raff-neutral-600);
+  --color-raff-neutral-700: var(--raff-neutral-700);
+  --color-raff-neutral-800: var(--raff-neutral-800);
+  --color-raff-neutral-900: var(--raff-neutral-900);
+
+  /* Semantic Colors */
+  --color-raff-success: var(--raff-success);
+  --color-raff-warning: var(--raff-warning);
+  --color-raff-error: var(--raff-error);
+  --color-raff-info: var(--raff-info);
+
+  /* Spacing */
+  --spacing-18: 4.5rem;
+  --spacing-88: 22rem;
+  --spacing-112: 28rem;
+  --spacing-128: 32rem;
+}
+
+/* ========================================
+   BASE STYLES
+   ======================================== */
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
+  }
+
+  /* RTL Support */
+  [dir="rtl"] {
+    direction: rtl;
+  }
+
+  [dir="ltr"] {
+    direction: ltr;
+  }
+}
+
+/* ========================================
+   CUSTOM UTILITIES
+   ======================================== */
+@layer utilities {
+  /* Text Balance */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Hide Scrollbar */
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Custom Container */
+  .container-raff {
+    @apply w-full mx-auto px-4 sm:px-6 lg:px-8;
+    max-width: var(--raff-container-max-width);
+  }
+}

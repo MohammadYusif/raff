@@ -1,0 +1,304 @@
+// prisma/schema.prisma
+// Raff E-Commerce Discovery Platform Database Schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ============================================
+// MERCHANT MODEL
+// ============================================
+
+model Merchant {
+  id              String         @id @default(cuid())
+  name            String
+  nameAr          String?
+  email           String         @unique
+  phone           String?
+  logo            String?
+  description     String?        @db.Text
+  descriptionAr   String?        @db.Text
+  
+  // Salla Integration
+  sallaStoreId    String         @unique
+  sallaStoreUrl   String
+  sallaAccessToken String?       @db.Text
+  sallaRefreshToken String?      @db.Text
+  sallaTokenExpiry DateTime?
+  
+  // Status & Approval
+  status          MerchantStatus @default(PENDING)
+  approvedAt      DateTime?
+  approvedBy      String?        // Admin user ID who approved
+  rejectionReason String?        @db.Text
+  
+  // Settings
+  isActive        Boolean        @default(true)
+  autoSyncProducts Boolean       @default(false)
+  lastSyncAt      DateTime?
+  
+  // Relations
+  products        Product[]
+  
+  // Timestamps
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  @@index([status])
+  @@index([sallaStoreId])
+  @@index([email])
+}
+
+// ============================================
+// PRODUCT MODEL
+// ============================================
+
+model Product {
+  id              String    @id @default(cuid())
+  
+  // Basic Info
+  title           String
+  titleAr         String?
+  description     String?   @db.Text
+  descriptionAr   String?   @db.Text
+  
+  // Pricing
+  price           Float
+  currency        String    @default("SAR")
+  originalPrice   Float?    // For displaying discounts
+  
+  // Images
+  images          String[]  // Array of image URLs
+  thumbnail       String?   // Main thumbnail
+  
+  // Categorization
+  categoryId      String?
+  category        Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  tags            String[]  // Searchable tags
+  
+  // Salla Integration
+  sallaProductId  String
+  sallaVariantId  String?
+  sallaUrl        String    // Direct link to product on Salla
+  
+  // Merchant
+  merchantId      String
+  merchant        Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  
+  // Stock & Availability
+  isActive        Boolean   @default(true)
+  inStock         Boolean   @default(true)
+  quantity        Int?      // Available quantity
+  
+  // Trending & Analytics
+  trendingScore   Float     @default(0)
+  viewCount       Int       @default(0)
+  clickCount      Int       @default(0)
+  orderCount      Int       @default(0)
+  
+  // SEO
+  slug            String    @unique
+  metaTitle       String?
+  metaDescription String?
+  
+  // Relations
+  orders          Order[]
+  savedByUsers    User[]    @relation("SavedProducts")
+  
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  lastSyncedAt    DateTime? // Last sync from Salla
+  
+  @@index([merchantId])
+  @@index([categoryId])
+  @@index([trendingScore])
+  @@index([isActive, inStock])
+  @@index([slug])
+  @@unique([sallaProductId, merchantId])
+}
+
+// ============================================
+// CATEGORY MODEL
+// ============================================
+
+model Category {
+  id              String    @id @default(cuid())
+  name            String
+  nameAr          String?
+  slug            String    @unique
+  description     String?   @db.Text
+  descriptionAr   String?   @db.Text
+  icon            String?   // Icon name or URL
+  image           String?   // Category image
+  
+  // Hierarchy (for subcategories)
+  parentId        String?
+  parent          Category? @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children        Category[] @relation("CategoryHierarchy")
+  
+  // Display
+  order           Int       @default(0) // Display order
+  isActive        Boolean   @default(true)
+  
+  // Relations
+  products        Product[]
+  
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([slug])
+  @@index([parentId])
+}
+
+// ============================================
+// ORDER MODEL
+// ============================================
+
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  
+  // Customer
+  customerId      String?
+  customer        User?       @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  
+  // Customer Info (for guest orders)
+  customerName    String
+  customerEmail   String
+  customerPhone   String
+  
+  // Product
+  productId       String
+  product         Product     @relation(fields: [productId], references: [id])
+  
+  // Order Details
+  quantity        Int         @default(1)
+  totalPrice      Float
+  currency        String      @default("SAR")
+  
+  // Salla Integration
+  sallaOrderId    String      @unique
+  sallaStatus     String      // Synced from Salla
+  
+  // Shipping
+  shippingAddress Json?       // Store as JSON
+  shippingCity    String?
+  shippingMethod  String?
+  
+  // Status
+  status          OrderStatus @default(PENDING)
+  
+  // Tracking
+  trackingNumber  String?
+  trackingUrl     String?
+  
+  // Payment
+  paymentMethod   String?
+  paymentStatus   String?
+  
+  // Timestamps
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  confirmedAt     DateTime?
+  shippedAt       DateTime?
+  deliveredAt     DateTime?
+  
+  @@index([customerId])
+  @@index([productId])
+  @@index([status])
+  @@index([sallaOrderId])
+  @@index([createdAt])
+}
+
+// ============================================
+// USER MODEL (Customers)
+// ============================================
+
+model User {
+  id              String    @id @default(cuid())
+  
+  // Basic Info
+  name            String
+  email           String    @unique
+  phone           String?
+  avatar          String?
+  
+  // Authentication
+  password        String    // Hashed with bcrypt
+  emailVerified   DateTime?
+  
+  // Role
+  role            UserRole  @default(CUSTOMER)
+  
+  // Preferences
+  language        String    @default("ar") // "ar" or "en"
+  
+  // Relations
+  orders          Order[]
+  savedProducts   Product[] @relation("SavedProducts")
+  
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  lastLoginAt     DateTime?
+  
+  @@index([email])
+  @@index([role])
+}
+
+// ============================================
+// TRENDING LOG (for algorithm)
+// ============================================
+
+model TrendingLog {
+  id              String    @id @default(cuid())
+  productId       String
+  eventType       TrendingEvent
+  weight          Float     // Weight of this event
+  metadata        Json?     // Additional data
+  createdAt       DateTime  @default(now())
+  
+  @@index([productId, createdAt])
+  @@index([eventType])
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum MerchantStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum UserRole {
+  CUSTOMER
+  MERCHANT
+  ADMIN
+}
+
+enum TrendingEvent {
+  VIEW
+  CLICK
+  ORDER
+  SAVE
+}
