@@ -220,7 +220,7 @@ export function ProductsContent({
             {/* Main Content */}
             <div className="min-w-0 flex-1 space-y-6">
               {/* Sort & Results Count */}
-              <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm text-raff-neutral-600">
                   {t("resultsCount", {
                     count:
@@ -229,7 +229,7 @@ export function ProductsContent({
                       initialProducts.length,
                   })}
                 </p>
-                <div className="flex gap-2">
+                <div className="flex gap-2 overflow-x-auto pb-2">
                   <Button
                     variant={
                       urlSearchParams.get("sortBy") === "trending"
@@ -237,6 +237,7 @@ export function ProductsContent({
                         : "outline"
                     }
                     size="sm"
+                    className="shrink-0"
                     onClick={() => handleSort("trending")}
                   >
                     {t("sortTrending")}
@@ -248,6 +249,7 @@ export function ProductsContent({
                         : "outline"
                     }
                     size="sm"
+                    className="shrink-0"
                     onClick={() => handleSort("price_low")}
                   >
                     {t("sortPriceLow")}
@@ -259,6 +261,7 @@ export function ProductsContent({
                         : "outline"
                     }
                     size="sm"
+                    className="shrink-0"
                     onClick={() => handleSort("price_high")}
                   >
                     {t("sortPriceHigh")}
@@ -270,6 +273,7 @@ export function ProductsContent({
                         : "outline"
                     }
                     size="sm"
+                    className="shrink-0"
                     onClick={() => handleSort("newest")}
                   >
                     {t("sortNewest")}

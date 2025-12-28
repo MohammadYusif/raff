@@ -109,5 +109,23 @@
     "noTrending": "لا توجد منتجات رائجة",
     "noTrendingDescription": "تحقق مرة أخرى قريباً لاكتشاف المنتجات الرائجة",
     "viewAllProducts": "عرض جميع المنتجات"
+  },
+    "categories": {
+    "title": "التصنيفات",
+    "subtitle": "تصفح المنتجات حسب التصنيف",
+    "viewProducts": "عرض المنتجات",
+    "noCategories": "لا توجد تصنيفات",
+    "noCategoriesDescription": "لم يتم العثور على تصنيفات حالياً",
+    "viewAllProducts": "عرض جميع المنتجات"
+  },
+   "category": {
+    "backToCategories": "العودة للتصنيفات",
+    "noProducts": "لا توجد منتجات",
+    "noProductsDescription": "لا توجد منتجات في هذا التصنيف حالياً",
+    "notFound": {
+      "title": "التصنيف غير موجود",
+      "description": "عذراً، التصنيف الذي تبحث عنه غير موجود",
+      "browseCategories": "تصفح التصنيفات"
+    }
   }
 }

@@ -25,8 +25,8 @@
     "allCategories": "All Categories",
     "resultsCount": "{count} products",
     "sortTrending": "Trending",
-    "sortPriceLow": "Price: Low to High",
-    "sortPriceHigh": "Price: High to Low",
+    "sortPriceLow": "Lowest Price",
+    "sortPriceHigh": "Highest Price",
     "sortNewest": "Newest",
     "noResults": "No results found",
     "noResultsDescription": "Try changing your search or filters",
@@ -109,5 +109,23 @@
     "noTrending": "No Trending Products",
     "noTrendingDescription": "Check back soon to discover trending products",
     "viewAllProducts": "View All Products"
+  },
+    "categories": {
+    "title": "Categories",
+    "subtitle": "Browse products by category",
+    "viewProducts": "View Products",
+    "noCategories": "No Categories",
+    "noCategoriesDescription": "No categories found at the moment",
+    "viewAllProducts": "View All Products"
+  },
+    "category": {
+    "backToCategories": "Back to Categories",
+    "noProducts": "No Products",
+    "noProductsDescription": "No products found in this category",
+    "notFound": {
+      "title": "Category Not Found",
+      "description": "Sorry, the category you're looking for doesn't exist",
+      "browseCategories": "Browse Categories"
+    }
   }
 }
