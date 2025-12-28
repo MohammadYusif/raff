@@ -9,11 +9,29 @@
     "visitStore": "Visit Store",
     "backToProducts": "Back to Products",
     "redirectNotice": "Note: You will be redirected to {merchant}'s store on Salla platform to complete your purchase securely.",
+    "views": "views",
     "notFound": {
       "title": "Product Not Found",
       "description": "Sorry, we couldn't find the product you're looking for. It may have been deleted or moved.",
       "browseProducts": "Browse All Products"
     }
+  },
+  "products": {
+    "title": "All Products",
+    "subtitle": "Browse our complete collection of products",
+    "search": "Search",
+    "searchPlaceholder": "Search for a product...",
+    "categories": "Categories",
+    "allCategories": "All Categories",
+    "resultsCount": "{count} products",
+    "sortTrending": "Trending",
+    "sortPriceLow": "Price: Low to High",
+    "sortPriceHigh": "Price: High to Low",
+    "sortNewest": "Newest",
+    "noResults": "No results found",
+    "noResultsDescription": "Try changing your search or filters",
+    "previous": "Previous",
+    "next": "Next"
   },
   "common": {
     "nav": {

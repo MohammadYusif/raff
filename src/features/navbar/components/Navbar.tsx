@@ -7,7 +7,6 @@ import { useTranslations, useLocale } from "next-intl";
 import { useLocale as useLocaleHook } from "@/core/i18n";
 import { Button, Container } from "@/shared/components/ui";
 import { Menu, X, Search, Globe } from "lucide-react";
-import Image from "next/image";
 
 export function Navbar() {
   const t = useTranslations("nav");
@@ -25,7 +24,7 @@ export function Navbar() {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-raff-neutral-200 bg-white/95 backdrop-blur">
+    <nav className="fixed top-0 z-50 w-full border-b border-raff-neutral-200 bg-white/95 backdrop-blur">
       <Container>
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}

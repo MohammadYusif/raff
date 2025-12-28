@@ -3,5 +3,5 @@
  * Type Definitions for Raff Platform
  */
 
-export * from './product';
-export * from './category';
+export * from "./product";
+export * from "./category";

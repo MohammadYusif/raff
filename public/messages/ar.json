@@ -9,11 +9,29 @@
     "visitStore": "زيارة المتجر",
     "backToProducts": "العودة للمنتجات",
     "redirectNotice": "ملاحظة: سيتم توجيهك إلى متجر {merchant} على منصة سلة لإتمام عملية الشراء بشكل آمن.",
+    "views": "مشاهدة",
     "notFound": {
       "title": "المنتج غير موجود",
       "description": "عذراً، لم نتمكن من العثور على المنتج الذي تبحث عنه. قد يكون قد تم حذفه أو نقله.",
       "browseProducts": "تصفح جميع المنتجات"
     }
+  },
+  "products": {
+    "title": "جميع المنتجات",
+    "subtitle": "تصفح مجموعتنا الكاملة من المنتجات",
+    "search": "بحث",
+    "searchPlaceholder": "ابحث عن منتج...",
+    "categories": "التصنيفات",
+    "allCategories": "جميع التصنيفات",
+    "resultsCount": "{count} منتج",
+    "sortTrending": "الأكثر رواجاً",
+    "sortPriceLow": "الأقل سعراً",
+    "sortPriceHigh": "الأعلى سعراً",
+    "sortNewest": "الأحدث",
+    "noResults": "لا توجد نتائج",
+    "noResultsDescription": "جرب تغيير معايير البحث أو الفلاتر",
+    "previous": "السابق",
+    "next": "التالي"
   },
   "common": {
     "nav": {
