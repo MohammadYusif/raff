@@ -1,36 +1,67 @@
 {
+  "product": {
+    "inStock": "In Stock",
+    "outOfStock": "Out of Stock",
+    "limitedStock": "Limited Stock - Only {count} left",
+    "description": "Product Description",
+    "taxIncluded": "VAT included",
+    "buyNow": "Buy Now",
+    "visitStore": "Visit Store",
+    "backToProducts": "Back to Products",
+    "redirectNotice": "Note: You will be redirected to {merchant}'s store on Salla platform to complete your purchase securely.",
+    "notFound": {
+      "title": "Product Not Found",
+      "description": "Sorry, we couldn't find the product you're looking for. It may have been deleted or moved.",
+      "browseProducts": "Browse All Products"
+    }
+  },
   "common": {
+    "nav": {
+      "home": "Home",
+      "products": "Products"
+    },
     "actions": {
-      "search": "Search",
-      "filter": "Filter",
-      "sort": "Sort",
+      "backToHome": "Back to Home",
       "viewDetails": "View Details",
-      "orderNow": "Order Now",
-      "addToCart": "Add to Cart",
-      "save": "Save",
-      "share": "Share",
-      "login": "Login",
-      "register": "Register",
-      "viewAll": "View All",
-      "loadMore": "Load More"
+      "login": "Login"
     },
     "labels": {
-      "price": "Price",
-      "merchant": "Store",
-      "category": "Category",
       "trending": "Trending",
-      "new": "New",
-      "sale": "Sale",
-      "outOfStock": "Out of Stock",
-      "inStock": "In Stock",
-      "free": "Free",
       "sar": "SAR"
+    }
+  },
+  "homepage": {
+    "hero": {
+      "title": "Discover Trending Products",
+      "subtitle": "Browse the best products from Saudi stores",
+      "searchPlaceholder": "Search for a product...",
+      "cta": "Start Browsing"
     },
-    "messages": {
-      "loading": "Loading...",
-      "error": "Something went wrong",
-      "noResults": "No results found",
-      "tryAgain": "Try again"
+    "trending": {
+      "title": "Most Popular Products",
+      "subtitle": "Discover what others are buying now",
+      "viewAll": "View All"
+    },
+    "stats": {
+      "products": "Products",
+      "merchants": "Stores",
+      "customers": "Customers"
+    },
+    "howItWorks": {
+      "title": "How Raff Works",
+      "subtitle": "Three simple steps to find your perfect product",
+      "step1": {
+        "title": "Browse Products",
+        "description": "Explore thousands of products from different stores"
+      },
+      "step2": {
+        "title": "Compare & Choose",
+        "description": "Easily compare prices and features"
+      },
+      "step3": {
+        "title": "Buy Safely",
+        "description": "Purchase directly from the original store"
+      }
     }
   },
   "nav": {
@@ -38,96 +69,19 @@
     "products": "Products",
     "trending": "Trending",
     "categories": "Categories",
-    "merchants": "Stores",
-    "about": "About",
-    "contact": "Contact"
+    "merchants": "Stores"
   },
-  "homepage": {
-    "hero": {
-      "title": "Discover Trending Products",
-      "subtitle": "From the best Saudi stores, all in one place",
-      "cta": "Start Exploring",
-      "searchPlaceholder": "Search for products..."
-    },
-    "trending": {
-      "title": "Trending Now",
-      "subtitle": "Discover what others are buying",
-      "viewAll": "View All Trending Products"
-    },
-    "categories": {
-      "title": "Shop by Category",
-      "subtitle": "Explore products organized by your interests"
-    },
-    "howItWorks": {
-      "title": "How Raff Works",
-      "subtitle": "Shop smart from multiple stores",
-      "step1": {
-        "title": "Browse Products",
-        "description": "Discover trending items from various Saudi stores"
-      },
-      "step2": {
-        "title": "Find What You Love",
-        "description": "Compare prices and read reviews"
-      },
-      "step3": {
-        "title": "Order Directly",
-        "description": "Get redirected to the original store to complete your purchase"
-      }
-    },
-    "merchants": {
-      "title": "Trusted Merchants",
-      "subtitle": "We work with the best Saudi online stores",
-      "joinCta": "Join as a Merchant"
-    },
-    "stats": {
-      "products": "Products Available",
-      "merchants": "Partner Stores",
-      "customers": "Happy Customers"
-    }
-  },
-  "products": {
-    "filters": {
-      "category": "Category",
-      "priceRange": "Price Range",
-      "merchant": "Store",
-      "availability": "Availability",
-      "sortBy": "Sort By"
-    },
-    "sort": {
-      "trending": "Most Trending",
-      "newest": "Newest First",
-      "priceLow": "Price: Low to High",
-      "priceHigh": "Price: High to Low",
-      "popular": "Most Popular"
-    },
-    "card": {
-      "viewStore": "Visit Store",
-      "addToSaved": "Save",
-      "share": "Share"
-    }
-  },
-  "categories": {
-    "electronics": "Electronics",
-    "fashion": "Fashion",
-    "beauty": "Beauty",
-    "home": "Home & Garden",
-    "sports": "Sports",
-    "toys": "Toys",
-    "books": "Books",
-    "food": "Food"
-  },
-    "footer": {
-  "description": "Raff Platform - Discover the best products from Saudi stores",
-  "quickLinks": "Quick Links",
-  "forMerchants": "For Merchants",
-  "joinAsStore": "Join as Store",
-  "merchantDashboard": "Merchant Dashboard",
-  "support": "Support",
-  "legal": "Legal",
-  "helpCenter": "Help Center",
-  "contactUs": "Contact Us",
-  "termsOfService": "Terms of Service",
-  "privacyPolicy": "Privacy Policy",
-  "allRightsReserved": "All rights reserved"
-}
+  "footer": {
+    "quickLinks": "Quick Links",
+    "forMerchants": "For Merchants",
+    "support": "Support",
+    "legal": "Legal",
+    "joinAsStore": "Join as Store",
+    "merchantDashboard": "Merchant Dashboard",
+    "helpCenter": "Help Center",
+    "contactUs": "Contact Us",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "allRightsReserved": "All rights reserved"
+  }
 }

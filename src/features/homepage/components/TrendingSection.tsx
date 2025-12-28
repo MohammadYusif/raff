@@ -9,6 +9,7 @@ import {
   CardContent,
   Button,
   Badge,
+  Skeleton,
 } from "@/shared/components/ui";
 import { TrendingUp } from "lucide-react";
 import Link from "next/link";
@@ -65,17 +66,18 @@ export function TrendingSection() {
             </h2>
           </div>
 
-          {/* Loading skeleton */}
+          {/* Loading skeleton using shadcn Skeleton */}
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="aspect-square bg-raff-neutral-200 rounded-t-lg" />
-                <div className="p-4 space-y-3">
-                  <div className="h-4 bg-raff-neutral-200 rounded w-2/3" />
-                  <div className="h-5 bg-raff-neutral-200 rounded w-full" />
-                  <div className="h-6 bg-raff-neutral-200 rounded w-1/2" />
-                </div>
-              </div>
+              <Card key={i} className="overflow-hidden">
+                <Skeleton className="aspect-square w-full" />
+                <CardContent className="space-y-3 p-4">
+                  <Skeleton className="h-4 w-2/3" />
+                  <Skeleton className="h-5 w-full" />
+                  <Skeleton className="h-6 w-1/2" />
+                  <Skeleton className="h-10 w-full" />
+                </CardContent>
+              </Card>
             ))}
           </div>
         </Container>

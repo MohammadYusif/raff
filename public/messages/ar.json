@@ -1,133 +1,87 @@
 {
+  "product": {
+    "inStock": "متوفر",
+    "outOfStock": "غير متوفر",
+    "limitedStock": "الكمية محدودة - {count} فقط",
+    "description": "وصف المنتج",
+    "taxIncluded": "شامل ضريبة القيمة المضافة",
+    "buyNow": "اشتر الآن",
+    "visitStore": "زيارة المتجر",
+    "backToProducts": "العودة للمنتجات",
+    "redirectNotice": "ملاحظة: سيتم توجيهك إلى متجر {merchant} على منصة سلة لإتمام عملية الشراء بشكل آمن.",
+    "notFound": {
+      "title": "المنتج غير موجود",
+      "description": "عذراً، لم نتمكن من العثور على المنتج الذي تبحث عنه. قد يكون قد تم حذفه أو نقله.",
+      "browseProducts": "تصفح جميع المنتجات"
+    }
+  },
   "common": {
+    "nav": {
+      "home": "الرئيسية",
+      "products": "المنتجات"
+    },
     "actions": {
-      "search": "بحث",
-      "filter": "تصفية",
-      "sort": "ترتيب",
+      "backToHome": "العودة للرئيسية",
       "viewDetails": "عرض التفاصيل",
-      "orderNow": "اطلب الآن",
-      "addToCart": "أضف للسلة",
-      "save": "حفظ",
-      "share": "مشاركة",
-      "login": "تسجيل الدخول",
-      "register": "إنشاء حساب",
-      "viewAll": "عرض الكل",
-      "loadMore": "تحميل المزيد"
+      "login": "تسجيل الدخول"
     },
     "labels": {
-      "price": "السعر",
-      "merchant": "المتجر",
-      "category": "الفئة",
       "trending": "رائج",
-      "new": "جديد",
-      "sale": "تخفيض",
-      "outOfStock": "نفد من المخزون",
-      "inStock": "متوفر",
-      "free": "مجاني",
       "sar": "ر.س"
+    }
+  },
+  "homepage": {
+    "hero": {
+      "title": "اكتشف المنتجات الرائجة",
+      "subtitle": "تصفح أفضل المنتجات من المتاجر السعودية",
+      "searchPlaceholder": "ابحث عن منتج...",
+      "cta": "ابدأ التصفح"
     },
-    "messages": {
-      "loading": "جاري التحميل...",
-      "error": "حدث خطأ ما",
-      "noResults": "لا توجد نتائج",
-      "tryAgain": "حاول مرة أخرى"
+    "trending": {
+      "title": "المنتجات الأكثر رواجاً",
+      "subtitle": "اكتشف ما يشتريه الآخرون الآن",
+      "viewAll": "عرض الكل"
+    },
+    "stats": {
+      "products": "منتج",
+      "merchants": "متجر",
+      "customers": "عميل"
+    },
+    "howItWorks": {
+      "title": "كيف يعمل رَفّ",
+      "subtitle": "ثلاث خطوات بسيطة للعثور على منتجك المثالي",
+      "step1": {
+        "title": "تصفح المنتجات",
+        "description": "استكشف آلاف المنتجات من متاجر مختلفة"
+      },
+      "step2": {
+        "title": "قارن واختر",
+        "description": "قارن الأسعار والمميزات بسهولة"
+      },
+      "step3": {
+        "title": "اشترِ بأمان",
+        "description": "اشترِ مباشرة من المتجر الأصلي"
+      }
     }
   },
   "nav": {
     "home": "الرئيسية",
     "products": "المنتجات",
     "trending": "الرائج",
-    "categories": "الفئات",
-    "merchants": "المتاجر",
-    "about": "من نحن",
-    "contact": "تواصل معنا"
-  },
-  "homepage": {
-    "hero": {
-      "title": "اكتشف المنتجات الرائجة",
-      "subtitle": "من أفضل المتاجر السعودية، كلها في مكان واحد",
-      "cta": "ابدأ الاستكشاف",
-      "searchPlaceholder": "ابحث عن منتجات..."
-    },
-    "trending": {
-      "title": "المنتجات الرائجة",
-      "subtitle": "اكتشف ما يشتريه الآخرون الآن",
-      "viewAll": "عرض كل المنتجات الرائجة"
-    },
-    "categories": {
-      "title": "تسوق حسب الفئة",
-      "subtitle": "اكتشف منتجات مصنفة حسب اهتماماتك"
-    },
-    "howItWorks": {
-      "title": "كيف يعمل رَفّ؟",
-      "subtitle": "تسوق بذكاء من متاجر متعددة",
-      "step1": {
-        "title": "تصفح المنتجات",
-        "description": "اكتشف المنتجات الرائجة من متاجر سعودية مختلفة"
-      },
-      "step2": {
-        "title": "اختر ما يعجبك",
-        "description": "قارن الأسعار واقرأ التقييمات"
-      },
-      "step3": {
-        "title": "اطلب مباشرة",
-        "description": "يتم توجيهك للمتجر الأصلي لإتمام الطلب"
-      }
-    },
-    "merchants": {
-      "title": "متاجر موثوقة",
-      "subtitle": "نعمل مع أفضل المتاجر السعودية",
-      "joinCta": "انضم كمتجر"
-    },
-    "stats": {
-      "products": "منتج متاح",
-      "merchants": "متجر شريك",
-      "customers": "عميل راضٍ"
-    }
-  },
-  "products": {
-    "filters": {
-      "category": "الفئة",
-      "priceRange": "نطاق السعر",
-      "merchant": "المتجر",
-      "availability": "التوفر",
-      "sortBy": "ترتيب حسب"
-    },
-    "sort": {
-      "trending": "الأكثر رواجاً",
-      "newest": "الأحدث",
-      "priceLow": "السعر: من الأقل إلى الأعلى",
-      "priceHigh": "السعر: من الأعلى إلى الأقل",
-      "popular": "الأكثر شعبية"
-    },
-    "card": {
-      "viewStore": "زيارة المتجر",
-      "addToSaved": "حفظ",
-      "share": "مشاركة"
-    }
-  },
-  "categories": {
-    "electronics": "إلكترونيات",
-    "fashion": "أزياء",
-    "beauty": "تجميل",
-    "home": "منزل وحديقة",
-    "sports": "رياضة",
-    "toys": "ألعاب",
-    "books": "كتب",
-    "food": "طعام"
+    "categories": "التصنيفات",
+    "merchants": "المتاجر"
   },
   "footer": {
-  "description": "منصة رَفّ - اكتشف أفضل المنتجات من المتاجر السعودية",
-  "quickLinks": "روابط سريعة",
-  "forMerchants": "للمتاجر",
-  "joinAsStore": "انضم كمتجر",
-  "merchantDashboard": "لوحة التحكم",
-  "support": "الدعم",
-  "legal": "قانوني",
-  "helpCenter": "مركز المساعدة",
-  "contactUs": "تواصل معنا",
-  "termsOfService": "شروط الخدمة",
-  "privacyPolicy": "سياسة الخصوصية",
-  "allRightsReserved": "جميع الحقوق محفوظة"
-}
+    "quickLinks": "روابط سريعة",
+    "forMerchants": "للتجار",
+    "support": "الدعم",
+    "legal": "قانوني",
+    "joinAsStore": "انضم كمتجر",
+    "merchantDashboard": "لوحة التحكم",
+    "helpCenter": "مركز المساعدة",
+    "contactUs": "اتصل بنا",
+    "termsOfService": "شروط الخدمة",
+    "privacyPolicy": "سياسة الخصوصية",
+    "allRightsReserved": "جميع الحقوق محفوظة"
+  }
 }

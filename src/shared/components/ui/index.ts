@@ -9,3 +9,6 @@ export * from "./card";
 export * from "./input";
 export * from "./container";
 export * from "./badge";
+export * from "./breadcrumb";
+export * from "./separator";
+export * from "./skeleton";
