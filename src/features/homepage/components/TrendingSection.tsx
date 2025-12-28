@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import {
   Container,
   Card,
@@ -32,6 +32,7 @@ interface Product {
 export function TrendingSection() {
   const t = useTranslations("homepage.trending");
   const commonT = useTranslations("common");
+  const locale = useLocale(); // ← Add locale
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -104,57 +105,76 @@ export function TrendingSection() {
 
         {/* Products Grid */}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {products.map((product) => (
-            <Card
-              key={product.id}
-              className="group overflow-hidden border-raff-neutral-200"
-            >
-              {/* Product Image Placeholder */}
-              <div className="relative aspect-square overflow-hidden from-raff-neutral-50 to-raff-neutral-100">
-                <div className="flex h-full items-center justify-center">
-                  <div className="text-center">
-                    <div className="mb-3 text-6xl opacity-40">📦</div>
-                    <Badge variant="default" className="gap-1 bg-raff-primary">
-                      <TrendingUp className="h-3 w-3" />
-                      {commonT("labels.trending")}
-                    </Badge>
+          {products.map((product) => {
+            // ← Add locale-aware display
+            const productTitle =
+              locale === "ar"
+                ? product.titleAr || product.title
+                : product.title;
+            const merchantName =
+              locale === "ar"
+                ? product.merchant.nameAr || product.merchant.name
+                : product.merchant.name;
+
+            return (
+              <Card
+                key={product.id}
+                className="group overflow-hidden border-raff-neutral-200"
+              >
+                {/* Product Image Placeholder */}
+                <div className="relative aspect-square overflow-hidden from-raff-neutral-50 to-raff-neutral-100">
+                  <div className="flex h-full items-center justify-center">
+                    <div className="text-center">
+                      <div className="mb-3 text-6xl opacity-40">📦</div>
+                      <Badge
+                        variant="default"
+                        className="gap-1 bg-raff-primary"
+                      >
+                        <TrendingUp className="h-3 w-3" />
+                        {commonT("labels.trending")}
+                      </Badge>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <CardContent className="p-4">
-                {/* Merchant */}
-                <div className="mb-2 text-xs font-medium uppercase tracking-wide text-raff-neutral-500">
-                  {product.merchant.nameAr || product.merchant.name}
-                </div>
+                <CardContent className="p-4">
+                  {/* Merchant */}
+                  <div className="mb-2 text-xs font-medium uppercase tracking-wide text-raff-neutral-500">
+                    {merchantName}
+                  </div>
 
-                {/* Product Title */}
-                <h3 className="mb-3 line-clamp-2 text-base font-semibold text-raff-primary">
-                  {product.titleAr || product.title}
-                </h3>
+                  {/* Product Title */}
+                  <h3 className="mb-3 line-clamp-2 text-base font-semibold text-raff-primary">
+                    {productTitle}
+                  </h3>
 
-                {/* Price */}
-                <div className="mb-4">
-                  {product.originalPrice && (
-                    <span className="me-2 text-sm text-raff-neutral-500 line-through">
-                      {formatPrice(product.originalPrice, "ar")}
+                  {/* Price */}
+                  <div className="mb-4">
+                    {product.originalPrice && (
+                      <span className="me-2 text-sm text-raff-neutral-500 line-through">
+                        {formatPrice(product.originalPrice, locale)}
+                      </span>
+                    )}
+                    <span className="text-xl font-bold text-raff-primary">
+                      {formatPrice(product.price, locale)}
                     </span>
-                  )}
-                  <span className="text-xl font-bold text-raff-primary">
-                    {formatPrice(product.price, "ar")}
-                  </span>
-                </div>
+                  </div>
 
-                {/* View Button */}
-                <Link href={`/products/${product.slug}`}>
-                  <Button variant="outline" className="w-full gap-2" size="sm">
-                    {commonT("actions.viewDetails")}
-                    <ArrowForward className="h-4 w-4" />
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          ))}
+                  {/* View Button */}
+                  <Link href={`/products/${product.slug}`}>
+                    <Button
+                      variant="outline"
+                      className="w-full gap-2"
+                      size="sm"
+                    >
+                      {commonT("actions.viewDetails")}
+                      <ArrowForward className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         {/* View All Button */}

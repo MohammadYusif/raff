@@ -101,5 +101,13 @@
     "termsOfService": "Terms of Service",
     "privacyPolicy": "Privacy Policy",
     "allRightsReserved": "All rights reserved"
+  },
+    "trending": {
+    "title": "Trending Products",
+    "subtitle": "Discover the most popular products right now",
+    "description": "These products are the most viewed and purchased by users right now",
+    "noTrending": "No Trending Products",
+    "noTrendingDescription": "Check back soon to discover trending products",
+    "viewAllProducts": "View All Products"
   }
 }

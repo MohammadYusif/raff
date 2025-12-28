@@ -24,8 +24,8 @@ export function Navbar() {
   ];
 
   return (
-    <nav className="fixed top-0 z-50 w-full border-b border-raff-neutral-200 bg-white/95 backdrop-blur">
-      <Container>
+    <nav className="fixed top-0 z-50 w-full overflow-x-hidden border-b border-raff-neutral-200 bg-white/95 backdrop-blur">
+      <Container className="max-w-full">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center py-2">
@@ -98,8 +98,8 @@ export function Navbar() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="border-t border-raff-neutral-200 bg-white md:hidden">
-          <Container>
+        <div className="overflow-x-hidden border-t border-raff-neutral-200 bg-white md:hidden">
+          <Container className="max-w-full">
             <div className="flex flex-col gap-4 py-4">
               {navItems.map((item) => (
                 <Link

@@ -2,22 +2,26 @@
 // LOCATION: src/app/api/products/route.ts
 // PURPOSE: List all products with filtering, search, and pagination
 
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    
+
     // Extract query parameters
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '12');
-    const category = searchParams.get('category');
-    const merchantId = searchParams.get('merchantId');
-    const search = searchParams.get('search');
-    const sortBy = searchParams.get('sortBy') || 'trending'; // trending, newest, price_low, price_high
-    const minPrice = searchParams.get('minPrice') ? parseFloat(searchParams.get('minPrice')!) : undefined;
-    const maxPrice = searchParams.get('maxPrice') ? parseFloat(searchParams.get('maxPrice')!) : undefined;
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "12");
+    const category = searchParams.get("category");
+    const merchantId = searchParams.get("merchantId");
+    const search = searchParams.get("search");
+    const sortBy = searchParams.get("sortBy"); // Don't set default here
+    const minPrice = searchParams.get("minPrice")
+      ? parseFloat(searchParams.get("minPrice")!)
+      : undefined;
+    const maxPrice = searchParams.get("maxPrice")
+      ? parseFloat(searchParams.get("maxPrice")!)
+      : undefined;
 
     // Build where clause
     const where: any = {
@@ -37,10 +41,10 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       where.OR = [
-        { title: { contains: search, mode: 'insensitive' } },
-        { titleAr: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-        { descriptionAr: { contains: search, mode: 'insensitive' } },
+        { title: { contains: search, mode: "insensitive" } },
+        { titleAr: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } },
+        { descriptionAr: { contains: search, mode: "insensitive" } },
         { tags: { has: search.toLowerCase() } },
       ];
     }
@@ -51,23 +55,31 @@ export async function GET(request: NextRequest) {
       if (maxPrice !== undefined) where.price.lte = maxPrice;
     }
 
+    // ✨ NEW: Filter for trending products when sortBy is trending
+    if (sortBy === "trending") {
+      where.trendingScore = {
+        gt: 70, // Only products with trendingScore > 70
+      };
+    }
+
     // Build orderBy clause
     let orderBy: any = {};
     switch (sortBy) {
-      case 'trending':
-        orderBy = { trendingScore: 'desc' };
+      case "trending":
+        orderBy = { trendingScore: "desc" };
         break;
-      case 'newest':
-        orderBy = { createdAt: 'desc' };
+      case "newest":
+        orderBy = { createdAt: "desc" };
         break;
-      case 'price_low':
-        orderBy = { price: 'asc' };
+      case "price_low":
+        orderBy = { price: "asc" };
         break;
-      case 'price_high':
-        orderBy = { price: 'desc' };
+      case "price_high":
+        orderBy = { price: "desc" };
         break;
       default:
-        orderBy = { trendingScore: 'desc' };
+        // Default sort by trending score when no sortBy specified
+        orderBy = { trendingScore: "desc" };
     }
 
     // Calculate pagination
@@ -120,9 +132,9 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Error fetching products:', error);
+    console.error("Error fetching products:", error);
     return NextResponse.json(
-      { error: 'Failed to fetch products' },
+      { error: "Failed to fetch products" },
       { status: 500 }
     );
   }

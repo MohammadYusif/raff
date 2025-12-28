@@ -50,9 +50,10 @@ interface Pagination {
   page: number;
   limit: number;
   totalPages: number;
+  totalCount?: number;
   totalItems?: number;
   hasNextPage?: boolean;
-  hasPrevPage?: boolean;
+  hasPreviousPage?: boolean; // ← Fixed to match API
 }
 
 interface ProductsContentProps {
@@ -106,8 +107,10 @@ export function ProductsContent({
     // Toggle: if clicking the active sort, remove it
     if (currentSort === sortBy) {
       params.delete("sortBy");
+      params.delete("page"); // Reset to page 1
     } else {
       params.set("sortBy", sortBy);
+      params.delete("page"); // Reset to page 1 when changing sort
     }
 
     router.push(`/products?${params.toString()}`);
@@ -121,7 +124,7 @@ export function ProductsContent({
 
   return (
     <PageLayout>
-      <div className="min-h-screen bg-raff-neutral-50">
+      <div className="min-h-screen overflow-x-hidden bg-raff-neutral-50">
         {/* Header with Back Button */}
         <div className="border-b border-raff-neutral-200 bg-white">
           <Container className="py-8">
@@ -141,11 +144,11 @@ export function ProductsContent({
         </div>
 
         <Container className="py-8">
-          <div className="grid gap-8 lg:grid-cols-4">
+          <div className="flex max-w-full flex-col gap-8 lg:flex-row">
             {/* Sidebar Filters */}
-            <aside className="lg:col-span-1">
-              <Card>
-                <CardContent className="p-6 space-y-6">
+            <aside className="w-full shrink-0 lg:w-64">
+              <Card className="overflow-hidden">
+                <CardContent className="space-y-6 p-6">
                   {/* Search */}
                   <div>
                     <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-raff-primary">
@@ -215,12 +218,15 @@ export function ProductsContent({
             </aside>
 
             {/* Main Content */}
-            <div className="lg:col-span-3 space-y-6">
+            <div className="min-w-0 flex-1 space-y-6">
               {/* Sort & Results Count */}
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <p className="text-sm text-raff-neutral-600">
                   {t("resultsCount", {
-                    count: pagination.totalItems ?? initialProducts.length,
+                    count:
+                      pagination.totalCount ??
+                      pagination.totalItems ??
+                      initialProducts.length,
                   })}
                 </p>
                 <div className="flex gap-2">
@@ -381,7 +387,7 @@ export function ProductsContent({
                   <Button
                     variant="outline"
                     onClick={() => handlePageChange(pagination.page - 1)}
-                    disabled={!pagination.hasPrevPage}
+                    disabled={!pagination.hasPreviousPage}
                   >
                     {t("previous")}
                   </Button>
