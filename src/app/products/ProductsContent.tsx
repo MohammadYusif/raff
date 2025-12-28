@@ -299,15 +299,18 @@ export function ProductsContent({
                           <div className="flex h-full items-center justify-center from-raff-neutral-50 to-raff-neutral-100">
                             <div className="text-center">
                               <div className="mb-3 text-6xl opacity-40">📦</div>
-                              {product.trendingScore > 70 && (
-                                <Badge
-                                  variant="default"
-                                  className="gap-1 bg-raff-primary"
-                                >
-                                  <TrendingUp className="h-3 w-3" />
-                                  {commonT("labels.trending")}
-                                </Badge>
-                              )}
+                              {/* Fixed height container for badge to maintain consistent spacing */}
+                              <div className="flex h-6 items-center justify-center">
+                                {product.trendingScore > 70 && (
+                                  <Badge
+                                    variant="default"
+                                    className="gap-1 bg-raff-primary"
+                                  >
+                                    <TrendingUp className="h-3 w-3" />
+                                    {commonT("labels.trending")}
+                                  </Badge>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
