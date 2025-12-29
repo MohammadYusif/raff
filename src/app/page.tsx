@@ -11,7 +11,8 @@ export default function HomePage() {
     <LocaleProvider>
       <div className="min-h-screen">
         <Navbar />
-        <main>
+        {/* Add padding-top to account for fixed navbar */}
+        <main className="pt-16">
           <HeroSection />
           <TrendingSection />
           <HowItWorksSection />

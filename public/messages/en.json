@@ -156,5 +156,91 @@
     "termsOfService": "Terms of Service",
     "privacyPolicy": "Privacy Policy",
     "allRightsReserved": "All rights reserved"
+  },
+  "merchantSidebar": {
+    "dashboard": "Dashboard",
+    "products": "Products",
+    "analytics": "Analytics",
+    "orders": "Orders",
+    "settings": "Settings",
+    "viewStorefront": "View Storefront",
+    "logout": "Logout"
+  },
+  "merchantDashboard": {
+    "title": "Merchant Dashboard",
+    "subtitle": "Manage your store and performance analytics",
+    "viewStorefront": "View Storefront",
+    "connectStore": {
+      "title": "Connect Your Store to Raff",
+      "description": "Link your Salla or Zid store to start showcasing your products on Raff and track conversions",
+      "connectSalla": "Connect Salla Store",
+      "connectZid": "Connect Zid Store",
+      "connecting": "Connecting..."
+    },
+    "storeConnected": {
+      "title": "Store Connected Successfully!",
+      "description": "Your {{platform}} store is now connected to Raff",
+      "manage": "Manage Connection"
+    },
+    "stats": {
+      "totalProducts": "Total Products",
+      "totalViews": "Total Views",
+      "totalOrders": "Total Orders",
+      "totalRevenue": "Total Revenue"
+    },
+    "metrics": {
+      "conversionRate": "Conversion Rate",
+      "conversionRateDesc": "Percentage of visitors who completed a purchase",
+      "clicks": "Clicks",
+      "orders": "Orders"
+    },
+    "topProducts": {
+      "title": "Top Performing Products",
+      "description": "Your best-selling products this month",
+      "views": "views",
+      "orders": "orders"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "syncProducts": "Sync Products",
+      "viewAnalytics": "View Analytics",
+      "settings": "Settings",
+      "viewStore": "View Store"
+    },
+    "gettingStarted": {
+      "title": "Getting Started Guide",
+      "description": "Follow these steps to maximize your Raff experience",
+      "step1": "Store Connected",
+      "step1Desc": "Your store is now linked and ready to sync",
+      "step2": "Sync Your Products",
+      "step2Desc": "Click 'Sync Products' to import your product catalog",
+      "step3": "Monitor Performance",
+      "step3Desc": "Track views, clicks, and conversions in your dashboard"
+    }
+  },
+  "merchantProducts": {
+    "title": "Product Management",
+    "subtitle": "View and sync your store products",
+    "syncNow": "Sync Now",
+    "comingSoon": "Coming Soon",
+    "comingSoonDesc": "You'll be able to manage your products from here soon"
+  },
+  "merchantAnalytics": {
+    "title": "Analytics & Reports",
+    "subtitle": "Track your store performance in detail",
+    "comingSoon": "Coming Soon",
+    "comingSoonDesc": "Advanced analytics and detailed reports coming soon"
+  },
+  "merchantOrders": {
+    "title": "Orders",
+    "subtitle": "Track orders and conversions",
+    "comingSoon": "Coming Soon",
+    "comingSoonDesc": "Order management and conversion tracking coming soon"
+  },
+  "merchantSettings": {
+    "title": "Settings",
+    "subtitle": "Manage your account and preferences",
+    "comingSoon": "Coming Soon",
+    "comingSoonDesc": "Account settings and preferences coming soon"
   }
 }

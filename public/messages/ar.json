@@ -156,5 +156,91 @@
     "termsOfService": "شروط الخدمة",
     "privacyPolicy": "سياسة الخصوصية",
     "allRightsReserved": "جميع الحقوق محفوظة"
+  },
+    "merchantSidebar": {
+    "dashboard": "لوحة التحكم",
+    "products": "المنتجات",
+    "analytics": "التحليلات",
+    "orders": "الطلبات",
+    "settings": "الإعدادات",
+    "viewStorefront": "عرض الواجهة",
+    "logout": "تسجيل الخروج"
+  },
+  "merchantDashboard": {
+    "title": "لوحة تحكم التاجر",
+    "subtitle": "إدارة متجرك وتحليلات الأداء",
+    "viewStorefront": "عرض الواجهة الأمامية",
+    "connectStore": {
+      "title": "ربط متجرك مع رَفّ",
+      "description": "قم بربط متجرك من سلة أو زد لبدء عرض منتجاتك على رَفّ وتتبع التحويلات",
+      "connectSalla": "ربط متجر سلة",
+      "connectZid": "ربط متجر زد",
+      "connecting": "جاري الربط..."
+    },
+    "storeConnected": {
+      "title": "متجرك متصل بنجاح!",
+      "description": "متجرك من {{platform}} متصل الآن مع رَفّ",
+      "manage": "إدارة الاتصال"
+    },
+    "stats": {
+      "totalProducts": "إجمالي المنتجات",
+      "totalViews": "إجمالي المشاهدات",
+      "totalOrders": "إجمالي الطلبات",
+      "totalRevenue": "إجمالي الإيرادات"
+    },
+    "metrics": {
+      "conversionRate": "معدل التحويل",
+      "conversionRateDesc": "نسبة الزوار الذين أتموا عملية شراء",
+      "clicks": "النقرات",
+      "orders": "الطلبات"
+    },
+    "topProducts": {
+      "title": "المنتجات الأكثر أداءً",
+      "description": "منتجاتك الأعلى مبيعاً هذا الشهر",
+      "views": "مشاهدة",
+      "orders": "طلب"
+    },
+    "quickActions": {
+      "title": "إجراءات سريعة",
+      "syncProducts": "مزامنة المنتجات",
+      "viewAnalytics": "عرض التحليلات",
+      "settings": "الإعدادات",
+      "viewStore": "عرض المتجر"
+    },
+    "gettingStarted": {
+      "title": "دليل البدء السريع",
+      "description": "اتبع هذه الخطوات لتحقيق أقصى استفادة من رَفّ",
+      "step1": "تم ربط المتجر",
+      "step1Desc": "متجرك متصل الآن وجاهز لبدء المزامنة",
+      "step2": "قم بمزامنة منتجاتك",
+      "step2Desc": "انقر على 'مزامنة المنتجات' لاستيراد كتالوج منتجاتك",
+      "step3": "راقب أدائك",
+      "step3Desc": "تتبع المشاهدات والنقرات والتحويلات في لوحة التحكم"
+    }
+  },
+  "merchantProducts": {
+    "title": "إدارة المنتجات",
+    "subtitle": "عرض ومزامنة منتجات متجرك",
+    "syncNow": "مزامنة الآن",
+    "comingSoon": "قريباً",
+    "comingSoonDesc": "ستتمكن قريباً من إدارة منتجاتك من هنا"
+  },
+  "merchantAnalytics": {
+    "title": "التحليلات والتقارير",
+    "subtitle": "تتبع أداء متجرك بالتفصيل",
+    "comingSoon": "قريباً",
+    "comingSoonDesc": "التحليلات المتقدمة والتقارير المفصلة قادمة قريباً"
+  },
+  "merchantOrders": {
+    "title": "الطلبات",
+    "subtitle": "تتبع الطلبات والتحويلات",
+    "comingSoon": "قريباً",
+    "comingSoonDesc": "إدارة الطلبات وتتبع التحويلات قريباً"
+  },
+  "merchantSettings": {
+    "title": "الإعدادات",
+    "subtitle": "إدارة حسابك وتفضيلاتك",
+    "comingSoon": "قريباً",
+    "comingSoonDesc": "إعدادات الحساب والتفضيلات قادمة قريباً"
   }
 }

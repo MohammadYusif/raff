@@ -1,0 +1,174 @@
+// src/app/merchant/MerchantSidebar.tsx
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
+import { useLocale as useLocaleHook } from "@/core/i18n";
+import { Button } from "@/shared/components/ui";
+import { cn } from "@/lib/utils";
+import {
+  LayoutDashboard,
+  Package,
+  BarChart3,
+  Settings,
+  Store,
+  LogOut,
+  Menu,
+  X,
+  Globe,
+  Home,
+  TrendingUp,
+  ShoppingBag,
+} from "lucide-react";
+
+const menuItems = [
+  {
+    label: "dashboard",
+    href: "/merchant/dashboard",
+    icon: LayoutDashboard,
+  },
+  {
+    label: "products",
+    href: "/merchant/products",
+    icon: Package,
+  },
+  {
+    label: "analytics",
+    href: "/merchant/analytics",
+    icon: BarChart3,
+  },
+  {
+    label: "orders",
+    href: "/merchant/orders",
+    icon: ShoppingBag,
+  },
+  {
+    label: "settings",
+    href: "/merchant/settings",
+    icon: Settings,
+  },
+];
+
+export function MerchantSidebar() {
+  const pathname = usePathname();
+  const t = useTranslations("merchantSidebar");
+  const commonT = useTranslations("common");
+  const currentLocale = useLocale();
+  const { switchLocale } = useLocaleHook();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  return (
+    <>
+      {/* Mobile Menu Toggle */}
+      <div className="fixed start-4 top-4 z-50 lg:hidden">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="bg-white shadow-lg"
+        >
+          {isMobileMenuOpen ? (
+            <X className="h-5 w-5" />
+          ) : (
+            <Menu className="h-5 w-5" />
+          )}
+        </Button>
+      </div>
+
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          "fixed inset-y-0 z-40 flex w-64 flex-col border-e border-raff-neutral-200 bg-white transition-transform lg:translate-x-0",
+          currentLocale === "ar" ? "end-0" : "start-0",
+          isMobileMenuOpen
+            ? "translate-x-0"
+            : currentLocale === "ar"
+              ? "translate-x-full lg:translate-x-0"
+              : "-translate-x-full lg:translate-x-0"
+        )}
+      >
+        {/* Logo */}
+        <div className="flex h-16 items-center justify-center border-b border-raff-neutral-200 px-6">
+          <Link href="/" className="flex items-center">
+            <img
+              src="/logo.png"
+              alt="Raff Logo"
+              className="h-auto w-32 object-contain"
+            />
+          </Link>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 space-y-1 overflow-y-auto p-4">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.href;
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all",
+                  isActive
+                    ? "bg-raff-primary text-white shadow-sm"
+                    : "text-raff-neutral-700 hover:bg-raff-neutral-100 hover:text-raff-primary"
+                )}
+              >
+                <Icon className="h-5 w-5" />
+                {t(item.label)}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Bottom Actions */}
+        <div className="space-y-2 border-t border-raff-neutral-200 p-4">
+          {/* View Storefront */}
+          <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
+            <Button
+              variant="outline"
+              className="w-full justify-start gap-3"
+              size="sm"
+            >
+              <Home className="h-4 w-4" />
+              {t("viewStorefront")}
+            </Button>
+          </Link>
+
+          {/* Language Switcher */}
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-3"
+            size="sm"
+            onClick={() => switchLocale(currentLocale === "ar" ? "en" : "ar")}
+          >
+            <Globe className="h-4 w-4" />
+            {currentLocale === "ar" ? "English" : "العربية"}
+          </Button>
+
+          {/* Logout */}
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-3 text-raff-error hover:bg-raff-error/10 hover:text-raff-error"
+            size="sm"
+          >
+            <LogOut className="h-4 w-4" />
+            {t("logout")}
+          </Button>
+        </div>
+      </aside>
+
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/50 lg:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+    </>
+  );
+}

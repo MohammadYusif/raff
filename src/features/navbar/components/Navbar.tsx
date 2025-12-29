@@ -96,8 +96,8 @@ export function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Search Bar */}
-        <div className="pb-4 lg:hidden">
+        {/* Mobile Search Bar - Improved spacing */}
+        <div className="pb-3 pt-2 lg:hidden">
           <SearchInput
             placeholder={commonT("searchPlaceholder")}
             size="md"
