@@ -1,5 +1,6 @@
 // src/app/layout.tsx
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { LocaleProvider } from "@/core/i18n/components/LocaleProvider";
@@ -16,18 +17,46 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "رَفّ Raff - اكتشف المنتجات الرائجة",
-  description: "منصة رَفّ - اكتشف أفضل المنتجات من المتاجر السعودية",
-};
+// Use the same cookie key from your locale utils
+const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 
-export default function RootLayout({
+const TITLES = {
+  ar: "رَفّ Raff - اكتشف المنتجات الرائجة",
+  en: "Raff - Discover Trending Products",
+} as const;
+
+const DESCRIPTIONS = {
+  ar: "منصة رَفّ - اكتشف أفضل المنتجات من المتاجر السعودية",
+  en: "Raff Platform - Discover the best products from Saudi stores",
+} as const;
+
+// ✅ Server-side, SEO-friendly metadata
+export async function generateMetadata(): Promise<Metadata> {
+  const cookieStore = await cookies();
+  const storedLocale = cookieStore.get(LOCALE_COOKIE_NAME)?.value;
+  const locale = storedLocale === "en" ? "en" : "ar"; // default to ar
+
+  const title = TITLES[locale];
+  const description = DESCRIPTIONS[locale];
+
+  return {
+    title,
+    description,
+  };
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const storedLocale = cookieStore.get(LOCALE_COOKIE_NAME)?.value;
+  const locale = storedLocale === "en" ? "en" : "ar";
+  const dir = locale === "ar" ? "rtl" : "ltr";
+
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
+    <html lang={locale} dir={dir} suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} overflow-x-hidden antialiased`}
       >

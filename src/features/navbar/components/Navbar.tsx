@@ -24,11 +24,11 @@ export function Navbar() {
   ];
 
   return (
-    <nav className="fixed top-0 z-50 w-full overflow-x-hidden border-b border-raff-neutral-200 bg-white/95 backdrop-blur">
-      <Container className="max-w-full">
+    <nav className="fixed top-0 z-50 w-full border-b border-raff-neutral-200 bg-white/95 backdrop-blur">
+      <Container>
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center py-2">
+          <Link href="/" className="flex shrink-0 items-center py-2">
             <img
               src="/logo.png"
               alt="Raff Logo"
@@ -42,7 +42,7 @@ export function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-sm font-medium text-raff-neutral-700 transition-colors hover:text-raff-primary"
+                className="whitespace-nowrap text-sm font-medium text-raff-neutral-700 transition-colors hover:text-raff-primary"
               >
                 {item.label}
               </Link>
@@ -50,7 +50,7 @@ export function Navbar() {
           </div>
 
           {/* Right Section */}
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-3">
             {/* Search Icon */}
             <Button
               variant="ghost"
@@ -98,8 +98,8 @@ export function Navbar() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="overflow-x-hidden border-t border-raff-neutral-200 bg-white md:hidden">
-          <Container className="max-w-full">
+        <div className="border-t border-raff-neutral-200 bg-white md:hidden">
+          <Container>
             <div className="flex flex-col gap-4 py-4">
               {navItems.map((item) => (
                 <Link
