@@ -136,5 +136,17 @@
     "noMerchants": "No Merchants",
     "noMerchantsDescription": "No merchants found at the moment",
     "viewAllProducts": "View All Products"
+  },
+    "merchant": {
+    "backToMerchants": "Back to Merchants",
+    "products": "products",
+    "visitStore": "Visit Store",
+    "noProducts": "No Products",
+    "noProductsDescription": "No products found in this store",
+    "notFound": {
+      "title": "Merchant Not Found",
+      "description": "Sorry, the merchant you're looking for doesn't exist",
+      "browseMerchants": "Browse Merchants"
+    }
   }
 }

@@ -136,5 +136,17 @@
     "noMerchants": "لا توجد متاجر",
     "noMerchantsDescription": "لم يتم العثور على متاجر حالياً",
     "viewAllProducts": "عرض جميع المنتجات"
+  },
+    "merchant": {
+    "backToMerchants": "العودة للمتاجر",
+    "products": "منتج",
+    "visitStore": "زيارة المتجر",
+    "noProducts": "لا توجد منتجات",
+    "noProductsDescription": "لا توجد منتجات في هذا المتجر حالياً",
+    "notFound": {
+      "title": "المتجر غير موجود",
+      "description": "عذراً، المتجر الذي تبحث عنه غير موجود",
+      "browseMerchants": "تصفح المتاجر"
+    }
   }
 }
