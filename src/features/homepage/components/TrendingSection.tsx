@@ -119,7 +119,7 @@ export function TrendingSection() {
             return (
               <Card
                 key={product.id}
-                className="group overflow-hidden border-raff-neutral-200"
+                className="group overflow-hidden border-raff-neutral-200 hover-lift"
               >
                 {/* Product Image Placeholder */}
                 <div className="relative aspect-square overflow-hidden from-raff-neutral-50 to-raff-neutral-100">

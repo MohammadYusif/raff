@@ -283,7 +283,7 @@ export function MerchantDetailContent({
                 return (
                   <Card
                     key={product.id}
-                    className="group overflow-hidden border-raff-neutral-200"
+                    className="group overflow-hidden border-raff-neutral-200 hover-lift"
                   >
                     {/* Product Image */}
                     <div className="relative aspect-square overflow-hidden">

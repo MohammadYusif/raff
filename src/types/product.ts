@@ -1,12 +1,21 @@
 // src/types/product.ts
-import { Product, Merchant, Category } from '@prisma/client';
+import { Product, Merchant, Category } from "@prisma/client";
 
 /**
  * Product with relations for API responses
  */
 export type ProductWithRelations = Product & {
-  merchant: Pick<Merchant, 'id' | 'name' | 'nameAr' | 'logo' | 'sallaStoreUrl'>;
-  category: Pick<Category, 'id' | 'name' | 'nameAr' | 'slug'> | null;
+  merchant: Pick<
+    Merchant,
+    | "id"
+    | "name"
+    | "nameAr"
+    | "logo"
+    | "sallaStoreUrl"
+    | "description"
+    | "descriptionAr"
+  >;
+  category: Pick<Category, "id" | "name" | "nameAr" | "slug"> | null;
 };
 
 /**
@@ -52,7 +61,7 @@ export interface ProductFilters {
   category?: string;
   merchantId?: string;
   search?: string;
-  sortBy?: 'trending' | 'newest' | 'price_low' | 'price_high';
+  sortBy?: "trending" | "newest" | "price_low" | "price_high";
   minPrice?: number;
   maxPrice?: number;
 }

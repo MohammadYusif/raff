@@ -1,9 +1,6 @@
 // src/app/api/products/[slug]/route.ts
-// LOCATION: src/app/api/products/[slug]/route.ts
-// PURPOSE: Get single product by slug (also tracks view count)
-
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: NextRequest,
@@ -21,8 +18,8 @@ export async function GET(
             name: true,
             nameAr: true,
             logo: true,
-            description: true,
-            descriptionAr: true,
+            description: true, // ← Add this
+            descriptionAr: true, // ← Add this
             sallaStoreUrl: true,
             phone: true,
             email: true,
@@ -40,10 +37,7 @@ export async function GET(
     });
 
     if (!product) {
-      return NextResponse.json(
-        { error: 'Product not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
     // Increment view count
@@ -60,16 +54,16 @@ export async function GET(
     await prisma.trendingLog.create({
       data: {
         productId: product.id,
-        eventType: 'VIEW',
+        eventType: "VIEW",
         weight: 1.0,
       },
     });
 
     return NextResponse.json({ product });
   } catch (error) {
-    console.error('Error fetching product:', error);
+    console.error("Error fetching product:", error);
     return NextResponse.json(
-      { error: 'Failed to fetch product' },
+      { error: "Failed to fetch product" },
       { status: 500 }
     );
   }

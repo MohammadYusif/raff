@@ -5,17 +5,20 @@ import { fetchProduct } from "@/lib/api";
 import { ProductDetailContent } from "./ProductDetailContent";
 
 interface ProductPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 // Generate metadata for SEO
 export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
+  // Await params before using
+  const { slug } = await params;
+
   try {
-    const { product } = await fetchProduct(params.slug);
+    const { product } = await fetchProduct(slug);
 
     return {
       title: `${product.titleAr || product.title} - Raff`,
@@ -34,10 +37,13 @@ export async function generateMetadata({
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
+  // Await params before using
+  const { slug } = await params;
+
   let product;
 
   try {
-    const data = await fetchProduct(params.slug);
+    const data = await fetchProduct(slug);
     product = data.product;
   } catch (error) {
     notFound();

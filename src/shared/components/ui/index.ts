@@ -12,3 +12,5 @@ export * from "./badge";
 export * from "./breadcrumb";
 export * from "./separator";
 export * from "./skeleton";
+export * from "./toaster";
+export * from "../ScrollToTop";
