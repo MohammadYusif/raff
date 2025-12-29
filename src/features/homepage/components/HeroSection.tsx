@@ -2,8 +2,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Button, Container, Input } from "@/shared/components/ui";
-import { Search } from "lucide-react";
+import { Container } from "@/shared/components/ui";
 import { ArrowForward } from "@/core/i18n";
 
 export function HeroSection() {
@@ -28,22 +27,6 @@ export function HeroSection() {
           <p className="mb-8 text-lg text-raff-neutral-600 sm:text-xl">
             {t("subtitle")}
           </p>
-
-          {/* Search Bar */}
-          <div className="mx-auto mb-8 flex max-w-2xl gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute start-3 top-1/2 h-5 w-5 -translate-y-1/2 text-raff-neutral-400" />
-              <Input
-                type="search"
-                placeholder={t("searchPlaceholder")}
-                className="h-12 border-raff-neutral-300 ps-10 text-base focus-visible:border-raff-primary focus-visible:ring-raff-primary"
-              />
-            </div>
-            <Button size="lg" className="gap-2">
-              {t("cta")}
-              <ArrowForward className="h-5 w-5" />
-            </Button>
-          </div>
 
           {/* Stats */}
           <div className="mt-16 grid grid-cols-3 gap-8">

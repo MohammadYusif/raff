@@ -32,40 +32,8 @@ import {
 } from "lucide-react";
 import type { ProductWithRelations } from "@/types";
 
-interface Product {
-  id: string;
-  title: string;
-  titleAr: string | null;
-  description: string | null;
-  descriptionAr: string | null;
-  price: number;
-  originalPrice: number | null;
-  slug: string;
-  thumbnail: string | null;
-  images: string[];
-  quantity: number | null;
-  inStock: boolean;
-  trendingScore: number;
-  viewCount: number;
-  merchant: {
-    id: string;
-    name: string;
-    nameAr: string | null;
-    logo: string | null;
-    sallaStoreUrl: string;
-    description: string | null;
-    descriptionAr: string | null;
-  };
-  category: {
-    id: string;
-    name: string;
-    nameAr: string | null;
-    slug: string;
-  } | null;
-}
-
 interface ProductDetailContentProps {
-  product: Product;
+  product: ProductWithRelations;
 }
 
 export function ProductDetailContent({ product }: ProductDetailContentProps) {

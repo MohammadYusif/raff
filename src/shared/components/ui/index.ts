@@ -14,3 +14,4 @@ export * from "./separator";
 export * from "./skeleton";
 export * from "./toaster";
 export * from "../ScrollToTop";
+export * from "../SearchInput";

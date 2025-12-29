@@ -6,7 +6,8 @@ import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { useLocale as useLocaleHook } from "@/core/i18n";
 import { Button, Container } from "@/shared/components/ui";
-import { Menu, X, Search, Globe } from "lucide-react";
+import { SearchInput } from "@/shared/components/SearchInput";
+import { Menu, X, Globe } from "lucide-react";
 
 export function Navbar() {
   const t = useTranslations("nav");
@@ -26,7 +27,7 @@ export function Navbar() {
   return (
     <nav className="fixed top-0 z-50 w-full border-b border-raff-neutral-200 bg-white/95 backdrop-blur">
       <Container>
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-16 items-center justify-between gap-4">
           {/* Logo */}
           <Link href="/" className="flex shrink-0 items-center py-2">
             <img
@@ -49,17 +50,17 @@ export function Navbar() {
             ))}
           </div>
 
+          {/* Search - Desktop Only */}
+          <div className="hidden flex-1 max-w-md lg:block">
+            <SearchInput
+              placeholder={commonT("searchPlaceholder")}
+              size="sm"
+              showSuggestions={true}
+            />
+          </div>
+
           {/* Right Section */}
           <div className="flex shrink-0 items-center gap-3">
-            {/* Search Icon */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="hover:bg-raff-neutral-100"
-            >
-              <Search className="h-5 w-5" />
-            </Button>
-
             {/* Language Switcher */}
             <Button
               variant="ghost"
@@ -93,6 +94,15 @@ export function Navbar() {
               )}
             </Button>
           </div>
+        </div>
+
+        {/* Mobile Search Bar */}
+        <div className="pb-4 lg:hidden">
+          <SearchInput
+            placeholder={commonT("searchPlaceholder")}
+            size="md"
+            showSuggestions={true}
+          />
         </div>
       </Container>
 

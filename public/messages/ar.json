@@ -1,152 +1,160 @@
 {
-  "product": {
-    "inStock": "متوفر",
-    "outOfStock": "غير متوفر",
-    "limitedStock": "الكمية محدودة - {count} فقط",
-    "description": "وصف المنتج",
-    "taxIncluded": "شامل ضريبة القيمة المضافة",
-    "buyNow": "اشتر الآن",
-    "visitStore": "زيارة المتجر",
-    "backToProducts": "العودة للمنتجات",
-    "redirectNotice": "ملاحظة: سيتم توجيهك إلى متجر {merchant} على منصة سلة لإتمام عملية الشراء بشكل آمن.",
-    "views": "مشاهدة",
-    "notFound": {
-      "title": "المنتج غير موجود",
-      "description": "عذراً، لم نتمكن من العثور على المنتج الذي تبحث عنه. قد يكون قد تم حذفه أو نقله.",
-      "browseProducts": "تصفح جميع المنتجات"
-    }
-  },
-  "products": {
-    "title": "جميع المنتجات",
-    "subtitle": "تصفح مجموعتنا الكاملة من المنتجات",
-    "search": "بحث",
-    "searchPlaceholder": "ابحث عن منتج...",
-    "categories": "التصنيفات",
-    "allCategories": "جميع التصنيفات",
-    "resultsCount": "{count} منتج",
-    "sortTrending": "الأكثر رواجاً",
-    "sortPriceLow": "الأقل سعراً",
-    "sortPriceHigh": "الأعلى سعراً",
-    "sortNewest": "الأحدث",
-    "noResults": "لا توجد نتائج",
-    "noResultsDescription": "جرب تغيير معايير البحث أو الفلاتر",
-    "previous": "السابق",
-    "next": "التالي"
+  "nav": {
+    "home": "الرئيسية",
+    "products": "المنتجات",
+    "trending": "الرائج",
+    "categories": "الفئات",
+    "merchants": "التجار"
   },
   "common": {
     "nav": {
       "home": "الرئيسية",
-      "products": "المنتجات"
+      "products": "المنتجات",
+      "trending": "الرائج",
+      "categories": "الفئات",
+      "merchants": "التجار"
     },
     "actions": {
-      "backToHome": "العودة للرئيسية",
+      "login": "تسجيل الدخول",
       "viewDetails": "عرض التفاصيل",
-      "login": "تسجيل الدخول"
+      "backToHome": "العودة للرئيسية"
     },
     "labels": {
-      "trending": "رائج",
-      "sar": "ر.س"
-    }
+      "trending": "رائج"
+    },
+    "searchPlaceholder": "بحث..."
   },
   "homepage": {
     "hero": {
       "title": "اكتشف المنتجات الرائجة",
-      "subtitle": "تصفح أفضل المنتجات من المتاجر السعودية",
-      "searchPlaceholder": "ابحث عن منتج...",
-      "cta": "ابدأ التصفح"
-    },
-    "trending": {
-      "title": "المنتجات الأكثر رواجاً",
-      "subtitle": "اكتشف ما يشتريه الآخرون الآن",
-      "viewAll": "عرض الكل"
+      "subtitle": "ابحث عن أفضل المنتجات من المتاجر السعودية",
+      "searchPlaceholder": "ماذا تبحث عنه؟",
+      "cta": "بحث"
     },
     "stats": {
       "products": "منتج",
       "merchants": "متجر",
       "customers": "عميل"
     },
+    "trending": {
+      "title": "الرائج الآن",
+      "subtitle": "اكتشف المنتجات الأكثر شعبية الآن",
+      "viewAll": "عرض جميع المنتجات الرائجة"
+    },
     "howItWorks": {
-      "title": "كيف يعمل رَفّ",
-      "subtitle": "ثلاث خطوات بسيطة للعثور على منتجك المثالي",
+      "title": "كيف يعمل",
+      "subtitle": "اكتشف، احفظ، واشتري في ثلاث خطوات بسيطة",
       "step1": {
-        "title": "تصفح المنتجات",
-        "description": "استكشف آلاف المنتجات من متاجر مختلفة"
+        "title": "ابحث واكتشف",
+        "description": "تصفح آلاف المنتجات من متاجر سعودية موثوقة"
       },
       "step2": {
-        "title": "قارن واختر",
-        "description": "قارن الأسعار والمميزات بسهولة"
+        "title": "احفظ المفضلات",
+        "description": "أنشئ قوائم أمنيات وتتبع المنتجات التي تحبها"
       },
       "step3": {
-        "title": "اشترِ بأمان",
-        "description": "اشترِ مباشرة من المتجر الأصلي"
+        "title": "تسوق مباشرة",
+        "description": "اشتري مباشرة من متاجر التجار بثقة"
       }
     }
   },
-  "nav": {
-    "home": "الرئيسية",
+  "search": {
+    "title": "البحث عن المنتجات",
+    "searchPlaceholder": "ابحث عن المنتجات...",
+    "noResults": "لم يتم العثور على منتجات",
+    "noResultsDescription": "حاول تعديل بحثك أو تصفح جميع المنتجات",
+    "browseAll": "تصفح جميع المنتجات",
+    "startSearching": "ابدأ البحث",
+    "startSearchingDescription": "أدخل الكلمات المفتاحية للعثور على المنتجات من المتاجر السعودية"
+  },
+  "products": {
+    "title": "جميع المنتجات",
+    "subtitle": "تصفح المنتجات من المتاجر السعودية",
+    "searchPlaceholder": "ابحث عن المنتجات...",
+    "resultsCount": "تم العثور على {count} منتج",
+    "noResults": "لم يتم العثور على منتجات",
+    "noResultsDescription": "حاول تعديل الفلاتر أو كلمات البحث",
+    "sortTrending": "الرائج",
+    "sortPriceLow": "السعر: من الأقل للأعلى",
+    "sortPriceHigh": "السعر: من الأعلى للأقل",
+    "sortNewest": "الأحدث",
+    "categories": "الفئات",
+    "allCategories": "جميع الفئات",
+    "filters": "الفلاتر",
+    "search": "بحث",
+    "previous": "السابق",
+    "next": "التالي"
+  },
+  "product": {
+    "notFound": {
+      "title": "المنتج غير موجود",
+      "description": "المنتج الذي تبحث عنه غير موجود أو تم إزالته",
+      "browseProducts": "تصفح المنتجات"
+    },
+    "description": "الوصف",
+    "inStock": "متوفر",
+    "outOfStock": "غير متوفر",
+    "limitedStock": "متبقي {count} فقط",
+    "taxIncluded": "شامل الضريبة",
+    "buyNow": "اشتري الآن",
+    "visitStore": "زيارة المتجر",
+    "backToProducts": "العودة للمنتجات",
+    "redirectNotice": "سيتم توجيهك إلى متجر {merchant} لإكمال عملية الشراء"
+  },
+  "categories": {
+    "title": "الفئات",
+    "subtitle": "تصفح المنتجات حسب الفئة",
+    "viewProducts": "عرض المنتجات",
+    "noCategories": "لا توجد فئات متاحة",
+    "noCategoriesDescription": "ستظهر الفئات هنا بمجرد إضافتها",
+    "viewAllProducts": "عرض جميع المنتجات"
+  },
+  "category": {
+    "backToCategories": "العودة للفئات",
+    "noProducts": "لا توجد منتجات في هذه الفئة",
+    "noProductsDescription": "ستظهر المنتجات هنا بمجرد إضافتها"
+  },
+  "merchants": {
+    "title": "التجار",
+    "subtitle": "تصفح جميع المتاجر على رَفّ",
+    "viewProducts": "عرض المنتجات",
+    "visitStore": "زيارة المتجر",
+    "products": "منتجات",
+    "noMerchants": "لا يوجد تجار متاحين",
+    "noMerchantsDescription": "سيظهر التجار هنا بمجرد انضمامهم",
+    "viewAllProducts": "عرض جميع المنتجات"
+  },
+  "merchant": {
+    "backToMerchants": "العودة للتجار",
     "products": "المنتجات",
-    "trending": "الرائج",
-    "categories": "التصنيفات",
-    "merchants": "المتاجر"
+    "visitStore": "زيارة المتجر",
+    "noProducts": "لا توجد منتجات من هذا التاجر",
+    "noProductsDescription": "ستظهر المنتجات هنا بمجرد إضافتها",
+    "notFound": {
+      "title": "التاجر غير موجود",
+      "description": "التاجر الذي تبحث عنه غير موجود أو لم يعد نشطًا",
+      "browseMerchants": "تصفح التجار"
+    }
+  },
+  "trending": {
+    "title": "المنتجات الرائجة",
+    "subtitle": "اكتشف المنتجات الأكثر شعبية الآن",
+    "description": "يتم ترتيب المنتجات حسب الشعبية والمشاهدات والمبيعات",
+    "noTrending": "لا توجد منتجات رائجة",
+    "noTrendingDescription": "ستظهر المنتجات الرائجة هنا قريبًا",
+    "viewAllProducts": "عرض جميع المنتجات"
   },
   "footer": {
     "quickLinks": "روابط سريعة",
     "forMerchants": "للتجار",
     "support": "الدعم",
     "legal": "قانوني",
-    "joinAsStore": "انضم كمتجر",
-    "merchantDashboard": "لوحة التحكم",
+    "joinAsStore": "انضم كتاجر",
+    "merchantDashboard": "لوحة التاجر",
     "helpCenter": "مركز المساعدة",
     "contactUs": "اتصل بنا",
     "termsOfService": "شروط الخدمة",
     "privacyPolicy": "سياسة الخصوصية",
     "allRightsReserved": "جميع الحقوق محفوظة"
-  },
-    "trending": {
-    "title": "المنتجات الرائجة",
-    "subtitle": "اكتشف أكثر المنتجات شعبية الآن",
-    "description": "هذه المنتجات هي الأكثر مشاهدة وطلباً من قبل المستخدمين في الوقت الحالي",
-    "noTrending": "لا توجد منتجات رائجة",
-    "noTrendingDescription": "تحقق مرة أخرى قريباً لاكتشاف المنتجات الرائجة",
-    "viewAllProducts": "عرض جميع المنتجات"
-  },
-    "categories": {
-    "title": "التصنيفات",
-    "subtitle": "تصفح المنتجات حسب التصنيف",
-    "viewProducts": "عرض المنتجات",
-    "noCategories": "لا توجد تصنيفات",
-    "noCategoriesDescription": "لم يتم العثور على تصنيفات حالياً",
-    "viewAllProducts": "عرض جميع المنتجات"
-  },
-   "category": {
-    "backToCategories": "العودة للتصنيفات",
-    "noProducts": "لا توجد منتجات",
-    "noProductsDescription": "لا توجد منتجات في هذا التصنيف حالياً",
-    "notFound": {
-      "title": "التصنيف غير موجود",
-      "description": "عذراً، التصنيف الذي تبحث عنه غير موجود",
-      "browseCategories": "تصفح التصنيفات"
-    }
-  },
-    "merchants": {
-    "title": "المتاجر",
-    "subtitle": "تصفح جميع المتاجر ومنتجاتها",
-    "viewProducts": "عرض المنتجات",
-    "visitStore": "زيارة المتجر",
-    "noMerchants": "لا توجد متاجر",
-    "noMerchantsDescription": "لم يتم العثور على متاجر حالياً",
-    "viewAllProducts": "عرض جميع المنتجات"
-  },
-    "merchant": {
-    "backToMerchants": "العودة للمتاجر",
-    "products": "منتج",
-    "visitStore": "زيارة المتجر",
-    "noProducts": "لا توجد منتجات",
-    "noProductsDescription": "لا توجد منتجات في هذا المتجر حالياً",
-    "notFound": {
-      "title": "المتجر غير موجود",
-      "description": "عذراً، المتجر الذي تبحث عنه غير موجود",
-      "browseMerchants": "تصفح المتاجر"
-    }
   }
 }

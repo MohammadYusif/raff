@@ -1,152 +1,160 @@
 {
-  "product": {
-    "inStock": "In Stock",
-    "outOfStock": "Out of Stock",
-    "limitedStock": "Limited Stock - Only {count} left",
-    "description": "Product Description",
-    "taxIncluded": "VAT included",
-    "buyNow": "Buy Now",
-    "visitStore": "Visit Store",
-    "backToProducts": "Back to Products",
-    "redirectNotice": "Note: You will be redirected to {merchant}'s store on Salla platform to complete your purchase securely.",
-    "views": "views",
-    "notFound": {
-      "title": "Product Not Found",
-      "description": "Sorry, we couldn't find the product you're looking for. It may have been deleted or moved.",
-      "browseProducts": "Browse All Products"
-    }
-  },
-  "products": {
-    "title": "All Products",
-    "subtitle": "Browse our complete collection of products",
-    "search": "Search",
-    "searchPlaceholder": "Search for a product...",
-    "categories": "Categories",
-    "allCategories": "All Categories",
-    "resultsCount": "{count} products",
-    "sortTrending": "Trending",
-    "sortPriceLow": "Lowest Price",
-    "sortPriceHigh": "Highest Price",
-    "sortNewest": "Newest",
-    "noResults": "No results found",
-    "noResultsDescription": "Try changing your search or filters",
-    "previous": "Previous",
-    "next": "Next"
-  },
-  "common": {
-    "nav": {
-      "home": "Home",
-      "products": "Products"
-    },
-    "actions": {
-      "backToHome": "Back to Home",
-      "viewDetails": "View Details",
-      "login": "Login"
-    },
-    "labels": {
-      "trending": "Trending",
-      "sar": "SAR"
-    }
-  },
-  "homepage": {
-    "hero": {
-      "title": "Discover Trending Products",
-      "subtitle": "Browse the best products from Saudi stores",
-      "searchPlaceholder": "Search for a product...",
-      "cta": "Start Browsing"
-    },
-    "trending": {
-      "title": "Most Popular Products",
-      "subtitle": "Discover what others are buying now",
-      "viewAll": "View All"
-    },
-    "stats": {
-      "products": "Products",
-      "merchants": "Stores",
-      "customers": "Customers"
-    },
-    "howItWorks": {
-      "title": "How Raff Works",
-      "subtitle": "Three simple steps to find your perfect product",
-      "step1": {
-        "title": "Browse Products",
-        "description": "Explore thousands of products from different stores"
-      },
-      "step2": {
-        "title": "Compare & Choose",
-        "description": "Easily compare prices and features"
-      },
-      "step3": {
-        "title": "Buy Safely",
-        "description": "Purchase directly from the original store"
-      }
-    }
-  },
   "nav": {
     "home": "Home",
     "products": "Products",
     "trending": "Trending",
     "categories": "Categories",
-    "merchants": "Stores"
+    "merchants": "Merchants"
+  },
+  "common": {
+    "nav": {
+      "home": "Home",
+      "products": "Products",
+      "trending": "Trending",
+      "categories": "Categories",
+      "merchants": "Merchants"
+    },
+    "actions": {
+      "login": "Login",
+      "viewDetails": "View Details",
+      "backToHome": "Back to Home"
+    },
+    "labels": {
+      "trending": "Trending"
+    },
+    "searchPlaceholder": "Search..."
+  },
+  "homepage": {
+    "hero": {
+      "title": "Discover Trending Products",
+      "subtitle": "Find the best products from Saudi stores",
+      "searchPlaceholder": "What are you looking for?",
+      "cta": "Search"
+    },
+    "stats": {
+      "products": "Products",
+      "merchants": "Merchants",
+      "customers": "Customers"
+    },
+    "trending": {
+      "title": "Trending Now",
+      "subtitle": "Discover the most popular products right now",
+      "viewAll": "View All Trending"
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "subtitle": "Discover, save, and buy in three simple steps",
+      "step1": {
+        "title": "Search & Discover",
+        "description": "Browse thousands of products from verified Saudi stores"
+      },
+      "step2": {
+        "title": "Save Favorites",
+        "description": "Create wishlists and track products you love"
+      },
+      "step3": {
+        "title": "Shop Directly",
+        "description": "Buy directly from merchant stores with confidence"
+      }
+    }
+  },
+  "search": {
+    "title": "Search Products",
+    "searchPlaceholder": "Search for products...",
+    "noResults": "No products found",
+    "noResultsDescription": "Try adjusting your search or browse all products",
+    "browseAll": "Browse All Products",
+    "startSearching": "Start Your Search",
+    "startSearchingDescription": "Enter keywords to find products from Saudi stores"
+  },
+  "products": {
+    "title": "All Products",
+    "subtitle": "Browse products from Saudi stores",
+    "searchPlaceholder": "Search products...",
+    "resultsCount": "{count} products found",
+    "noResults": "No products found",
+    "noResultsDescription": "Try adjusting your filters or search terms",
+    "sortTrending": "Trending",
+    "sortPriceLow": "Price: Low to High",
+    "sortPriceHigh": "Price: High to Low",
+    "sortNewest": "Newest",
+    "categories": "Categories",
+    "allCategories": "All Categories",
+    "filters": "Filters",
+    "search": "Search",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "product": {
+    "notFound": {
+      "title": "Product Not Found",
+      "description": "The product you're looking for doesn't exist or has been removed",
+      "browseProducts": "Browse Products"
+    },
+    "description": "Description",
+    "inStock": "In Stock",
+    "outOfStock": "Out of Stock",
+    "limitedStock": "Only {count} left in stock",
+    "taxIncluded": "Tax included",
+    "buyNow": "Buy Now",
+    "visitStore": "Visit Store",
+    "backToProducts": "Back to Products",
+    "redirectNotice": "You'll be redirected to {merchant}'s store to complete your purchase"
+  },
+  "categories": {
+    "title": "Categories",
+    "subtitle": "Browse products by category",
+    "viewProducts": "View Products",
+    "noCategories": "No categories available",
+    "noCategoriesDescription": "Categories will appear here once added",
+    "viewAllProducts": "View All Products"
+  },
+  "category": {
+    "backToCategories": "Back to Categories",
+    "noProducts": "No products in this category",
+    "noProductsDescription": "Products will appear here once added"
+  },
+  "merchants": {
+    "title": "Merchants",
+    "subtitle": "Browse all stores on Raff",
+    "viewProducts": "View Products",
+    "visitStore": "Visit Store",
+    "products": "products",
+    "noMerchants": "No merchants available",
+    "noMerchantsDescription": "Merchants will appear here once they join",
+    "viewAllProducts": "View All Products"
+  },
+  "merchant": {
+    "backToMerchants": "Back to Merchants",
+    "products": "Products",
+    "visitStore": "Visit Store",
+    "noProducts": "No products from this merchant",
+    "noProductsDescription": "Products will appear here once added",
+    "notFound": {
+      "title": "Merchant Not Found",
+      "description": "The merchant you're looking for doesn't exist or is no longer active",
+      "browseMerchants": "Browse Merchants"
+    }
+  },
+  "trending": {
+    "title": "Trending Products",
+    "subtitle": "Discover the most popular products right now",
+    "description": "Products are ranked by popularity, views, and sales",
+    "noTrending": "No trending products",
+    "noTrendingDescription": "Trending products will appear here soon",
+    "viewAllProducts": "View All Products"
   },
   "footer": {
     "quickLinks": "Quick Links",
     "forMerchants": "For Merchants",
     "support": "Support",
     "legal": "Legal",
-    "joinAsStore": "Join as Store",
+    "joinAsStore": "Join as Merchant",
     "merchantDashboard": "Merchant Dashboard",
     "helpCenter": "Help Center",
     "contactUs": "Contact Us",
     "termsOfService": "Terms of Service",
     "privacyPolicy": "Privacy Policy",
     "allRightsReserved": "All rights reserved"
-  },
-    "trending": {
-    "title": "Trending Products",
-    "subtitle": "Discover the most popular products right now",
-    "description": "These products are the most viewed and purchased by users right now",
-    "noTrending": "No Trending Products",
-    "noTrendingDescription": "Check back soon to discover trending products",
-    "viewAllProducts": "View All Products"
-  },
-    "categories": {
-    "title": "Categories",
-    "subtitle": "Browse products by category",
-    "viewProducts": "View Products",
-    "noCategories": "No Categories",
-    "noCategoriesDescription": "No categories found at the moment",
-    "viewAllProducts": "View All Products"
-  },
-    "category": {
-    "backToCategories": "Back to Categories",
-    "noProducts": "No Products",
-    "noProductsDescription": "No products found in this category",
-    "notFound": {
-      "title": "Category Not Found",
-      "description": "Sorry, the category you're looking for doesn't exist",
-      "browseCategories": "Browse Categories"
-    }
-  },
-    "merchants": {
-    "title": "Merchants",
-    "subtitle": "Browse all merchants and their stores",
-    "viewProducts": "View Products",
-    "visitStore": "Visit Store",
-    "noMerchants": "No Merchants",
-    "noMerchantsDescription": "No merchants found at the moment",
-    "viewAllProducts": "View All Products"
-  },
-    "merchant": {
-    "backToMerchants": "Back to Merchants",
-    "products": "products",
-    "visitStore": "Visit Store",
-    "noProducts": "No Products",
-    "noProductsDescription": "No products found in this store",
-    "notFound": {
-      "title": "Merchant Not Found",
-      "description": "Sorry, the merchant you're looking for doesn't exist",
-      "browseMerchants": "Browse Merchants"
-    }
   }
 }
