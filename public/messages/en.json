@@ -127,5 +127,14 @@
       "description": "Sorry, the category you're looking for doesn't exist",
       "browseCategories": "Browse Categories"
     }
+  },
+    "merchants": {
+    "title": "Merchants",
+    "subtitle": "Browse all merchants and their stores",
+    "viewProducts": "View Products",
+    "visitStore": "Visit Store",
+    "noMerchants": "No Merchants",
+    "noMerchantsDescription": "No merchants found at the moment",
+    "viewAllProducts": "View All Products"
   }
 }

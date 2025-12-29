@@ -106,7 +106,13 @@ export function CategoriesContent({ categories }: CategoriesContentProps) {
                         {/* View Products Link */}
                         <div className="flex items-center gap-2 text-sm font-medium text-raff-accent">
                           {t("viewProducts")}
-                          <ArrowForward className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                          <ArrowForward
+                            className={`h-4 w-4 transition-transform ${
+                              locale === "ar"
+                                ? "group-hover:-translate-x-1"
+                                : "group-hover:translate-x-1"
+                            }`}
+                          />
                         </div>
                       </CardContent>
                     </Card>

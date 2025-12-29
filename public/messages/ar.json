@@ -127,5 +127,14 @@
       "description": "عذراً، التصنيف الذي تبحث عنه غير موجود",
       "browseCategories": "تصفح التصنيفات"
     }
+  },
+    "merchants": {
+    "title": "المتاجر",
+    "subtitle": "تصفح جميع المتاجر ومنتجاتها",
+    "viewProducts": "عرض المنتجات",
+    "visitStore": "زيارة المتجر",
+    "noMerchants": "لا توجد متاجر",
+    "noMerchantsDescription": "لم يتم العثور على متاجر حالياً",
+    "viewAllProducts": "عرض جميع المنتجات"
   }
 }
