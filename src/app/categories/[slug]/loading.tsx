@@ -1,0 +1,64 @@
+// src/app/categories/[slug]/loading.tsx
+import { PageLayout } from "@/shared/components/layouts";
+import { Container, Card, CardContent, Skeleton } from "@/shared/components/ui";
+
+export default function CategoryDetailLoading() {
+  return (
+    <PageLayout>
+      <div className="min-h-screen overflow-x-hidden bg-raff-neutral-50">
+        {/* Header Skeleton */}
+        <div className="border-b border-raff-neutral-200 bg-white">
+          <Container className="py-8">
+            <Skeleton className="mb-4 h-10 w-32" />
+
+            {/* Category Header */}
+            <div className="mb-4 flex items-start gap-4">
+              <Skeleton className="h-16 w-16 shrink-0 rounded-xl" />
+              <div className="min-w-0 flex-1">
+                <div className="mb-2 flex items-start justify-between gap-4">
+                  <Skeleton className="h-10 w-64" />
+                  <Skeleton className="h-8 w-12 shrink-0" />
+                </div>
+                <Skeleton className="h-6 w-96" />
+              </div>
+            </div>
+          </Container>
+        </div>
+
+        <Container className="py-8">
+          {/* Search & Sort Skeleton */}
+          <div className="mb-6 space-y-4">
+            <div className="flex gap-2">
+              <Skeleton className="h-10 flex-1" />
+              <Skeleton className="h-10 w-10" />
+            </div>
+
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <Skeleton className="h-5 w-32" />
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                {[...Array(4)].map((_, i) => (
+                  <Skeleton key={i} className="h-9 w-24 shrink-0" />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Products Grid Skeleton */}
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {[...Array(12)].map((_, i) => (
+              <Card key={i} className="overflow-hidden">
+                <Skeleton className="aspect-square w-full" />
+                <CardContent className="space-y-3 p-4">
+                  <Skeleton className="h-4 w-2/3" />
+                  <Skeleton className="h-5 w-full" />
+                  <Skeleton className="h-6 w-1/2" />
+                  <Skeleton className="h-10 w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </Container>
+      </div>
+    </PageLayout>
+  );
+}
