@@ -37,15 +37,15 @@ export function getZidConfig() {
       "ZID_REDIRECT_URI",
       process.env.ZID_OAUTH_REDIRECT_URI
     ),
-    appBaseUrl: requireEnv(
-      "ZID_APP_BASE_URL",
-      process.env.NEXT_PUBLIC_APP_URL
-    ),
+    appBaseUrl: requireEnv("ZID_APP_BASE_URL", process.env.NEXT_PUBLIC_APP_URL),
+    appId: process.env.ZID_APP_ID, // ✅ NEW: App ID for webhook registration
     scopes: parseScopes(process.env.ZID_SCOPES),
     webhook: {
       secret: process.env.ZID_WEBHOOK_SECRET,
       header: process.env.ZID_WEBHOOK_HEADER,
-      createUrl: process.env.ZID_WEBHOOK_CREATE_URL,
+      createUrl:
+        process.env.ZID_WEBHOOK_CREATE_URL ||
+        "https://api.zid.sa/v1/managers/webhooks", // ✅ Default URL
       callbackUrl: process.env.ZID_WEBHOOK_CALLBACK_URL,
       events: parseList(process.env.ZID_WEBHOOK_EVENTS),
     },
@@ -72,9 +72,12 @@ export function getSallaConfig() {
     webhook: {
       secret: process.env.SALLA_WEBHOOK_SECRET,
       header: process.env.SALLA_WEBHOOK_HEADER,
-      createUrl: process.env.SALLA_WEBHOOK_CREATE_URL,
+      createUrl:
+        process.env.SALLA_WEBHOOK_CREATE_URL ||
+        "https://api.salla.dev/admin/v2/webhooks/subscribe", // ✅ Default URL
       callbackUrl: process.env.SALLA_WEBHOOK_CALLBACK_URL,
       events: parseList(process.env.SALLA_WEBHOOK_EVENTS),
+      version: process.env.SALLA_WEBHOOK_VERSION || "2", // ✅ NEW: Webhook version
     },
     productUrlTemplate: process.env.SALLA_PRODUCT_URL_TEMPLATE,
     productsApiUrl: process.env.SALLA_PRODUCTS_API_URL,

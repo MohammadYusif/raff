@@ -3,7 +3,8 @@ import { getSallaConfig, getZidConfig } from "@/lib/platform/config";
 
 type RegisterResult =
   | { status: "skipped"; reason: string }
-  | { status: "registered"; response: unknown };
+  | { status: "registered"; webhooksCreated: number; response?: unknown }
+  | { status: "partial"; webhooksCreated: number; errors: string[] };
 
 async function postJson(
   url: string,
@@ -20,12 +21,19 @@ async function postJson(
   });
 
   if (!response.ok) {
-    throw new Error(`Webhook registration failed: ${response.status}`);
+    const text = await response.text();
+    throw new Error(
+      `Webhook registration failed: ${response.status} - ${text}`
+    );
   }
 
   return response.json();
 }
 
+/**
+ * Register Zid webhooks
+ * Note: Zid only accepts ONE event per webhook, so we register multiple
+ */
 export async function registerZidWebhooks(params: {
   accessToken: string;
   managerToken?: string | null;
@@ -34,6 +42,7 @@ export async function registerZidWebhooks(params: {
   const callbackUrl =
     config.webhook.callbackUrl || `${config.appBaseUrl}/api/zid/webhook`;
 
+  // Validation
   if (!config.webhook.createUrl) {
     return { status: "skipped", reason: "Missing ZID_WEBHOOK_CREATE_URL" };
   }
@@ -46,6 +55,10 @@ export async function registerZidWebhooks(params: {
     return { status: "skipped", reason: "Missing ZID_WEBHOOK_EVENTS" };
   }
 
+  if (!config.appId) {
+    return { status: "skipped", reason: "Missing ZID_APP_ID" };
+  }
+
   const headers: Record<string, string> = {
     Authorization: `Bearer ${params.accessToken}`,
     Accept: "application/json",
@@ -55,26 +68,58 @@ export async function registerZidWebhooks(params: {
     headers["X-MANAGER-TOKEN"] = params.managerToken;
   }
 
-  // TODO: Adjust payload format to Zid webhook registration schema.
-  const payload = {
-    url: callbackUrl,
-    events: config.webhook.events,
-    headers: {
-      [config.webhook.header]: config.webhook.secret,
-    },
-  };
+  // Register one webhook per event
+  const results: Array<{ event: string; success: boolean; error?: string }> =
+    [];
 
-  try {
-    const response = await postJson(config.webhook.createUrl, headers, payload);
-    return { status: "registered", response };
-  } catch (error) {
-    console.error("Zid webhook registration failed:", error);
-    const message =
-      error instanceof Error ? error.message : "Unknown registration error";
-    return { status: "skipped", reason: message };
+  for (const event of config.webhook.events) {
+    const payload = {
+      event, // Single event
+      target_url: callbackUrl,
+      original_id: config.appId,
+      subscriber: config.appId,
+      // Optional: Add conditions if needed
+      // conditions: {}
+    };
+
+    try {
+      await postJson(config.webhook.createUrl, headers, payload);
+      results.push({ event, success: true });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      console.error(`Zid webhook registration failed for ${event}:`, message);
+      results.push({ event, success: false, error: message });
+    }
   }
+
+  const successCount = results.filter((r) => r.success).length;
+  const failures = results.filter((r) => !r.success);
+
+  if (successCount === 0) {
+    return {
+      status: "skipped",
+      reason: `All webhook registrations failed: ${failures.map((f) => f.error).join(", ")}`,
+    };
+  }
+
+  if (failures.length > 0) {
+    return {
+      status: "partial",
+      webhooksCreated: successCount,
+      errors: failures.map((f) => `${f.event}: ${f.error}`),
+    };
+  }
+
+  return {
+    status: "registered",
+    webhooksCreated: successCount,
+  };
 }
 
+/**
+ * Register Salla webhooks
+ * Note: Salla only accepts ONE event per webhook, so we register multiple
+ */
 export async function registerSallaWebhooks(params: {
   accessToken: string;
 }): Promise<RegisterResult> {
@@ -82,6 +127,7 @@ export async function registerSallaWebhooks(params: {
   const callbackUrl =
     config.webhook.callbackUrl || `${config.appBaseUrl}/api/salla/webhook`;
 
+  // Validation
   if (!config.webhook.createUrl) {
     return { status: "skipped", reason: "Missing SALLA_WEBHOOK_CREATE_URL" };
   }
@@ -99,22 +145,58 @@ export async function registerSallaWebhooks(params: {
     Accept: "application/json",
   };
 
-  // TODO: Adjust payload format to Salla webhook registration schema.
-  const payload = {
-    url: callbackUrl,
-    events: config.webhook.events,
-    headers: {
-      [config.webhook.header]: config.webhook.secret,
-    },
-  };
+  const version = parseInt(config.webhook.version || "2", 10);
 
-  try {
-    const response = await postJson(config.webhook.createUrl, headers, payload);
-    return { status: "registered", response };
-  } catch (error) {
-    console.error("Salla webhook registration failed:", error);
-    const message =
-      error instanceof Error ? error.message : "Unknown registration error";
-    return { status: "skipped", reason: message };
+  // Register one webhook per event
+  const results: Array<{ event: string; success: boolean; error?: string }> =
+    [];
+
+  for (const event of config.webhook.events) {
+    const payload = {
+      name: `Raff - ${event}`,
+      event, // Single event
+      url: callbackUrl,
+      version,
+      headers: [
+        {
+          key: config.webhook.header,
+          value: config.webhook.secret,
+        },
+      ],
+      // Optional: Add rule for filtering
+      // rule: "price > 100"
+    };
+
+    try {
+      await postJson(config.webhook.createUrl, headers, payload);
+      results.push({ event, success: true });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      console.error(`Salla webhook registration failed for ${event}:`, message);
+      results.push({ event, success: false, error: message });
+    }
   }
+
+  const successCount = results.filter((r) => r.success).length;
+  const failures = results.filter((r) => !r.success);
+
+  if (successCount === 0) {
+    return {
+      status: "skipped",
+      reason: `All webhook registrations failed: ${failures.map((f) => f.error).join(", ")}`,
+    };
+  }
+
+  if (failures.length > 0) {
+    return {
+      status: "partial",
+      webhooksCreated: successCount,
+      errors: failures.map((f) => `${f.event}: ${f.error}`),
+    };
+  }
+
+  return {
+    status: "registered",
+    webhooksCreated: successCount,
+  };
 }
