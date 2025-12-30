@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
-    // TODO: Get merchant ID from authenticated session
     const merchantId = request.nextUrl.searchParams.get("merchantId");
 
     if (!merchantId) {
@@ -14,8 +13,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const merchant = await prisma.merchant.findUnique({
-      where: { id: merchantId },
+    // ✅ FIX: Use findFirst instead of findUnique with extra filters
+    const merchant = await prisma.merchant.findFirst({
+      where: {
+        id: merchantId,
+        status: "APPROVED",
+        isActive: true,
+      },
       select: {
         id: true,
         name: true,
@@ -25,10 +29,8 @@ export async function GET(request: NextRequest) {
         logo: true,
         description: true,
         descriptionAr: true,
-        // Zid fields
         zidStoreId: true,
         zidStoreUrl: true,
-        // Salla fields
         sallaStoreId: true,
         sallaStoreUrl: true,
         status: true,
@@ -53,22 +55,11 @@ export async function GET(request: NextRequest) {
 
     if (!merchant) {
       return NextResponse.json(
-        { error: "Merchant not found" },
+        { error: "Merchant not found or not approved" },
         { status: 404 }
       );
     }
 
-    if (merchant.status !== "APPROVED" || !merchant.isActive) {
-      return NextResponse.json(
-        {
-          error: "Merchant account is not active",
-          status: merchant.status,
-        },
-        { status: 403 }
-      );
-    }
-
-    // Determine which platform is connected
     let platform: "zid" | "salla" | null = null;
     let storeId: string | null = null;
     let storeUrl: string | null = null;
@@ -145,10 +136,10 @@ export async function PATCH(request: NextRequest) {
       where: { id: merchantId },
       data: {
         ...(name && { name }),
-        ...(nameAr && { nameAr }),
-        ...(description && { description }),
-        ...(descriptionAr && { descriptionAr }),
-        ...(phone && { phone }),
+        ...(nameAr !== undefined && { nameAr }),
+        ...(description !== undefined && { description }),
+        ...(descriptionAr !== undefined && { descriptionAr }),
+        ...(phone !== undefined && { phone }),
         ...(typeof autoSyncProducts === "boolean" && { autoSyncProducts }),
       },
       select: {

@@ -1,16 +1,21 @@
 // src/lib/api/merchants.ts
 import type { MerchantsResponse, MerchantResponse } from "@/types";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+// ✅ FIX: Use proper environment variable check
+function getApiBaseUrl(): string {
+  if (typeof window === "undefined") {
+    return process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  }
+  return "";
+}
 
-/**
- * Fetch all merchants
- */
+const API_BASE_URL = getApiBaseUrl();
+
 export async function fetchMerchants(): Promise<MerchantsResponse> {
   const url = `${API_BASE_URL}/api/merchants`;
 
   const response = await fetch(url, {
-    next: { revalidate: 3600 }, // Cache for 1 hour
+    next: { revalidate: 3600 },
   });
 
   if (!response.ok) {
@@ -20,14 +25,11 @@ export async function fetchMerchants(): Promise<MerchantsResponse> {
   return response.json();
 }
 
-/**
- * Fetch single merchant by ID
- */
 export async function fetchMerchant(id: string): Promise<MerchantResponse> {
   const url = `${API_BASE_URL}/api/merchants/${id}`;
 
   const response = await fetch(url, {
-    next: { revalidate: 300 }, // Cache for 5 minutes
+    next: { revalidate: 300 },
   });
 
   if (!response.ok) {

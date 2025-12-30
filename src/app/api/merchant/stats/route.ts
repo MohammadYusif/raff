@@ -17,15 +17,20 @@ export async function GET(request: NextRequest) {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - daysBack);
 
-    const merchant = await prisma.merchant.findUnique({
-      where: { id: merchantId },
-      select: { id: true, status: true, isActive: true },
+    // ✅ FIX: Use findFirst instead of findUnique
+    const merchant = await prisma.merchant.findFirst({
+      where: {
+        id: merchantId,
+        status: "APPROVED",
+        isActive: true,
+      },
+      select: { id: true },
     });
 
-    if (!merchant || merchant.status !== "APPROVED" || !merchant.isActive) {
+    if (!merchant) {
       return NextResponse.json(
-        { error: "Merchant not found or inactive" },
-        { status: 403 }
+        { error: "Merchant not found or not approved" },
+        { status: 404 }
       );
     }
 

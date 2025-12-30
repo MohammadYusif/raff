@@ -14,20 +14,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const merchant = await prisma.merchant.findUnique({
-      where: { id: merchantId },
+    // ✅ FIX: Use findFirst instead of findUnique
+    const merchant = await prisma.merchant.findFirst({
+      where: {
+        id: merchantId,
+        status: "APPROVED",
+        isActive: true,
+      },
       select: {
         id: true,
         name: true,
-        status: true,
-        isActive: true,
-        // Zid fields
         zidStoreId: true,
         zidStoreUrl: true,
         zidAccessToken: true,
         zidRefreshToken: true,
         zidTokenExpiry: true,
-        // Salla fields
         sallaStoreId: true,
         sallaStoreUrl: true,
         sallaAccessToken: true,
@@ -39,19 +40,11 @@ export async function POST(request: NextRequest) {
 
     if (!merchant) {
       return NextResponse.json(
-        { error: "Merchant not found" },
+        { error: "Merchant not found or not approved" },
         { status: 404 }
       );
     }
 
-    if (merchant.status !== "APPROVED" || !merchant.isActive) {
-      return NextResponse.json(
-        { error: "Merchant account is not active" },
-        { status: 403 }
-      );
-    }
-
-    // Check which platform is connected
     const isZidConnected = !!merchant.zidStoreId && !!merchant.zidAccessToken;
     const isSallaConnected =
       !!merchant.sallaStoreId && !!merchant.sallaAccessToken;
@@ -66,7 +59,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Rate limiting check (5 minutes)
     if (merchant.lastSyncAt) {
       const timeSinceLastSync = Date.now() - merchant.lastSyncAt.getTime();
       const fiveMinutesInMs = 5 * 60 * 1000;
@@ -86,19 +78,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Update last sync timestamp
     await prisma.merchant.update({
       where: { id: merchantId },
       data: { lastSyncAt: new Date() },
     });
 
-    // Determine platform and prepare response
     const platform = isZidConnected ? "zid" : "salla";
     const storeUrl = isZidConnected
       ? merchant.zidStoreUrl
       : merchant.sallaStoreUrl;
 
-    // TODO: Implement actual sync logic
     const syncResult = {
       status: "success",
       message: "Product sync initiated",

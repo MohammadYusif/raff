@@ -6,11 +6,18 @@ import type {
   ProductFilters,
 } from "@/types";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+// ✅ FIX: Use proper environment variable check
+function getApiBaseUrl(): string {
+  // Server-side: Use NEXT_PUBLIC_APP_URL or construct from request
+  if (typeof window === "undefined") {
+    return process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  }
+  // Client-side: Use relative URLs
+  return "";
+}
 
-/**
- * Fetch products with filters
- */
+const API_BASE_URL = getApiBaseUrl();
+
 export async function fetchProducts(
   filters: ProductFilters = {}
 ): Promise<ProductsResponse> {
@@ -30,7 +37,7 @@ export async function fetchProducts(
   const url = `${API_BASE_URL}/api/products?${params.toString()}`;
 
   const response = await fetch(url, {
-    cache: "no-store", // Always fetch fresh data
+    cache: "no-store",
   });
 
   if (!response.ok) {
@@ -40,16 +47,13 @@ export async function fetchProducts(
   return response.json();
 }
 
-/**
- * Fetch trending products
- */
 export async function fetchTrendingProducts(
   limit: number = 8
 ): Promise<TrendingProductsResponse> {
   const url = `${API_BASE_URL}/api/products/trending?limit=${limit}`;
 
   const response = await fetch(url, {
-    next: { revalidate: 300 }, // Cache for 5 minutes
+    next: { revalidate: 300 },
   });
 
   if (!response.ok) {
@@ -59,14 +63,11 @@ export async function fetchTrendingProducts(
   return response.json();
 }
 
-/**
- * Fetch single product by slug
- */
 export async function fetchProduct(slug: string): Promise<ProductResponse> {
   const url = `${API_BASE_URL}/api/products/${slug}`;
 
   const response = await fetch(url, {
-    cache: "no-store", // Always fetch fresh to track views
+    cache: "no-store",
   });
 
   if (!response.ok) {
@@ -79,9 +80,6 @@ export async function fetchProduct(slug: string): Promise<ProductResponse> {
   return response.json();
 }
 
-/**
- * Client-side product fetch (for use in components)
- */
 export async function fetchProductsClient(
   filters: ProductFilters = {}
 ): Promise<ProductsResponse> {
@@ -102,9 +100,6 @@ export async function fetchProductsClient(
   return response.json();
 }
 
-/**
- * Track product click (for trending algorithm)
- */
 export async function trackProductClick(productId: string): Promise<void> {
   try {
     await fetch("/api/products/track", {
@@ -118,7 +113,6 @@ export async function trackProductClick(productId: string): Promise<void> {
       }),
     });
   } catch (error) {
-    // Silently fail - tracking shouldn't break user experience
     console.error("Failed to track click:", error);
   }
 }
