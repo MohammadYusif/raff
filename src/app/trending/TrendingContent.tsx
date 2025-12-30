@@ -98,7 +98,7 @@ export function TrendingContent({ products }: TrendingContentProps) {
                 return (
                   <Card
                     key={product.id}
-                    className="group relative overflow-hidden border-raff-neutral-200"
+                    className="group relative flex h-full flex-col overflow-hidden border-raff-neutral-200"
                   >
                     {/* Trending Rank Badge */}
                     <div className="absolute start-3 top-3 z-10">
@@ -111,63 +111,73 @@ export function TrendingContent({ products }: TrendingContentProps) {
                     </div>
 
                     {/* Product Image */}
-                    <div className="relative aspect-square overflow-hidden">
-                      <div className="flex h-full items-center justify-center from-raff-neutral-50 to-raff-neutral-100">
-                        <div className="text-center">
-                          <div className="mb-3 text-6xl opacity-40">📦</div>
-                          {/* Fixed height container for badge */}
-                          <div className="flex h-6 items-center justify-center">
-                            <Badge
-                              variant="default"
-                              className="gap-1 bg-raff-primary"
-                            >
-                              <TrendingUp className="h-3 w-3" />
-                              {commonT("labels.trending")}
-                            </Badge>
+                    <Link href={`/products/${product.slug}`}>
+                      <div className="relative aspect-square overflow-hidden">
+                        <div className="flex h-full items-center justify-center from-raff-neutral-50 to-raff-neutral-100">
+                          <div className="text-center">
+                            <div className="mb-3 text-6xl opacity-40">📦</div>
+                            {/* Fixed height container for badge */}
+                            <div className="flex h-6 items-center justify-center">
+                              <Badge
+                                variant="default"
+                                className="gap-1 bg-raff-primary"
+                              >
+                                <TrendingUp className="h-3 w-3" />
+                                {commonT("labels.trending")}
+                              </Badge>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </Link>
 
-                    <CardContent className="p-4">
-                      {/* Category */}
-                      {categoryName && (
-                        <div className="mb-2 text-xs font-medium uppercase tracking-wide text-raff-neutral-500">
-                          {categoryName}
-                        </div>
-                      )}
-
-                      {/* Merchant */}
-                      <div className="mb-2 text-xs text-raff-neutral-500">
-                        {merchantName}
-                      </div>
-
-                      {/* Title */}
-                      <h3 className="mb-3 line-clamp-2 text-base font-semibold text-raff-primary">
-                        {productTitle}
-                      </h3>
-
-                      {/* Price */}
-                      <div className="mb-4">
-                        {product.originalPrice && (
-                          <span className="me-2 text-sm text-raff-neutral-500 line-through">
-                            {formatPrice(product.originalPrice, locale)}
-                          </span>
+                    {/* Product Info - Flex Container */}
+                    <CardContent className="flex flex-1 flex-col p-4">
+                      {/* Content Area - Grows to fill space */}
+                      <div className="flex-1">
+                        {/* Category */}
+                        {categoryName && (
+                          <div className="mb-2 text-xs font-medium uppercase tracking-wide text-raff-neutral-500">
+                            {categoryName}
+                          </div>
                         )}
-                        <span className="text-xl font-bold text-raff-primary">
-                          {formatPrice(product.price, locale)}
-                        </span>
+
+                        {/* Merchant */}
+                        <div className="mb-2 text-xs text-raff-neutral-500">
+                          {merchantName}
+                        </div>
+
+                        {/* Title */}
+                        <Link href={`/products/${product.slug}`}>
+                          <h3 className="mb-3 line-clamp-2 text-base font-semibold text-raff-primary transition-colors hover:text-raff-accent">
+                            {productTitle}
+                          </h3>
+                        </Link>
+
+                        {/* Price */}
+                        <div className="mb-4">
+                          {product.originalPrice && (
+                            <span className="me-2 text-sm text-raff-neutral-500 line-through">
+                              {formatPrice(product.originalPrice, locale)}
+                            </span>
+                          )}
+                          <span className="text-xl font-bold text-raff-primary">
+                            {formatPrice(product.price, locale)}
+                          </span>
+                        </div>
                       </div>
 
-                      {/* View Button */}
+                      {/* View Button - Always at Bottom */}
                       <Link href={`/products/${product.slug}`}>
                         <Button
                           variant="outline"
-                          className="w-full gap-2"
+                          className="group/btn w-full gap-2 transition-all hover:border-raff-primary hover:bg-raff-primary hover:text-white"
                           size="sm"
                         >
-                          {commonT("actions.viewDetails")}
-                          <ArrowForward className="h-4 w-4" />
+                          <span className="flex-1">
+                            {commonT("actions.viewDetails")}
+                          </span>
+                          <ArrowForward className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
                         </Button>
                       </Link>
                     </CardContent>

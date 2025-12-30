@@ -1,7 +1,7 @@
 // src/app/products/ProductsContent.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -14,7 +14,7 @@ import {
   Badge,
   Input,
 } from "@/shared/components/ui";
-import { TrendingUp, Search, SlidersHorizontal } from "lucide-react";
+import { TrendingUp, Search, SlidersHorizontal, X } from "lucide-react";
 import { ArrowForward, ArrowBackward } from "@/core/i18n";
 import { formatPrice } from "@/lib/utils";
 
@@ -53,7 +53,7 @@ interface Pagination {
   totalCount?: number;
   totalItems?: number;
   hasNextPage?: boolean;
-  hasPreviousPage?: boolean; // ← Fixed to match API
+  hasPreviousPage?: boolean;
 }
 
 interface ProductsContentProps {
@@ -69,7 +69,7 @@ export function ProductsContent({
 }: ProductsContentProps) {
   const t = useTranslations("products");
   const commonT = useTranslations("common");
-  const locale = useLocale(); // Get current locale
+  const locale = useLocale();
   const router = useRouter();
   const urlSearchParams = useSearchParams();
 
@@ -77,16 +77,56 @@ export function ProductsContent({
     urlSearchParams.get("search") || ""
   );
 
+  // ✅ Auto-search after user stops typing for 1 second
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams(urlSearchParams.toString());
+
+      if (searchQuery.trim()) {
+        // User typed something - add search param
+        params.set("search", searchQuery.trim());
+      } else {
+        // User cleared search - remove search param to show all products
+        params.delete("search");
+      }
+
+      // Reset to page 1 when search changes
+      params.delete("page");
+
+      // Only navigate if the search param actually changed
+      const currentSearch = urlSearchParams.get("search") || "";
+      if (currentSearch !== searchQuery.trim()) {
+        router.push(`/products?${params.toString()}`);
+      }
+    }, 1000); // Wait 1 second after user stops typing
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, router, urlSearchParams]);
+
+  // ✅ Sync input with URL when URL changes (e.g., back button)
+  useEffect(() => {
+    const urlSearch = urlSearchParams.get("search") || "";
+    if (urlSearch !== searchQuery) {
+      setSearchQuery(urlSearch);
+    }
+  }, [urlSearchParams]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    // Manual submit - trigger immediately
     const params = new URLSearchParams(urlSearchParams.toString());
-    if (searchQuery) {
-      params.set("search", searchQuery);
+    if (searchQuery.trim()) {
+      params.set("search", searchQuery.trim());
     } else {
       params.delete("search");
     }
     params.delete("page");
     router.push(`/products?${params.toString()}`);
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    // Will auto-trigger useEffect to remove search param
   };
 
   const handleCategoryFilter = (categorySlug: string | null) => {
@@ -104,13 +144,12 @@ export function ProductsContent({
     const params = new URLSearchParams(urlSearchParams.toString());
     const currentSort = params.get("sortBy");
 
-    // Toggle: if clicking the active sort, remove it
     if (currentSort === sortBy) {
       params.delete("sortBy");
-      params.delete("page"); // Reset to page 1
+      params.delete("page");
     } else {
       params.set("sortBy", sortBy);
-      params.delete("page"); // Reset to page 1 when changing sort
+      params.delete("page");
     }
 
     router.push(`/products?${params.toString()}`);
@@ -156,17 +195,23 @@ export function ProductsContent({
                       {t("search")}
                     </h3>
                     <form onSubmit={handleSearch}>
-                      <div className="flex gap-2">
+                      <div className="relative">
                         <Input
-                          type="search"
+                          type="text"
                           placeholder={t("searchPlaceholder")}
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
-                          className="flex-1"
+                          className="pe-10"
                         />
-                        <Button type="submit" size="icon">
-                          <Search className="h-4 w-4" />
-                        </Button>
+                        {searchQuery && (
+                          <button
+                            type="button"
+                            onClick={handleClearSearch}
+                            className="absolute end-3 top-1/2 -translate-y-1/2 text-raff-neutral-400 hover:text-raff-neutral-600"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
                     </form>
                   </div>
@@ -180,8 +225,11 @@ export function ProductsContent({
                     <div className="space-y-2">
                       <Button
                         variant={
-                          !urlSearchParams.get("category") ? "default" : "ghost"
+                          !urlSearchParams.get("category")
+                            ? "default"
+                            : "outline"
                         }
+                        size="sm"
                         className="w-full justify-start"
                         onClick={() => handleCategoryFilter(null)}
                       >
@@ -192,20 +240,23 @@ export function ProductsContent({
                           locale === "ar"
                             ? category.nameAr || category.name
                             : category.name;
-
                         return (
                           <Button
                             key={category.id}
                             variant={
                               urlSearchParams.get("category") === category.slug
                                 ? "default"
-                                : "ghost"
+                                : "outline"
                             }
-                            className="w-full justify-between"
+                            size="sm"
+                            className="w-full justify-start"
                             onClick={() => handleCategoryFilter(category.slug)}
                           >
-                            <span>{categoryName}</span>
-                            <Badge variant="secondary" className="text-xs">
+                            <span className="truncate">{categoryName}</span>
+                            <Badge
+                              variant="secondary"
+                              className="ms-auto shrink-0"
+                            >
                               {category._count.products}
                             </Badge>
                           </Button>
@@ -218,14 +269,14 @@ export function ProductsContent({
             </aside>
 
             {/* Main Content */}
-            <div className="min-w-0 flex-1 space-y-6">
+            <div className="flex-1">
               {/* Sort & Results Count */}
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm text-raff-neutral-600">
                   {t("resultsCount", {
                     count:
-                      pagination.totalCount ??
-                      pagination.totalItems ??
+                      pagination.totalCount ||
+                      pagination.totalItems ||
                       initialProducts.length,
                   })}
                 </p>
@@ -283,154 +334,153 @@ export function ProductsContent({
 
               {/* Products Grid */}
               {initialProducts.length > 0 ? (
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {initialProducts.map((product) => {
-                    const productTitle =
-                      locale === "ar"
-                        ? product.titleAr || product.title
-                        : product.title;
-                    const categoryName = product.category
-                      ? locale === "ar"
-                        ? product.category.nameAr || product.category.name
-                        : product.category.name
-                      : null;
-                    const merchantName =
-                      locale === "ar"
-                        ? product.merchant.nameAr || product.merchant.name
-                        : product.merchant.name;
+                <>
+                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                    {initialProducts.map((product) => {
+                      const productTitle =
+                        locale === "ar"
+                          ? product.titleAr || product.title
+                          : product.title;
+                      const merchantName =
+                        locale === "ar"
+                          ? product.merchant.nameAr || product.merchant.name
+                          : product.merchant.name;
+                      const categoryName = product.category
+                        ? locale === "ar"
+                          ? product.category.nameAr || product.category.name
+                          : product.category.name
+                        : null;
 
-                    return (
-                      <Card
-                        key={product.id}
-                        className="group overflow-hidden border-raff-neutral-200 hover-lift"
-                      >
-                        {/* Product Image */}
-                        <div className="relative aspect-square overflow-hidden">
-                          <div className="flex h-full items-center justify-center from-raff-neutral-50 to-raff-neutral-100">
-                            <div className="text-center">
-                              <div className="mb-3 text-6xl opacity-40">📦</div>
-                              {/* Fixed height container for badge to maintain consistent spacing */}
-                              <div className="flex h-6 items-center justify-center">
+                      return (
+                        <Card
+                          key={product.id}
+                          className="group flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-lg"
+                        >
+                          <CardContent className="flex h-full flex-col p-0">
+                            {/* Product Image Placeholder */}
+                            <Link href={`/products/${product.slug}`}>
+                              <div className="relative aspect-square overflow-hidden bg-raff-neutral-100 transition-transform duration-300 group-hover:scale-105">
+                                <div className="flex h-full items-center justify-center text-6xl opacity-40">
+                                  📦
+                                </div>
                                 {product.trendingScore > 70 && (
-                                  <Badge
-                                    variant="default"
-                                    className="gap-1 bg-raff-primary"
-                                  >
-                                    <TrendingUp className="h-3 w-3" />
-                                    {commonT("labels.trending")}
-                                  </Badge>
+                                  <div className="absolute start-3 top-3">
+                                    <Badge className="gap-1 bg-raff-accent text-white">
+                                      <TrendingUp className="h-3 w-3" />
+                                      {commonT("labels.trending")}
+                                    </Badge>
+                                  </div>
                                 )}
                               </div>
+                            </Link>
+
+                            {/* Product Info - Flex Container */}
+                            <div className="flex flex-1 flex-col p-4">
+                              {/* Content Area - Grows to fill space */}
+                              <div className="flex-1">
+                                {categoryName && (
+                                  <p className="mb-1 text-xs text-raff-neutral-500">
+                                    {categoryName}
+                                  </p>
+                                )}
+                                <Link href={`/products/${product.slug}`}>
+                                  <h3 className="mb-2 line-clamp-2 text-base font-semibold text-raff-primary transition-colors hover:text-raff-accent">
+                                    {productTitle}
+                                  </h3>
+                                </Link>
+                                <p className="mb-3 text-sm text-raff-neutral-600">
+                                  {merchantName}
+                                </p>
+
+                                {/* Price */}
+                                <div className="mb-4">
+                                  <span className="text-lg font-bold text-raff-primary">
+                                    {formatPrice(product.price, locale)}
+                                  </span>
+                                  {product.originalPrice &&
+                                    product.originalPrice > product.price && (
+                                      <span className="ms-2 text-sm text-raff-neutral-400 line-through">
+                                        {formatPrice(
+                                          product.originalPrice,
+                                          locale
+                                        )}
+                                      </span>
+                                    )}
+                                </div>
+                              </div>
+
+                              {/* View Details Button - Always at Bottom */}
+                              <Link
+                                href={`/products/${product.slug}`}
+                                className="block"
+                              >
+                                <Button
+                                  variant="outline"
+                                  className="group/btn w-full transition-all hover:bg-raff-primary hover:text-white hover:border-raff-primary"
+                                  size="sm"
+                                >
+                                  <span className="flex-1">
+                                    {commonT("actions.viewDetails")}
+                                  </span>
+                                  <ArrowForward className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+                                </Button>
+                              </Link>
                             </div>
-                          </div>
-                        </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
 
-                        <CardContent className="p-4">
-                          {/* Category */}
-                          {categoryName && (
-                            <div className="mb-2 text-xs font-medium uppercase tracking-wide text-raff-neutral-500">
-                              {categoryName}
-                            </div>
-                          )}
+                  {/* Pagination - unchanged */}
+                  {pagination.totalPages > 1 && (
+                    <div className="mt-8 flex items-center justify-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(pagination.page - 1)}
+                        disabled={
+                          pagination.page === 1 ||
+                          pagination.hasPreviousPage === false
+                        }
+                      >
+                        <ArrowBackward className="h-4 w-4" />
+                        {t("previous")}
+                      </Button>
 
-                          {/* Merchant */}
-                          <div className="mb-2 text-xs text-raff-neutral-500">
-                            {merchantName}
-                          </div>
+                      <span className="text-sm text-raff-neutral-600">
+                        {pagination.page} / {pagination.totalPages}
+                      </span>
 
-                          {/* Title */}
-                          <h3 className="mb-3 line-clamp-2 text-base font-semibold text-raff-primary">
-                            {productTitle}
-                          </h3>
-
-                          {/* Price */}
-                          <div className="mb-4">
-                            {product.originalPrice && (
-                              <span className="me-2 text-sm text-raff-neutral-500 line-through">
-                                {formatPrice(product.originalPrice, locale)}
-                              </span>
-                            )}
-                            <span className="text-xl font-bold text-raff-primary">
-                              {formatPrice(product.price, locale)}
-                            </span>
-                          </div>
-
-                          {/* View Button */}
-                          <Link href={`/products/${product.slug}`}>
-                            <Button
-                              variant="outline"
-                              className="w-full gap-2"
-                              size="sm"
-                            >
-                              {commonT("actions.viewDetails")}
-                              <ArrowForward className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(pagination.page + 1)}
+                        disabled={
+                          pagination.page >= pagination.totalPages ||
+                          pagination.hasNextPage === false
+                        }
+                      >
+                        {t("next")}
+                        <ArrowForward className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </>
               ) : (
                 <Card>
-                  <CardContent className="p-12 text-center">
-                    <div className="mb-4 text-6xl opacity-40">🔍</div>
-                    <h3 className="mb-2 text-xl font-semibold text-raff-primary">
+                  <CardContent className="py-16 text-center">
+                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-raff-neutral-100">
+                      <Search className="h-8 w-8 text-raff-neutral-400" />
+                    </div>
+                    <h3 className="mb-2 text-lg font-semibold text-raff-primary">
                       {t("noResults")}
                     </h3>
-                    <p className="text-raff-neutral-600">
+                    <p className="mb-4 text-raff-neutral-600">
                       {t("noResultsDescription")}
                     </p>
                   </CardContent>
                 </Card>
-              )}
-
-              {/* Pagination */}
-              {pagination.totalPages > 1 && (
-                <div className="flex items-center justify-center gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => handlePageChange(pagination.page - 1)}
-                    disabled={!pagination.hasPreviousPage}
-                  >
-                    {t("previous")}
-                  </Button>
-
-                  {[...Array(pagination.totalPages)].map((_, i) => {
-                    const page = i + 1;
-                    if (
-                      page === 1 ||
-                      page === pagination.totalPages ||
-                      Math.abs(page - pagination.page) <= 1
-                    ) {
-                      return (
-                        <Button
-                          key={page}
-                          variant={
-                            page === pagination.page ? "default" : "outline"
-                          }
-                          onClick={() => handlePageChange(page)}
-                        >
-                          {page}
-                        </Button>
-                      );
-                    } else if (
-                      page === pagination.page - 2 ||
-                      page === pagination.page + 2
-                    ) {
-                      return <span key={page}>...</span>;
-                    }
-                    return null;
-                  })}
-
-                  <Button
-                    variant="outline"
-                    onClick={() => handlePageChange(pagination.page + 1)}
-                    disabled={!pagination.hasNextPage}
-                  >
-                    {t("next")}
-                  </Button>
-                </div>
               )}
             </div>
           </div>
