@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { LocaleProvider } from "@/core/i18n/components/LocaleProvider";
+import { SessionProvider } from "@/components/SessionProvider"; // ← ADD THIS
 import { Toaster } from "@/shared/components/ui/toaster";
 import { ScrollToTop } from "@/shared/components/ScrollToTop";
 
@@ -17,7 +18,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Use the same cookie key from your locale utils
 const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 
 const TITLES = {
@@ -30,11 +30,10 @@ const DESCRIPTIONS = {
   en: "Raff Platform - Discover the best products from Saudi stores",
 } as const;
 
-// ✅ Server-side, SEO-friendly metadata
 export async function generateMetadata(): Promise<Metadata> {
   const cookieStore = await cookies();
   const storedLocale = cookieStore.get(LOCALE_COOKIE_NAME)?.value;
-  const locale = storedLocale === "en" ? "en" : "ar"; // default to ar
+  const locale = storedLocale === "en" ? "en" : "ar";
 
   const title = TITLES[locale];
   const description = DESCRIPTIONS[locale];
@@ -60,11 +59,16 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} overflow-x-hidden antialiased`}
       >
-        <LocaleProvider>
-          <ScrollToTop />
-          {children}
-          <Toaster />
-        </LocaleProvider>
+        <SessionProvider>
+          {" "}
+          {/* ← ADD THIS */}
+          <LocaleProvider>
+            <ScrollToTop />
+            {children}
+            <Toaster />
+          </LocaleProvider>
+        </SessionProvider>{" "}
+        {/* ← ADD THIS */}
       </body>
     </html>
   );

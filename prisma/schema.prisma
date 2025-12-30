@@ -24,17 +24,24 @@ model Merchant {
   description     String?        @db.Text
   descriptionAr   String?        @db.Text
   
-  // Salla Integration
-  sallaStoreId    String         @unique
-  sallaStoreUrl   String
+  // Zid Integration (PRIMARY - Phase 1)
+  zidStoreId      String?        @unique
+  zidStoreUrl     String?
+  zidAccessToken  String?        @db.Text
+  zidRefreshToken String?        @db.Text
+  zidTokenExpiry  DateTime?
+  
+  // Salla Integration (SECONDARY - Phase 2)
+  sallaStoreId    String?        @unique
+  sallaStoreUrl   String?
   sallaAccessToken String?       @db.Text
   sallaRefreshToken String?      @db.Text
   sallaTokenExpiry DateTime?
   
   // Status & Approval
-  status          MerchantStatus @default(PENDING)
+  status          MerchantStatus @default(auto-APPROVED)
   approvedAt      DateTime?
-  approvedBy      String?        // Admin user ID who approved
+  approvedBy      String?
   rejectionReason String?        @db.Text
   
   // Settings
@@ -50,6 +57,7 @@ model Merchant {
   updatedAt       DateTime       @updatedAt
   
   @@index([status])
+  @@index([zidStoreId])
   @@index([sallaStoreId])
   @@index([email])
 }
