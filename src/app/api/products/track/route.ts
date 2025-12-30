@@ -45,18 +45,22 @@ export async function POST(request: NextRequest) {
 
     const weight = weights[eventType] || 1.0;
 
-    // Create trending log entry
-    await prisma.trendingLog.create({
-      data: {
-        productId,
-        eventType: eventType as "VIEW" | "CLICK" | "ORDER" | "SAVE",
-        weight,
-        metadata: {
-          timestamp: new Date().toISOString(),
-          userAgent: request.headers.get("user-agent") || "unknown",
+    // Create trending log entry (fail-soft)
+    try {
+      await prisma.trendingLog.create({
+        data: {
+          productId,
+          eventType: eventType as "VIEW" | "CLICK" | "ORDER" | "SAVE",
+          weight,
+          metadata: {
+            timestamp: new Date().toISOString(),
+            userAgent: request.headers.get("user-agent") || "unknown",
+          },
         },
-      },
-    });
+      });
+    } catch (error) {
+      console.warn("Failed to log trending event:", error);
+    }
 
     // Update product counters based on event type
     if (eventType === "CLICK") {

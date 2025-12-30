@@ -100,6 +100,7 @@ export async function GET(request: NextRequest) {
               nameAr: true,
               logo: true,
               sallaStoreUrl: true,
+              zidStoreUrl: true,
             },
           },
           category: {

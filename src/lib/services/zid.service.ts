@@ -1,9 +1,16 @@
 // src/lib/services/zid.service.ts
 // PURPOSE: Zid API integration service for merchant product sync
 
+import { prisma } from "@/lib/prisma";
+import { slugify } from "@/lib/utils";
+import { getZidConfig } from "@/lib/platform/config";
+import { buildExternalProductUrl } from "@/lib/platform/products";
+import { normalizeStoreUrl } from "@/lib/platform/store";
+
 interface ZidConfig {
   accessToken: string;
-  storeId: string;
+  storeId?: string | null;
+  managerToken?: string | null;
 }
 
 interface ZidProduct {
@@ -42,13 +49,30 @@ interface ZidPaginatedResponse<T> {
 }
 
 export class ZidService {
-  private baseUrl = "https://api.zid.sa/v1";
+  private baseUrl: string;
   private accessToken: string;
-  private storeId: string;
+  private storeId?: string | null;
+  private managerToken?: string | null;
 
   constructor(config: ZidConfig) {
+    const zidConfig = getZidConfig();
+    this.baseUrl = zidConfig.apiBaseUrl;
     this.accessToken = config.accessToken;
     this.storeId = config.storeId;
+    this.managerToken = config.managerToken;
+  }
+
+  private getHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${this.accessToken}`,
+      Accept: "application/json",
+    };
+
+    if (this.managerToken) {
+      headers["X-MANAGER-TOKEN"] = this.managerToken;
+    }
+
+    return headers;
   }
 
   /**
@@ -62,10 +86,7 @@ export class ZidService {
       const response = await fetch(
         `${this.baseUrl}/managers/store/products?page=${page}&per_page=${perPage}`,
         {
-          headers: {
-            Authorization: `Bearer ${this.accessToken}`,
-            Accept: "application/json",
-          },
+          headers: this.getHeaders(),
         }
       );
 
@@ -99,10 +120,7 @@ export class ZidService {
       const response = await fetch(
         `${this.baseUrl}/managers/store/products/${productId}`,
         {
-          headers: {
-            Authorization: `Bearer ${this.accessToken}`,
-            Accept: "application/json",
-          },
+          headers: this.getHeaders(),
         }
       );
 
@@ -129,10 +147,7 @@ export class ZidService {
       const response = await fetch(
         `${this.baseUrl}/managers/store/categories`,
         {
-          headers: {
-            Authorization: `Bearer ${this.accessToken}`,
-            Accept: "application/json",
-          },
+          headers: this.getHeaders(),
         }
       );
 
@@ -159,10 +174,7 @@ export class ZidService {
   } | null> {
     try {
       const response = await fetch(`${this.baseUrl}/managers/account/profile`, {
-        headers: {
-          Authorization: `Bearer ${this.accessToken}`,
-          Accept: "application/json",
-        },
+        headers: this.getHeaders(),
       });
 
       if (!response.ok) {
@@ -186,17 +198,20 @@ export class ZidService {
     expiresIn: number;
   }> {
     try {
-      const response = await fetch("https://oauth.zid.sa/oauth/token", {
+      const zidConfig = getZidConfig();
+      const body = new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: refreshToken,
+        client_id: zidConfig.clientId,
+        client_secret: zidConfig.clientSecret,
+      });
+
+      const response = await fetch(zidConfig.tokenUrl, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: JSON.stringify({
-          grant_type: "refresh_token",
-          refresh_token: refreshToken,
-          client_id: process.env.ZID_CLIENT_ID,
-          client_secret: process.env.ZID_CLIENT_SECRET,
-        }),
+        body,
       });
 
       if (!response.ok) {
@@ -217,33 +232,260 @@ export class ZidService {
   }
 }
 
+type ZidMerchantAuth = {
+  id: string;
+  zidAccessToken: string | null;
+  zidRefreshToken: string | null;
+  zidTokenExpiry: Date | null;
+  zidManagerToken: string | null;
+  zidStoreId: string | null;
+  zidStoreUrl: string | null;
+};
+
+function isTokenExpired(tokenExpiry: Date | null): boolean {
+  if (!tokenExpiry) return false;
+  return tokenExpiry.getTime() <= Date.now();
+}
+
+async function ensureZidAccessToken(merchant: ZidMerchantAuth) {
+  if (!isTokenExpired(merchant.zidTokenExpiry)) {
+    return {
+      accessToken: merchant.zidAccessToken,
+      refreshToken: merchant.zidRefreshToken,
+      tokenExpiry: merchant.zidTokenExpiry,
+    };
+  }
+
+  if (!merchant.zidRefreshToken) {
+    throw new Error("Zid refresh token missing");
+  }
+
+  const refreshed = await ZidService.refreshToken(merchant.zidRefreshToken);
+  const tokenExpiry = new Date(Date.now() + refreshed.expiresIn * 1000);
+
+  await prisma.merchant.update({
+    where: { id: merchant.id },
+    data: {
+      zidAccessToken: refreshed.accessToken,
+      zidRefreshToken: refreshed.refreshToken,
+      zidTokenExpiry: tokenExpiry,
+    },
+  });
+
+  return {
+    accessToken: refreshed.accessToken,
+    refreshToken: refreshed.refreshToken,
+    tokenExpiry,
+  };
+}
+
+function resolveZidProductUrl(product: ZidProduct): string | null {
+  const productAny = product as unknown as Record<string, unknown>;
+  const url =
+    (productAny?.url as string) ||
+    (productAny?.urls as Record<string, string> | undefined)?.product ||
+    null;
+  return url;
+}
+
+async function upsertCategory(
+  category: ZidCategory,
+  counters: { created: number; updated: number }
+): Promise<string | null> {
+  const slug = slugify(category.name || "");
+  if (!slug) return null;
+
+  const existing = await prisma.category.findUnique({
+    where: { slug },
+  });
+
+  if (!existing) {
+    const created = await prisma.category.create({
+      data: {
+        name: category.name,
+        nameAr: null,
+        slug,
+        description: category.description || null,
+        descriptionAr: null,
+        icon: null,
+        image: category.image || null,
+        isActive: true,
+      },
+    });
+    counters.created += 1;
+    return created.id;
+  }
+
+  const updated = await prisma.category.update({
+    where: { id: existing.id },
+    data: {
+      name: category.name,
+      description: category.description || existing.description,
+      image: category.image || existing.image,
+    },
+  });
+  counters.updated += 1;
+  return updated.id;
+}
+
+async function resolveProductSlug(
+  name: string,
+  zidProductId: string,
+  existingSlug?: string | null
+): Promise<string> {
+  if (existingSlug) return existingSlug;
+  const baseSlug = slugify(name) || zidProductId;
+  const conflict = await prisma.product.findUnique({
+    where: { slug: baseSlug },
+    select: { id: true },
+  });
+  if (!conflict) return baseSlug;
+  return `${baseSlug}-${zidProductId}`;
+}
+
 /**
  * Sync products from Zid to Raff database
  */
 export async function syncZidProducts(
-  merchantId: string,
-  accessToken: string
+  merchant: ZidMerchantAuth
 ): Promise<{
   productsCreated: number;
   productsUpdated: number;
   categoriesCreated: number;
   categoriesUpdated: number;
 }> {
-  const service = new ZidService({ accessToken, storeId: "" });
+  if (!merchant.zidAccessToken) {
+    throw new Error("Zid access token missing");
+  }
+
+  const tokens = await ensureZidAccessToken(merchant);
+  const service = new ZidService({
+    accessToken: tokens.accessToken || merchant.zidAccessToken,
+    storeId: merchant.zidStoreId,
+    managerToken: merchant.zidManagerToken,
+  });
 
   let productsCreated = 0;
   let productsUpdated = 0;
   let categoriesCreated = 0;
   let categoriesUpdated = 0;
 
-  // TODO: Implement full sync logic
-  // 1. Fetch categories and sync to database
-  // 2. Fetch all products (paginated)
-  // 3. For each product:
-  //    - Check if exists in database
-  //    - Create or update product
-  //    - Handle images
-  //    - Link to categories
+  const categoryCounters = {
+    created: 0,
+    updated: 0,
+  };
+
+  const categories = await service.fetchCategories();
+  const categoryMap = new Map<string, string>();
+
+  for (const category of categories) {
+    const categoryId = await upsertCategory(category, categoryCounters);
+    if (categoryId) {
+      categoryMap.set(category.id, categoryId);
+    }
+  }
+
+  categoriesCreated = categoryCounters.created;
+  categoriesUpdated = categoryCounters.updated;
+
+  let page = 1;
+  const perPage = 50;
+  let totalPages = 1;
+
+  while (page <= totalPages) {
+    const response = await service.fetchProducts(page, perPage);
+    const zidProducts = response.products || [];
+
+    if (response.pagination?.total_pages) {
+      totalPages = response.pagination.total_pages;
+    }
+
+    for (const zidProduct of zidProducts) {
+      const existing = await prisma.product.findFirst({
+        where: {
+          merchantId: merchant.id,
+          zidProductId: zidProduct.id,
+        },
+      });
+
+      const slug = await resolveProductSlug(
+        zidProduct.name,
+        zidProduct.id,
+        existing?.slug
+      );
+
+      const categoryId =
+        zidProduct.categories && zidProduct.categories.length > 0
+          ? categoryMap.get(zidProduct.categories[0].id) || null
+          : null;
+
+      const images =
+        zidProduct.images?.map((image) => image.url).filter(Boolean) || [];
+
+      const normalizedStatus = zidProduct.status?.toLowerCase() || "";
+      const isActive =
+        normalizedStatus === "active" ||
+        normalizedStatus === "published" ||
+        normalizedStatus === "" ||
+        normalizedStatus === "available";
+      const inStock =
+        typeof zidProduct.quantity === "number"
+          ? zidProduct.quantity > 0
+          : true;
+
+      const storeUrl = normalizeStoreUrl(merchant.zidStoreUrl);
+      const externalProductUrl = buildExternalProductUrl({
+        platform: "zid",
+        product: {
+          slug,
+          zidProductId: zidProduct.id,
+        },
+        storeUrl,
+        providedUrl: resolveZidProductUrl(zidProduct),
+      });
+      const sallaUrl = existing?.sallaUrl || undefined;
+      const sallaProductId = existing?.sallaProductId || undefined;
+
+      const productData = {
+        title: zidProduct.name,
+        titleAr: null,
+        description: zidProduct.description || null,
+        descriptionAr: null,
+        price: zidProduct.price,
+        originalPrice: zidProduct.compare_price || null,
+        currency: "SAR",
+        images,
+        thumbnail: images[0] || null,
+        categoryId,
+        tags:
+          zidProduct.categories?.map((category) => category.name) || [],
+        zidProductId: zidProduct.id,
+        sallaProductId,
+        sallaUrl,
+        externalProductUrl: externalProductUrl || undefined,
+        merchantId: merchant.id,
+        isActive,
+        inStock,
+        quantity: zidProduct.quantity || null,
+        slug,
+      };
+
+      if (existing) {
+        await prisma.product.update({
+          where: { id: existing.id },
+          data: productData,
+        });
+        productsUpdated += 1;
+      } else {
+        await prisma.product.create({
+          data: productData,
+        });
+        productsCreated += 1;
+      }
+    }
+
+    page += 1;
+  }
 
   return {
     productsCreated,
@@ -251,4 +493,114 @@ export async function syncZidProducts(
     categoriesCreated,
     categoriesUpdated,
   };
+}
+
+export async function syncZidProductById(
+  merchant: ZidMerchantAuth,
+  productId: string
+): Promise<{ created: boolean; updated: boolean }> {
+  if (!merchant.zidAccessToken) {
+    throw new Error("Zid access token missing");
+  }
+
+  const tokens = await ensureZidAccessToken(merchant);
+  const service = new ZidService({
+    accessToken: tokens.accessToken || merchant.zidAccessToken,
+    storeId: merchant.zidStoreId,
+    managerToken: merchant.zidManagerToken,
+  });
+
+  const zidProduct = await service.fetchProduct(productId);
+  if (!zidProduct) {
+    return { created: false, updated: false };
+  }
+
+  const existing = await prisma.product.findFirst({
+    where: {
+      merchantId: merchant.id,
+      zidProductId: zidProduct.id,
+    },
+  });
+
+  const slug = await resolveProductSlug(
+    zidProduct.name,
+    zidProduct.id,
+    existing?.slug
+  );
+
+  const images =
+    zidProduct.images?.map((image) => image.url).filter(Boolean) || [];
+
+  const normalizedStatus = zidProduct.status?.toLowerCase() || "";
+  const isActive =
+    normalizedStatus === "active" ||
+    normalizedStatus === "published" ||
+    normalizedStatus === "" ||
+    normalizedStatus === "available";
+  const inStock =
+    typeof zidProduct.quantity === "number" ? zidProduct.quantity > 0 : true;
+
+  const storeUrl = normalizeStoreUrl(merchant.zidStoreUrl);
+  const externalProductUrl = buildExternalProductUrl({
+    platform: "zid",
+    product: {
+      slug,
+      zidProductId: zidProduct.id,
+    },
+    storeUrl,
+    providedUrl: resolveZidProductUrl(zidProduct),
+  });
+  const sallaUrl = existing?.sallaUrl || undefined;
+  const sallaProductId = existing?.sallaProductId || undefined;
+
+  const productData = {
+    title: zidProduct.name,
+    titleAr: null,
+    description: zidProduct.description || null,
+    descriptionAr: null,
+    price: zidProduct.price,
+    originalPrice: zidProduct.compare_price || null,
+    currency: "SAR",
+    images,
+    thumbnail: images[0] || null,
+    tags: [],
+    zidProductId: zidProduct.id,
+    sallaProductId,
+    sallaUrl,
+    externalProductUrl: externalProductUrl || undefined,
+    merchantId: merchant.id,
+    isActive,
+    inStock,
+    quantity: zidProduct.quantity || null,
+    slug,
+  };
+
+  if (existing) {
+    await prisma.product.update({
+      where: { id: existing.id },
+      data: productData,
+    });
+    return { created: false, updated: true };
+  }
+
+  await prisma.product.create({
+    data: productData,
+  });
+  return { created: true, updated: false };
+}
+
+export async function deactivateZidProduct(
+  merchantId: string,
+  zidProductId: string
+): Promise<void> {
+  await prisma.product.updateMany({
+    where: {
+      merchantId,
+      zidProductId,
+    },
+    data: {
+      isActive: false,
+      inStock: false,
+    },
+  });
 }

@@ -18,6 +18,7 @@ import { Search, ExternalLink, Store, Package } from "lucide-react";
 import { ArrowForward, ArrowBackward } from "@/core/i18n";
 import { formatPrice } from "@/lib/utils";
 import { TrendingUp } from "lucide-react";
+import { getMerchantStoreUrl } from "@/lib/platform/store";
 
 interface Product {
   id: string;
@@ -40,7 +41,8 @@ interface Merchant {
   description: string | null;
   descriptionAr: string | null;
   logo: string | null;
-  sallaStoreUrl: string;
+  sallaStoreUrl: string | null;
+  zidStoreUrl: string | null;
   phone: string | null;
   email: string;
   _count: {
@@ -85,6 +87,7 @@ export function MerchantDetailContent({
     locale === "ar"
       ? merchant.descriptionAr || merchant.description
       : merchant.description;
+  const storeUrl = getMerchantStoreUrl(merchant);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -166,16 +169,19 @@ export function MerchantDetailContent({
                 <Badge variant="secondary" className="text-base">
                   {merchant._count.products} {t("products")}
                 </Badge>
-                <a
-                  href={merchant.sallaStoreUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Button className="w-full gap-2">
+                {storeUrl ? (
+                  <a href={storeUrl} target="_blank" rel="noopener noreferrer">
+                    <Button className="w-full gap-2">
+                      {t("visitStore")}
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                  </a>
+                ) : (
+                  <Button className="w-full gap-2" disabled>
                     {t("visitStore")}
                     <ExternalLink className="h-4 w-4" />
                   </Button>
-                </a>
+                )}
               </div>
             </div>
           </Container>
@@ -207,10 +213,7 @@ export function MerchantDetailContent({
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm text-raff-neutral-600">
                 {productsT("resultsCount", {
-                  count:
-                    pagination.totalCount ??
-                    pagination.totalCount ??
-                    initialProducts.length,
+                  count: pagination.totalCount ?? initialProducts.length,
                 })}
               </p>
               <div className="flex gap-2 overflow-x-auto pb-2">

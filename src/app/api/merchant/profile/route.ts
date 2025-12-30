@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     if (!merchantId) {
       return NextResponse.json(
         { error: "Merchant ID is required" },
-        { status: 401 }
+        { status: 400 }
       );
     }
 
@@ -118,7 +118,7 @@ export async function PATCH(request: NextRequest) {
     if (!merchantId) {
       return NextResponse.json(
         { error: "Merchant ID is required" },
-        { status: 401 }
+        { status: 400 }
       );
     }
 

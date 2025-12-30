@@ -12,7 +12,8 @@ import {
   Badge,
 } from "@/shared/components/ui";
 import { ArrowForward, ArrowBackward } from "@/core/i18n";
-import { Store, ExternalLink, MapPin } from "lucide-react";
+import { Store, ExternalLink } from "lucide-react";
+import { getMerchantStoreUrl } from "@/lib/platform/store";
 
 interface Merchant {
   id: string;
@@ -21,7 +22,8 @@ interface Merchant {
   description: string | null;
   descriptionAr: string | null;
   logo: string | null;
-  sallaStoreUrl: string;
+  sallaStoreUrl: string | null;
+  zidStoreUrl: string | null;
   _count: {
     products: number;
   };
@@ -70,6 +72,7 @@ export function MerchantsContent({ merchants }: MerchantsContentProps) {
                   locale === "ar"
                     ? merchant.descriptionAr || merchant.description
                     : merchant.description;
+                const storeUrl = getMerchantStoreUrl(merchant);
 
                 return (
                   <Card
@@ -126,20 +129,32 @@ export function MerchantsContent({ merchants }: MerchantsContentProps) {
                         </Link>
 
                         {/* Visit Store Link */}
-                        <a
-                          href={merchant.sallaStoreUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
+                        {storeUrl ? (
+                          <a
+                            href={storeUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Button
+                              variant="ghost"
+                              className="w-full gap-2 text-raff-accent"
+                              size="sm"
+                            >
+                              {t("visitStore")}
+                              <ExternalLink className="h-4 w-4" />
+                            </Button>
+                          </a>
+                        ) : (
                           <Button
                             variant="ghost"
                             className="w-full gap-2 text-raff-accent"
                             size="sm"
+                            disabled
                           >
                             {t("visitStore")}
                             <ExternalLink className="h-4 w-4" />
                           </Button>
-                        </a>
+                        )}
                       </div>
                     </CardContent>
                   </Card>

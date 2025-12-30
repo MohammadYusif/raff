@@ -12,10 +12,12 @@ export type ProductWithRelations = Product & {
     | "nameAr"
     | "logo"
     | "sallaStoreUrl"
+    | "zidStoreUrl"
     | "description"
     | "descriptionAr"
   >;
   category: Pick<Category, "id" | "name" | "nameAr" | "slug"> | null;
+  externalProductUrl?: string;
 };
 
 /**

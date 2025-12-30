@@ -15,7 +15,15 @@ export async function GET() {
       orderBy: {
         createdAt: "desc",
       },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        nameAr: true,
+        description: true,
+        descriptionAr: true,
+        logo: true,
+        sallaStoreUrl: true,
+        zidStoreUrl: true,
         _count: {
           select: {
             products: {

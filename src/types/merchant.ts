@@ -4,7 +4,20 @@ import { Merchant } from "@prisma/client";
 /**
  * Merchant with product count
  */
-export type MerchantWithCount = Merchant & {
+export type PublicMerchant = Pick<
+  Merchant,
+  | "id"
+  | "name"
+  | "nameAr"
+  | "description"
+  | "descriptionAr"
+  | "logo"
+  | "sallaStoreUrl"
+  | "zidStoreUrl"
+> &
+  Partial<Pick<Merchant, "phone" | "email">>;
+
+export type MerchantWithCount = PublicMerchant & {
   _count: {
     products: number;
   };

@@ -30,6 +30,7 @@ model Merchant {
   zidAccessToken  String?        @db.Text
   zidRefreshToken String?        @db.Text
   zidTokenExpiry  DateTime?
+  zidManagerToken String?        @db.Text
   
   // Salla Integration (SECONDARY - Phase 2)
   sallaStoreId    String?        @unique
@@ -39,7 +40,7 @@ model Merchant {
   sallaTokenExpiry DateTime?
   
   // Status & Approval
-  status          MerchantStatus @default(auto-APPROVED)
+  status          MerchantStatus @default(PENDING)
   approvedAt      DateTime?
   approvedBy      String?
   rejectionReason String?        @db.Text
@@ -90,9 +91,11 @@ model Product {
   tags            String[]  // Searchable tags
   
   // Salla Integration
-  sallaProductId  String
+  sallaProductId  String?
   sallaVariantId  String?
-  sallaUrl        String    // Direct link to product on Salla
+  sallaUrl        String?   // Direct link to product on Salla
+  zidProductId    String?   // Zid product id for Zid-synced products
+  externalProductUrl String? // External product URL (Zid/Salla)
   
   // Merchant
   merchantId      String
@@ -128,7 +131,9 @@ model Product {
   @@index([trendingScore])
   @@index([isActive, inStock])
   @@index([slug])
+  @@index([zidProductId])
   @@unique([sallaProductId, merchantId])
+  @@unique([zidProductId, merchantId])
 }
 
 // ============================================

@@ -23,6 +23,7 @@ import {
 } from "@/shared/components/ui";
 import { ArrowBackward } from "@/core/i18n";
 import { formatPrice } from "@/lib/utils";
+import { getMerchantStoreUrl } from "@/lib/platform/store";
 import {
   ShoppingBag,
   Store,
@@ -59,13 +60,20 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
     locale === "ar"
       ? product.category?.nameAr || product.category?.name
       : product.category?.name;
+  const storeUrl = getMerchantStoreUrl(product.merchant);
+  const externalProductUrl = product.externalProductUrl || storeUrl;
 
   // Calculate discount percentage
-  const discountPercentage = product.originalPrice
-    ? Math.round(
-        ((product.originalPrice - product.price) / product.originalPrice) * 100
-      )
-    : 0;
+  const discountPercentage =
+    product.originalPrice && product.originalPrice > product.price
+      ? Math.max(
+          0,
+          Math.round(
+            ((product.originalPrice - product.price) / product.originalPrice) *
+              100
+          )
+        )
+      : 0;
 
   return (
     <PageLayout>
@@ -252,42 +260,57 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
               {/* Action Buttons */}
               <div className="space-y-3">
                 {/* Buy Now Button */}
-                <a
-                  href={
-                    product.merchant.sallaStoreUrl + "/product/" + product.slug
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Button
-                    size="lg"
-                    className="w-full gap-2 text-lg"
-                    disabled={!product.inStock}
+                {externalProductUrl ? (
+                  <a
+                    href={externalProductUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
+                    <Button
+                      size="lg"
+                      className="w-full gap-2 text-lg"
+                      disabled={!product.inStock}
+                    >
+                      <ShoppingBag className="h-5 w-5" />
+                      {product.inStock ? t("buyNow") : t("outOfStock")}
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                  </a>
+                ) : (
+                  <Button size="lg" className="w-full gap-2 text-lg" disabled>
                     <ShoppingBag className="h-5 w-5" />
-                    {product.inStock ? t("buyNow") : t("outOfStock")}
+                    {t("buyNow")}
                     <ExternalLink className="h-4 w-4" />
                   </Button>
-                </a>
+                )}
 
                 <Separator />
 
                 {/* Visit Store Button */}
-                <a
-                  href={product.merchant.sallaStoreUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                {storeUrl ? (
+                  <a href={storeUrl} target="_blank" rel="noopener noreferrer">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="w-full gap-2 text-lg"
+                    >
+                      <Store className="h-5 w-5" />
+                      {t("visitStore")}
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                  </a>
+                ) : (
                   <Button
                     size="lg"
                     variant="outline"
                     className="w-full gap-2 text-lg"
+                    disabled
                   >
                     <Store className="h-5 w-5" />
                     {t("visitStore")}
                     <ExternalLink className="h-4 w-4" />
                   </Button>
-                </a>
+                )}
 
                 {/* Back to Products */}
                 <Link href="/products">

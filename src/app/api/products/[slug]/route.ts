@@ -21,6 +21,7 @@ export async function GET(
             description: true, // ← Add this
             descriptionAr: true, // ← Add this
             sallaStoreUrl: true,
+            zidStoreUrl: true,
             phone: true,
             email: true,
           },
@@ -50,14 +51,18 @@ export async function GET(
       },
     });
 
-    // Log trending event
-    await prisma.trendingLog.create({
-      data: {
-        productId: product.id,
-        eventType: "VIEW",
-        weight: 1.0,
-      },
-    });
+    // Log trending event (fail-soft)
+    try {
+      await prisma.trendingLog.create({
+        data: {
+          productId: product.id,
+          eventType: "VIEW",
+          weight: 1.0,
+        },
+      });
+    } catch (error) {
+      console.warn("Failed to log trending view event:", error);
+    }
 
     return NextResponse.json({ product });
   } catch (error) {

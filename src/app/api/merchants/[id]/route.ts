@@ -11,13 +11,23 @@ export async function GET(
   try {
     const { id } = params;
 
-    const merchant = await prisma.merchant.findUnique({
+    const merchant = await prisma.merchant.findFirst({
       where: {
         id,
         isActive: true,
         status: "APPROVED",
       },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        nameAr: true,
+        description: true,
+        descriptionAr: true,
+        logo: true,
+        phone: true,
+        email: true,
+        sallaStoreUrl: true,
+        zidStoreUrl: true,
         _count: {
           select: {
             products: {

@@ -9,11 +9,17 @@ export async function GET(request: NextRequest) {
     if (!merchantId) {
       return NextResponse.json(
         { error: "Merchant ID is required" },
-        { status: 401 }
+        { status: 400 }
       );
     }
 
-    const daysBack = parseInt(request.nextUrl.searchParams.get("days") || "30");
+    const daysParam = request.nextUrl.searchParams.get("days");
+    let daysBack = parseInt(daysParam || "30", 10);
+
+    if (!Number.isFinite(daysBack) || daysBack <= 0) {
+      daysBack = 30;
+    }
+
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - daysBack);
 

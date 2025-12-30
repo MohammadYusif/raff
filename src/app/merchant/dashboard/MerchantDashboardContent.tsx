@@ -1,7 +1,8 @@
 // src/app/merchant/dashboard/MerchantDashboardContent.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
 import {
@@ -21,7 +22,6 @@ import {
   Eye,
   DollarSign,
   Package,
-  Users,
   BarChart3,
   Settings,
   ExternalLink,
@@ -32,6 +32,10 @@ import {
   Zap,
 } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
+import {
+  useMerchantProfile,
+  useMerchantSync,
+} from "@/lib/hooks/useMerchantApi";
 
 interface MerchantStats {
   totalProducts: number;
@@ -40,49 +44,113 @@ interface MerchantStats {
   totalOrders: number;
   totalRevenue: number;
   conversionRate: number;
+  ordersGrowth: number;
   topProducts: Array<{
     id: string;
     title: string;
+    titleAr: string | null;
     views: number;
     orders: number;
   }>;
 }
 
+const DEFAULT_STATS: MerchantStats = {
+  totalProducts: 0,
+  totalViews: 0,
+  totalClicks: 0,
+  totalOrders: 0,
+  totalRevenue: 0,
+  conversionRate: 0,
+  ordersGrowth: 0,
+  topProducts: [],
+};
+
+function useMerchantStats(merchantId: string | null, days = 30) {
+  const [stats, setStats] = useState<MerchantStats>(DEFAULT_STATS);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    if (!merchantId) {
+      setStats({ ...DEFAULT_STATS });
+      return;
+    }
+
+    const controller = new AbortController();
+
+    async function fetchStats() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch(
+          `/api/merchant/stats?merchantId=${merchantId}&days=${days}`,
+          { signal: controller.signal }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch stats: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const apiStats = data?.stats;
+
+        if (!apiStats) return;
+
+        setStats({
+          totalProducts: apiStats.totalProducts ?? 0,
+          totalViews: apiStats.totalViews ?? 0,
+          totalClicks: apiStats.totalClicks ?? 0,
+          totalOrders: apiStats.totalOrders ?? 0,
+          totalRevenue: apiStats.totalRevenue ?? 0,
+          conversionRate: apiStats.conversionRate ?? 0,
+          ordersGrowth: apiStats.ordersGrowth ?? 0,
+          topProducts: (apiStats.topProducts ?? []).map((product: any) => ({
+            id: product.id,
+            title: product.title,
+            titleAr: product.titleAr ?? null,
+            views: product.views ?? 0,
+            orders: product.orders ?? 0,
+          })),
+        });
+      } catch (err: any) {
+        if (err?.name !== "AbortError") {
+          console.error("Failed to load merchant stats:", err);
+          setError(err);
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchStats();
+
+    return () => controller.abort();
+  }, [merchantId, days]);
+
+  return { stats, loading, error };
+}
+
 export function MerchantDashboardContent() {
   const t = useTranslations("merchantDashboard");
-  const commonT = useTranslations("common");
   const locale = useLocale();
+  const { data: session } = useSession();
+  const merchantId = session?.user?.id || null;
+  const { profile } = useMerchantProfile(merchantId);
+  const { triggerSync, syncing } = useMerchantSync(merchantId);
+  const { stats } = useMerchantStats(merchantId);
 
-  // Mock merchant data - will be replaced with real API data
-  const [isStoreConnected, setIsStoreConnected] = useState(false);
-  const [storePlatform, setStorePlatform] = useState<"salla" | "zid" | null>(
-    null
-  );
-  const [isSyncing, setIsSyncing] = useState(false);
+  const [connectingPlatform, setConnectingPlatform] = useState<
+    "salla" | "zid" | null
+  >(null);
 
-  // Mock stats - will be replaced with real API data
-  const stats: MerchantStats = {
-    totalProducts: 245,
-    totalViews: 12450,
-    totalClicks: 3890,
-    totalOrders: 127,
-    totalRevenue: 45670.5,
-    conversionRate: 3.27,
-    topProducts: [
-      { id: "1", title: "Wireless Headphones", views: 1240, orders: 34 },
-      { id: "2", title: "Smart Watch", views: 980, orders: 28 },
-      { id: "3", title: "Laptop Stand", views: 756, orders: 19 },
-    ],
-  };
+  const isStoreConnected = !!profile?.storeInfo.isConnected;
+  const storePlatform = profile?.storeInfo.platform || null;
 
   const handleConnectStore = (platform: "salla" | "zid") => {
-    setStorePlatform(platform);
-    setIsSyncing(true);
-    // TODO: Implement OAuth flow
-    setTimeout(() => {
-      setIsStoreConnected(true);
-      setIsSyncing(false);
-    }, 2000);
+    if (!merchantId) return;
+    setConnectingPlatform(platform);
+    window.location.href = `/api/${platform}/oauth/start?merchantId=${merchantId}`;
   };
 
   return (
@@ -128,7 +196,7 @@ export function MerchantDashboardContent() {
                       <Button
                         size="lg"
                         onClick={() => handleConnectStore("salla")}
-                        disabled={isSyncing}
+                        disabled={!!connectingPlatform}
                         className="gap-2"
                       >
                         <img
@@ -139,7 +207,7 @@ export function MerchantDashboardContent() {
                             e.currentTarget.style.display = "none";
                           }}
                         />
-                        {isSyncing && storePlatform === "salla" ? (
+                        {connectingPlatform === "salla" ? (
                           <>
                             <Clock className="h-5 w-5 animate-spin" />
                             {t("connectStore.connecting")}
@@ -155,7 +223,7 @@ export function MerchantDashboardContent() {
                         size="lg"
                         variant="outline"
                         onClick={() => handleConnectStore("zid")}
-                        disabled={isSyncing}
+                        disabled={!!connectingPlatform}
                         className="gap-2"
                       >
                         <img
@@ -166,7 +234,7 @@ export function MerchantDashboardContent() {
                             e.currentTarget.style.display = "none";
                           }}
                         />
-                        {isSyncing && storePlatform === "zid" ? (
+                        {connectingPlatform === "zid" ? (
                           <>
                             <Clock className="h-5 w-5 animate-spin" />
                             {t("connectStore.connecting")}
@@ -194,7 +262,12 @@ export function MerchantDashboardContent() {
                     </p>
                     <p className="text-sm text-raff-neutral-600">
                       {t("storeConnected.description", {
-                        platform: storePlatform === "salla" ? "Salla" : "Zid",
+                        platform:
+                          storePlatform === "salla"
+                            ? "Salla"
+                            : storePlatform === "zid"
+                              ? "Zid"
+                              : "",
                       })}
                     </p>
                   </div>
@@ -315,7 +388,8 @@ export function MerchantDashboardContent() {
                         </span>
                         <Badge variant="success" className="gap-1">
                           <TrendingUp className="h-3 w-3" />
-                          +0.5%
+                          {stats.ordersGrowth >= 0 ? "+" : ""}
+                          {stats.ordersGrowth.toFixed(1)}%
                         </Badge>
                       </div>
                       <div className="space-y-2">
@@ -357,36 +431,42 @@ export function MerchantDashboardContent() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {stats.topProducts.map((product, index) => (
-                        <div
-                          key={product.id}
-                          className="flex items-center gap-3 rounded-lg border border-raff-neutral-200 p-3 transition-colors hover:bg-raff-neutral-50"
-                        >
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-raff-primary/10 text-sm font-bold text-raff-primary">
-                            {index + 1}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate font-semibold text-raff-primary">
-                              {product.title}
-                            </p>
-                            <div className="flex gap-3 text-xs text-raff-neutral-600">
-                              <span>
-                                {product.views.toLocaleString(
-                                  locale === "ar" ? "ar-SA" : "en-US"
-                                )}{" "}
-                                {t("topProducts.views")}
-                              </span>
-                              <span>•</span>
-                              <span>
-                                {product.orders.toLocaleString(
-                                  locale === "ar" ? "ar-SA" : "en-US"
-                                )}{" "}
-                                {t("topProducts.orders")}
-                              </span>
+                      {stats.topProducts.map((product, index) => {
+                        const productTitle =
+                          locale === "ar"
+                            ? product.titleAr || product.title
+                            : product.title;
+                        return (
+                          <div
+                            key={product.id}
+                            className="flex items-center gap-3 rounded-lg border border-raff-neutral-200 p-3 transition-colors hover:bg-raff-neutral-50"
+                          >
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-raff-primary/10 text-sm font-bold text-raff-primary">
+                              {index + 1}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate font-semibold text-raff-primary">
+                                {productTitle}
+                              </p>
+                              <div className="flex gap-3 text-xs text-raff-neutral-600">
+                                <span>
+                                  {product.views.toLocaleString(
+                                    locale === "ar" ? "ar-SA" : "en-US"
+                                  )}{" "}
+                                  {t("topProducts.views")}
+                                </span>
+                                <span>|</span>
+                                <span>
+                                  {product.orders.toLocaleString(
+                                    locale === "ar" ? "ar-SA" : "en-US"
+                                  )}{" "}
+                                  {t("topProducts.orders")}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </CardContent>
                 </Card>
@@ -402,9 +482,16 @@ export function MerchantDashboardContent() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                    <Button variant="outline" className="justify-start gap-2">
+                    <Button
+                      variant="outline"
+                      className="justify-start gap-2"
+                      onClick={() => triggerSync()}
+                      disabled={!merchantId || syncing}
+                    >
                       <Package className="h-4 w-4" />
-                      {t("quickActions.syncProducts")}
+                      {syncing
+                        ? t("connectStore.connecting")
+                        : t("quickActions.syncProducts")}
                     </Button>
                     <Button variant="outline" className="justify-start gap-2">
                       <BarChart3 className="h-4 w-4" />

@@ -1,16 +1,18 @@
 // src/app/api/merchant/sync/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { syncZidProducts } from "@/lib/services/zid.service";
+import { syncSallaProducts } from "@/lib/services/salla.service";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { merchantId } = body;
+    const { merchantId, platform: requestedPlatform } = body;
 
     if (!merchantId) {
       return NextResponse.json(
         { error: "Merchant ID is required" },
-        { status: 401 }
+        { status: 400 }
       );
     }
 
@@ -29,6 +31,7 @@ export async function POST(request: NextRequest) {
         zidAccessToken: true,
         zidRefreshToken: true,
         zidTokenExpiry: true,
+        zidManagerToken: true,
         sallaStoreId: true,
         sallaStoreUrl: true,
         sallaAccessToken: true,
@@ -78,15 +81,88 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    await prisma.merchant.update({
-      where: { id: merchantId },
-      data: { lastSyncAt: new Date() },
-    });
+    const platform =
+      requestedPlatform === "salla" || requestedPlatform === "zid"
+        ? requestedPlatform
+        : isZidConnected
+        ? "zid"
+        : "salla";
 
-    const platform = isZidConnected ? "zid" : "salla";
-    const storeUrl = isZidConnected
-      ? merchant.zidStoreUrl
-      : merchant.sallaStoreUrl;
+    if (platform === "zid" && !isZidConnected) {
+      return NextResponse.json(
+        { error: "Zid store not connected" },
+        { status: 400 }
+      );
+    }
+
+    if (platform === "salla" && !isSallaConnected) {
+      return NextResponse.json(
+        { error: "Salla store not connected" },
+        { status: 400 }
+      );
+    }
+
+    const storeUrl =
+      platform === "zid" ? merchant.zidStoreUrl : merchant.sallaStoreUrl;
+
+    const safeNumber = (value: number | undefined | null) =>
+      typeof value === "number" && Number.isFinite(value) ? value : 0;
+
+    const previousLastSyncAt = merchant.lastSyncAt;
+    const syncStartedAt = new Date();
+    let syncSummary:
+      | {
+          productsCreated?: number;
+          productsUpdated?: number;
+          categoriesCreated?: number;
+          categoriesUpdated?: number;
+        }
+      | undefined;
+
+    try {
+      await prisma.merchant.update({
+        where: { id: merchantId },
+        data: { lastSyncAt: syncStartedAt },
+      });
+
+      syncSummary =
+        platform === "zid"
+          ? await syncZidProducts({
+              id: merchant.id,
+              zidAccessToken: merchant.zidAccessToken,
+              zidRefreshToken: merchant.zidRefreshToken,
+              zidTokenExpiry: merchant.zidTokenExpiry,
+              zidManagerToken: merchant.zidManagerToken,
+              zidStoreId: merchant.zidStoreId,
+              zidStoreUrl: merchant.zidStoreUrl,
+            })
+          : await syncSallaProducts({
+              id: merchant.id,
+              sallaAccessToken: merchant.sallaAccessToken,
+              sallaRefreshToken: merchant.sallaRefreshToken,
+              sallaTokenExpiry: merchant.sallaTokenExpiry,
+              sallaStoreId: merchant.sallaStoreId,
+              sallaStoreUrl: merchant.sallaStoreUrl,
+            });
+
+      await prisma.merchant.update({
+        where: { id: merchantId },
+        data: { lastSyncAt: new Date() },
+      });
+    } catch (error) {
+      await prisma.merchant.update({
+        where: { id: merchantId },
+        data: { lastSyncAt: previousLastSyncAt },
+      });
+      throw error;
+    }
+
+    const summary = {
+      productsCreated: safeNumber(syncSummary?.productsCreated),
+      productsUpdated: safeNumber(syncSummary?.productsUpdated),
+      categoriesCreated: safeNumber(syncSummary?.categoriesCreated),
+      categoriesUpdated: safeNumber(syncSummary?.categoriesUpdated),
+    };
 
     const syncResult = {
       status: "success",
@@ -97,12 +173,12 @@ export async function POST(request: NextRequest) {
       storeUrl,
       syncedAt: new Date().toISOString(),
       summary: {
-        productsChecked: 0,
-        productsCreated: 0,
-        productsUpdated: 0,
-        categoriesChecked: 0,
-        categoriesCreated: 0,
-        categoriesUpdated: 0,
+        productsChecked: summary.productsCreated + summary.productsUpdated,
+        productsCreated: summary.productsCreated,
+        productsUpdated: summary.productsUpdated,
+        categoriesChecked: summary.categoriesCreated + summary.categoriesUpdated,
+        categoriesCreated: summary.categoriesCreated,
+        categoriesUpdated: summary.categoriesUpdated,
       },
     };
 
@@ -123,7 +199,7 @@ export async function GET(request: NextRequest) {
     if (!merchantId) {
       return NextResponse.json(
         { error: "Merchant ID is required" },
-        { status: 401 }
+        { status: 400 }
       );
     }
 
