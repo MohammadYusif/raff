@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "prisma generate && prisma migrate deploy && next build",
-    "start": "next start -p $PORT",
+    "build": "prisma generate && next build",
+    "start": "prisma migrate deploy && next start -p $PORT",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "db:generate": "prisma generate",
