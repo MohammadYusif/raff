@@ -386,7 +386,7 @@ export async function POST(request: NextRequest) {
       }
 
       const syncDisabled =
-        process.env.SKIP_PLATFORM_SYNC === "true" ||
+        (!isProd && process.env.SKIP_PLATFORM_SYNC === "true") ||
         !merchant.sallaAccessToken ||
         !process.env.SALLA_CLIENT_ID ||
         !process.env.SALLA_CLIENT_SECRET ||

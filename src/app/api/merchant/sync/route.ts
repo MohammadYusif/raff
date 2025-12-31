@@ -1,38 +1,30 @@
 // src/app/api/merchant/sync/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { syncZidProducts } from "@/lib/services/zid.service";
 import { syncSallaProducts } from "@/lib/services/salla.service";
-import { authOptions } from "@/lib/auth";
+import { requireMerchant } from "@/lib/auth/guards";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const body = await request.json();
-    const { merchantId, platform: requestedPlatform } = body;
-
-    if (merchantId && merchantId !== session.user.id) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const resolvedMerchantId = session.user.id;
-
-    if (!resolvedMerchantId) {
+    const auth = await requireMerchant("api");
+    if ("response" in auth) return auth.response;
+    const { session } = auth;
+    const merchantId = session.user.merchantId;
+    if (!merchantId) {
       return NextResponse.json(
-        { error: "Merchant ID is required" },
-        { status: 400 }
+        { error: "Merchant profile not linked" },
+        { status: 403 }
       );
     }
 
-    // ✅ FIX: Use findFirst instead of findUnique
+    const body = await request.json().catch(() => ({}));
+    const requestedPlatform = body?.platform;
+
     const merchant = await prisma.merchant.findFirst({
       where: {
-        id: resolvedMerchantId,
+        id: merchantId,
+        userId: session.user.id,
         status: "APPROVED",
         isActive: true,
       },
@@ -134,7 +126,7 @@ export async function POST(request: NextRequest) {
 
     try {
       await prisma.merchant.update({
-        where: { id: resolvedMerchantId },
+        where: { id: merchantId },
         data: { lastSyncAt: syncStartedAt },
       });
 
@@ -159,12 +151,12 @@ export async function POST(request: NextRequest) {
             });
 
       await prisma.merchant.update({
-        where: { id: resolvedMerchantId },
+        where: { id: merchantId },
         data: { lastSyncAt: new Date() },
       });
     } catch (error) {
       await prisma.merchant.update({
-        where: { id: resolvedMerchantId },
+        where: { id: merchantId },
         data: { lastSyncAt: previousLastSyncAt },
       });
       throw error;
@@ -205,30 +197,21 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const requestedMerchantId =
-      request.nextUrl.searchParams.get("merchantId");
-    if (requestedMerchantId && requestedMerchantId !== session.user.id) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const merchantId = session.user.id;
-
+    const auth = await requireMerchant("api");
+    if ("response" in auth) return auth.response;
+    const { session } = auth;
+    const merchantId = session.user.merchantId;
     if (!merchantId) {
       return NextResponse.json(
-        { error: "Merchant ID is required" },
-        { status: 400 }
+        { error: "Merchant profile not linked" },
+        { status: 403 }
       );
     }
 
-    const merchant = await prisma.merchant.findUnique({
-      where: { id: merchantId },
+    const merchant = await prisma.merchant.findFirst({
+      where: { id: merchantId, userId: session.user.id },
       select: {
         id: true,
         lastSyncAt: true,

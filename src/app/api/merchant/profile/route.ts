@@ -1,35 +1,25 @@
 // src/app/api/merchant/profile/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
-import { authOptions } from "@/lib/auth";
+import { requireMerchant } from "@/lib/auth/guards";
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const requestedMerchantId =
-      request.nextUrl.searchParams.get("merchantId");
-    if (requestedMerchantId && requestedMerchantId !== session.user.id) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const merchantId = session.user.id;
-
+    const auth = await requireMerchant("api");
+    if ("response" in auth) return auth.response;
+    const { session } = auth;
+    const merchantId = session.user.merchantId;
     if (!merchantId) {
       return NextResponse.json(
-        { error: "Merchant ID is required" },
-        { status: 400 }
+        { error: "Merchant profile not linked" },
+        { status: 403 }
       );
     }
 
-    // ✅ FIX: Use findFirst instead of findUnique with extra filters
     const merchant = await prisma.merchant.findFirst({
       where: {
         id: merchantId,
+        userId: session.user.id,
         status: "APPROVED",
         isActive: true,
       },
@@ -126,23 +116,14 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const requestedMerchantId =
-      request.nextUrl.searchParams.get("merchantId");
-    if (requestedMerchantId && requestedMerchantId !== session.user.id) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const merchantId = session.user.id;
-
+    const auth = await requireMerchant("api");
+    if ("response" in auth) return auth.response;
+    const { session } = auth;
+    const merchantId = session.user.merchantId;
     if (!merchantId) {
       return NextResponse.json(
-        { error: "Merchant ID is required" },
-        { status: 400 }
+        { error: "Merchant profile not linked" },
+        { status: 403 }
       );
     }
 
@@ -156,8 +137,20 @@ export async function PATCH(request: NextRequest) {
       autoSyncProducts,
     } = body;
 
+    const existingMerchant = await prisma.merchant.findFirst({
+      where: { id: merchantId, userId: session.user.id },
+      select: { id: true },
+    });
+
+    if (!existingMerchant) {
+      return NextResponse.json(
+        { error: "Merchant not found" },
+        { status: 404 }
+      );
+    }
+
     const updatedMerchant = await prisma.merchant.update({
-      where: { id: merchantId },
+      where: { id: existingMerchant.id },
       data: {
         ...(name && { name }),
         ...(nameAr !== undefined && { nameAr }),

@@ -2,6 +2,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { nanoid } from "nanoid";
+import { z } from "zod";
+import { getRequestIp, rateLimit } from "@/lib/rateLimit";
+
+const trackClickSchema = z.object({
+  productId: z.string().min(1),
+});
 
 /**
  * Track product click and generate affiliate link
@@ -9,8 +15,30 @@ import { nanoid } from "nanoid";
  */
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { productId, userId } = body;
+    const ip = getRequestIp(request.headers);
+    const limit = rateLimit(`track-click:${ip}`, {
+      windowMs: 60_000,
+      max: 30,
+    });
+
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: "Too many requests" },
+        { status: 429 }
+      );
+    }
+
+    const body = await request.json().catch(() => null);
+    const parsed = trackClickSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid request" },
+        { status: 400 }
+      );
+    }
+
+    const { productId } = parsed.data;
 
     // Validate required fields
     if (!productId) {
@@ -73,7 +101,7 @@ export async function POST(request: NextRequest) {
         trackingId: `raff_${trackingId}`,
         productId: product.id,
         merchantId: product.merchantId,
-        userId: userId || null,
+        userId: null,
         platform,
         destinationUrl,
         ipAddress,
@@ -86,7 +114,15 @@ export async function POST(request: NextRequest) {
     });
 
     // Generate affiliate URL with tracking parameter
-    const trackingUrl = new URL(destinationUrl);
+    let trackingUrl: URL;
+    try {
+      trackingUrl = new URL(destinationUrl);
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid destination URL" },
+        { status: 400 }
+      );
+    }
     trackingUrl.searchParams.set("ref", clickTracking.trackingId);
     trackingUrl.searchParams.set("utm_source", "raff");
     trackingUrl.searchParams.set("utm_medium", "affiliate");

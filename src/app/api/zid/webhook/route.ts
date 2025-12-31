@@ -343,7 +343,7 @@ export async function POST(request: NextRequest) {
       }
 
       const syncDisabled =
-        process.env.SKIP_PLATFORM_SYNC === "true" ||
+        (!isProd && process.env.SKIP_PLATFORM_SYNC === "true") ||
         !merchant.zidAccessToken ||
         !process.env.ZID_CLIENT_ID ||
         !process.env.ZID_CLIENT_SECRET ||

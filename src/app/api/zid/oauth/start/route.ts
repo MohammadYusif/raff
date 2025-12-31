@@ -1,34 +1,29 @@
 // src/app/api/zid/oauth/start/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
-import { authOptions } from "@/lib/auth";
 import { getZidConfig } from "@/lib/platform/config";
 import { createOAuthState } from "@/lib/platform/oauth";
+import { requireMerchant } from "@/lib/auth/guards";
 
-export async function GET(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const requestedMerchantId =
-    request.nextUrl.searchParams.get("merchantId");
-  if (requestedMerchantId && requestedMerchantId !== session.user.id) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
-  const merchantId = session.user.id;
-
+export async function GET(_request: NextRequest) {
+  const auth = await requireMerchant("api");
+  if ("response" in auth) return auth.response;
+  const { session } = auth;
+  const merchantId = session.user.merchantId;
   if (!merchantId) {
     return NextResponse.json(
-      { error: "Merchant ID is required" },
-      { status: 400 }
+      { error: "Merchant profile not linked" },
+      { status: 403 }
     );
   }
 
   const merchant = await prisma.merchant.findFirst({
-    where: { id: merchantId, status: "APPROVED", isActive: true },
+    where: {
+      id: merchantId,
+      userId: session.user.id,
+      status: "APPROVED",
+      isActive: true,
+    },
     select: { id: true },
   });
 

@@ -1,10 +1,12 @@
 // prisma/seed.ts
 import { PrismaClient, MerchantStatus, OrderStatus, UserRole } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Starting database seed...');
+  const defaultPasswordHash = await bcrypt.hash('password123', 10);
 
   // Clean existing data
   console.log('🧹 Cleaning existing data...');
@@ -12,6 +14,9 @@ async function main() {
   await prisma.order.deleteMany();
   await prisma.product.deleteMany();
   await prisma.category.deleteMany();
+  await prisma.account.deleteMany();
+  await prisma.session.deleteMany();
+  await prisma.verificationToken.deleteMany();
   await prisma.merchant.deleteMany();
   await prisma.user.deleteMany();
 
@@ -99,6 +104,41 @@ async function main() {
   // ============================================
   // MERCHANTS
   // ============================================
+  console.log('Creating merchant users...');
+  const merchantUserSeeds = [
+    { name: 'Tech Galaxy', email: 'contact@techgalaxy.sa' },
+    { name: 'Fashion House', email: 'info@fashionhouse.sa' },
+    { name: 'Home Essentials', email: 'hello@homeessentials.sa' },
+    { name: 'Beauty Corner', email: 'care@beautycorner.sa' },
+    { name: 'Sports Pro', email: 'support@sportspro.sa' },
+  ];
+
+  const merchantUsers = await Promise.all(
+    merchantUserSeeds.map((user) =>
+      prisma.user.create({
+        data: {
+          name: user.name,
+          email: user.email,
+          passwordHash: defaultPasswordHash,
+          role: UserRole.MERCHANT,
+          language: 'ar',
+          emailVerified: new Date(),
+        },
+      })
+    )
+  );
+
+  const merchantUserMap = new Map(
+    merchantUserSeeds.map((user, index) => [user.email, merchantUsers[index].id])
+  );
+
+  const getMerchantUserId = (email: string) => {
+    const userId = merchantUserMap.get(email);
+    if (!userId) {
+      throw new Error(`Missing merchant user for ${email}`);
+    }
+    return userId;
+  };
   console.log('🏪 Creating merchants...');
   const merchants = await Promise.all([
     prisma.merchant.create({
@@ -106,6 +146,7 @@ async function main() {
         name: 'Tech Galaxy',
         nameAr: 'تك جالاكسي',
         email: 'contact@techgalaxy.sa',
+        userId: getMerchantUserId('contact@techgalaxy.sa'),
         phone: '+966501234567',
         description: 'Your premium destination for latest tech products',
         descriptionAr: 'وجهتك المميزة لأحدث المنتجات التقنية',
@@ -122,6 +163,7 @@ async function main() {
         name: 'Fashion House',
         nameAr: 'بيت الأزياء',
         email: 'info@fashionhouse.sa',
+        userId: getMerchantUserId('info@fashionhouse.sa'),
         phone: '+966502345678',
         description: 'Exclusive fashion and accessories',
         descriptionAr: 'أزياء وإكسسوارات حصرية',
@@ -138,6 +180,7 @@ async function main() {
         name: 'Home Essentials',
         nameAr: 'أساسيات المنزل',
         email: 'hello@homeessentials.sa',
+        userId: getMerchantUserId('hello@homeessentials.sa'),
         phone: '+966503456789',
         description: 'Quality home and kitchen products',
         descriptionAr: 'منتجات منزلية ومطبخية عالية الجودة',
@@ -154,6 +197,7 @@ async function main() {
         name: 'Beauty Corner',
         nameAr: 'ركن الجمال',
         email: 'care@beautycorner.sa',
+        userId: getMerchantUserId('care@beautycorner.sa'),
         phone: '+966504567890',
         description: 'Premium beauty and skincare',
         descriptionAr: 'منتجات جمال وعناية بالبشرة مميزة',
@@ -170,6 +214,7 @@ async function main() {
         name: 'Sports Pro',
         nameAr: 'سبورتس برو',
         email: 'support@sportspro.sa',
+        userId: getMerchantUserId('support@sportspro.sa'),
         phone: '+966505678901',
         description: 'Professional sports equipment',
         descriptionAr: 'معدات رياضية احترافية',
@@ -598,7 +643,7 @@ async function main() {
       data: {
         name: 'Ahmed Al-Rashid',
         email: 'ahmed@example.com',
-        password: '$2a$10$XQK8Z.VH5J5L9L9L9L9L9eXYZ123456789', // Hashed "password123"
+        passwordHash: defaultPasswordHash,
         phone: '+966501111111',
         role: UserRole.CUSTOMER,
         language: 'ar',
@@ -609,7 +654,7 @@ async function main() {
       data: {
         name: 'Sarah Mohammed',
         email: 'sarah@example.com',
-        password: '$2a$10$XQK8Z.VH5J5L9L9L9L9L9eXYZ123456789',
+        passwordHash: defaultPasswordHash,
         phone: '+966502222222',
         role: UserRole.CUSTOMER,
         language: 'ar',
@@ -620,7 +665,7 @@ async function main() {
       data: {
         name: 'Admin User',
         email: 'admin@raff.sa',
-        password: '$2a$10$XQK8Z.VH5J5L9L9L9L9L9eXYZ123456789',
+        passwordHash: defaultPasswordHash,
         role: UserRole.ADMIN,
         language: 'ar',
         emailVerified: new Date(),

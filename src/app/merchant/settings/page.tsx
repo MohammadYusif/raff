@@ -1,12 +1,12 @@
 // src/app/merchant/settings/page.tsx
-"use client";
-
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Container, Card, CardContent } from "@/shared/components/ui";
 import { Settings } from "lucide-react";
+import { requireMerchant } from "@/lib/auth/guards";
 
-export default function MerchantSettingsPage() {
-  const t = useTranslations("merchantSettings");
+export default async function MerchantSettingsPage() {
+  await requireMerchant("page");
+  const t = await getTranslations("merchantSettings");
 
   return (
     <div className="min-h-screen bg-raff-neutral-50">

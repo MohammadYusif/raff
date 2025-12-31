@@ -84,10 +84,9 @@ function useMerchantStats(merchantId: string | null, days = 30) {
         setLoading(true);
         setError(null);
 
-        const response = await fetch(
-          `/api/merchant/stats?merchantId=${merchantId}&days=${days}`,
-          { signal: controller.signal }
-        );
+        const response = await fetch(`/api/merchant/stats?days=${days}`, {
+          signal: controller.signal,
+        });
 
         if (!response.ok) {
           throw new Error(`Failed to fetch stats: ${response.status}`);
@@ -137,9 +136,9 @@ export function MerchantDashboardContent() {
   const t = useTranslations("merchantDashboard");
   const locale = useLocale();
   const { data: session } = useSession();
-  const merchantId = session?.user?.id || null;
-  const { profile } = useMerchantProfile(merchantId);
-  const { triggerSync, syncing } = useMerchantSync(merchantId);
+  const merchantId = session?.user?.merchantId ?? null;
+  const { profile } = useMerchantProfile(Boolean(merchantId));
+  const { triggerSync, syncing } = useMerchantSync(Boolean(merchantId));
   const { stats } = useMerchantStats(merchantId);
 
   const [connectingPlatform, setConnectingPlatform] = useState<
@@ -152,7 +151,7 @@ export function MerchantDashboardContent() {
   const handleConnectStore = (platform: "salla" | "zid") => {
     if (!merchantId) return;
     setConnectingPlatform(platform);
-    window.location.href = `/api/${platform}/oauth/start?merchantId=${merchantId}`;
+    window.location.href = `/api/${platform}/oauth/start`;
   };
 
   return (

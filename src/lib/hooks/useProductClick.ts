@@ -13,7 +13,7 @@ interface TrackClickResponse {
 export function useProductClick() {
   const [isTracking, setIsTracking] = useState(false);
 
-  const trackAndRedirect = async (productId: string, userId?: string) => {
+  const trackAndRedirect = async (productId: string) => {
     setIsTracking(true);
 
     try {
@@ -24,7 +24,6 @@ export function useProductClick() {
         },
         body: JSON.stringify({
           productId,
-          userId: userId || null,
         }),
       });
 

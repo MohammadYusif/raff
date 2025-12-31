@@ -100,6 +100,11 @@ npm run db:studio    # Open Prisma Studio
 npm run db:seed      # Seed database
 ```
 
+### Authentication Notes
+
+- Credentials login requires NextAuth JWT sessions.
+- PrismaAdapter is still enabled for account/session models.
+
 ### Database Migrations
 
 ```bash

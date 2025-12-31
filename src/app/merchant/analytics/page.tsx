@@ -1,12 +1,12 @@
 // src/app/merchant/analytics/page.tsx
-"use client";
-
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Container, Card, CardContent } from "@/shared/components/ui";
 import { BarChart3 } from "lucide-react";
+import { requireMerchant } from "@/lib/auth/guards";
 
-export default function MerchantAnalyticsPage() {
-  const t = useTranslations("merchantAnalytics");
+export default async function MerchantAnalyticsPage() {
+  await requireMerchant("page");
+  const t = await getTranslations("merchantAnalytics");
 
   return (
     <div className="min-h-screen bg-raff-neutral-50">

@@ -1,12 +1,12 @@
 // src/app/merchant/orders/page.tsx
-"use client";
-
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Container, Card, CardContent } from "@/shared/components/ui";
 import { ShoppingBag } from "lucide-react";
+import { requireMerchant } from "@/lib/auth/guards";
 
-export default function MerchantOrdersPage() {
-  const t = useTranslations("merchantOrders");
+export default async function MerchantOrdersPage() {
+  await requireMerchant("page");
+  const t = await getTranslations("merchantOrders");
 
   return (
     <div className="min-h-screen bg-raff-neutral-50">

@@ -55,13 +55,13 @@ interface MerchantStats {
   }>;
 }
 
-export function useMerchantProfile(merchantId: string | null) {
+export function useMerchantProfile(enabled: boolean) {
   const [profile, setProfile] = useState<MerchantProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!merchantId) {
+    if (!enabled) {
       setLoading(false);
       return;
     }
@@ -69,9 +69,7 @@ export function useMerchantProfile(merchantId: string | null) {
     async function fetchProfile() {
       try {
         setLoading(true);
-        const response = await fetch(
-          `/api/merchant/profile?merchantId=${merchantId}`
-        );
+        const response = await fetch("/api/merchant/profile");
 
         if (!response.ok) {
           throw new Error("Failed to fetch profile");
@@ -88,24 +86,22 @@ export function useMerchantProfile(merchantId: string | null) {
     }
 
     fetchProfile();
-  }, [merchantId]);
+  }, [enabled]);
 
   return { profile, loading, error };
 }
 
-export function useMerchantStats(merchantId: string | null, days: number = 30) {
+export function useMerchantStats(enabled: boolean, days: number = 30) {
   const [stats, setStats] = useState<MerchantStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const refetch = useCallback(async () => {
-    if (!merchantId) return;
+    if (!enabled) return;
 
     try {
       setLoading(true);
-      const response = await fetch(
-        `/api/merchant/stats?merchantId=${merchantId}&days=${days}`
-      );
+      const response = await fetch(`/api/merchant/stats?days=${days}`);
 
       if (!response.ok) {
         throw new Error("Failed to fetch stats");
@@ -119,7 +115,7 @@ export function useMerchantStats(merchantId: string | null, days: number = 30) {
     } finally {
       setLoading(false);
     }
-  }, [merchantId, days]);
+  }, [enabled, days]);
 
   useEffect(() => {
     refetch();
@@ -128,7 +124,7 @@ export function useMerchantStats(merchantId: string | null, days: number = 30) {
   return { stats, loading, error, refetch };
 }
 
-export function useMerchantSync(merchantId: string | null) {
+export function useMerchantSync(enabled: boolean) {
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastSync, setLastSync] = useState<{
@@ -138,11 +134,11 @@ export function useMerchantSync(merchantId: string | null) {
   } | null>(null);
 
   const fetchSyncStatus = useCallback(async () => {
-    if (!merchantId) return;
+    if (!enabled) return;
 
     try {
       const response = await fetch(
-        `/api/merchant/sync?merchantId=${merchantId}`
+        "/api/merchant/sync"
       );
 
       if (!response.ok) {
@@ -158,15 +154,15 @@ export function useMerchantSync(merchantId: string | null) {
     } catch (err) {
       console.error("Error fetching sync status:", err);
     }
-  }, [merchantId]);
+  }, [enabled]);
 
   useEffect(() => {
     fetchSyncStatus();
   }, [fetchSyncStatus]);
 
   const triggerSync = async () => {
-    if (!merchantId) {
-      setError("Merchant ID is required");
+    if (!enabled) {
+      setError("Unauthorized");
       return { success: false };
     }
 
@@ -179,7 +175,7 @@ export function useMerchantSync(merchantId: string | null) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ merchantId }),
+        body: JSON.stringify({}),
       });
 
       const data = await response.json();
