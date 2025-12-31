@@ -6,6 +6,7 @@ import { slugify } from "@/lib/utils";
 import { getSallaConfig } from "@/lib/platform/config";
 import { buildExternalProductUrl } from "@/lib/platform/products";
 import { normalizeStoreUrl } from "@/lib/platform/store";
+import { fetchWithTimeout } from "@/lib/platform/fetch";
 
 interface SallaConfig {
   accessToken: string;
@@ -80,7 +81,7 @@ export class SallaService {
     }
 
     const url = this.buildPagedUrl(sallaConfig.productsApiUrl, page, perPage);
-    const response = await fetch(url, { headers: this.getHeaders() });
+    const response = await fetchWithTimeout(url, { headers: this.getHeaders() });
     if (!response.ok) {
       throw new Error(`Salla API error: ${response.status}`);
     }
@@ -99,7 +100,7 @@ export class SallaService {
     }
 
     const url = sallaConfig.productApiUrlTemplate.replace("{id}", productId);
-    const response = await fetch(url, { headers: this.getHeaders() });
+    const response = await fetchWithTimeout(url, { headers: this.getHeaders() });
     if (!response.ok) {
       if (response.status === 404) return null;
       throw new Error(`Salla API error: ${response.status}`);
@@ -115,7 +116,7 @@ export class SallaService {
       throw new Error("Missing SALLA_CATEGORIES_API_URL");
     }
 
-    const response = await fetch(sallaConfig.categoriesApiUrl, {
+    const response = await fetchWithTimeout(sallaConfig.categoriesApiUrl, {
       headers: this.getHeaders(),
     });
     if (!response.ok) {
@@ -139,7 +140,7 @@ export class SallaService {
       client_secret: sallaConfig.clientSecret,
     });
 
-    const response = await fetch(sallaConfig.tokenUrl, {
+    const response = await fetchWithTimeout(sallaConfig.tokenUrl, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body,

@@ -6,6 +6,7 @@ import { slugify } from "@/lib/utils";
 import { getZidConfig } from "@/lib/platform/config";
 import { buildExternalProductUrl } from "@/lib/platform/products";
 import { normalizeStoreUrl } from "@/lib/platform/store";
+import { fetchWithTimeout } from "@/lib/platform/fetch";
 
 interface ZidConfig {
   accessToken: string;
@@ -83,7 +84,7 @@ export class ZidService {
     perPage: number = 50
   ): Promise<ZidPaginatedResponse<ZidProduct>> {
     try {
-      const response = await fetch(
+      const response = await fetchWithTimeout(
         `${this.baseUrl}/managers/store/products?page=${page}&per_page=${perPage}`,
         {
           headers: this.getHeaders(),
@@ -117,7 +118,7 @@ export class ZidService {
    */
   async fetchProduct(productId: string): Promise<ZidProduct | null> {
     try {
-      const response = await fetch(
+      const response = await fetchWithTimeout(
         `${this.baseUrl}/managers/store/products/${productId}`,
         {
           headers: this.getHeaders(),
@@ -144,7 +145,7 @@ export class ZidService {
    */
   async fetchCategories(): Promise<ZidCategory[]> {
     try {
-      const response = await fetch(
+      const response = await fetchWithTimeout(
         `${this.baseUrl}/managers/store/categories`,
         {
           headers: this.getHeaders(),
@@ -173,9 +174,12 @@ export class ZidService {
     domain: string;
   } | null> {
     try {
-      const response = await fetch(`${this.baseUrl}/managers/account/profile`, {
-        headers: this.getHeaders(),
-      });
+      const response = await fetchWithTimeout(
+        `${this.baseUrl}/managers/account/profile`,
+        {
+          headers: this.getHeaders(),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Zid API error: ${response.status}`);
@@ -206,7 +210,7 @@ export class ZidService {
         client_secret: zidConfig.clientSecret,
       });
 
-      const response = await fetch(zidConfig.tokenUrl, {
+      const response = await fetchWithTimeout(zidConfig.tokenUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",

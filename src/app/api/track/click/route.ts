@@ -1,6 +1,6 @@
 // src/app/api/track/click/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { getRequestIp, rateLimit } from "@/lib/rateLimit";

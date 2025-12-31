@@ -345,6 +345,7 @@ model ClickTracking {
 
   // Keeps "first conversion happened" info (optional but useful)
   converted Boolean @default(false)
+  convertedCount Int @default(0)
 
   // conversionId might collide across platforms, so DON'T make it globally unique.
   conversionId    String?
@@ -358,6 +359,7 @@ model ClickTracking {
 
   clickedAt   DateTime      @default(now())
   convertedAt DateTime?
+  lastConvertedAt DateTime?
   expiresAt   DateTime
   FraudSignal FraudSignal[]
 
@@ -369,6 +371,7 @@ model ClickTracking {
   @@index([sessionId])
   @@index([clickedAt])
   @@index([converted])
+  @@index([convertedCount])
   @@index([expiresAt])
   @@index([conversionId])
 }
@@ -497,6 +500,7 @@ model WebhookLog {
 
   event   String
   orderId String
+  orderKey String?
 
   platform Platform?
   storeId  String?
@@ -509,6 +513,7 @@ model WebhookLog {
 
   @@index([idempotencyKey])
   @@index([orderId])
+  @@index([orderKey])
   @@index([merchantId])
   @@index([platform])
   @@index([storeId])

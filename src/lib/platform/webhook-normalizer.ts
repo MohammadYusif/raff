@@ -10,6 +10,7 @@ export interface NormalizedOrderWebhook {
   orderId: string;
   storeId: string;
   platform: "ZID" | "SALLA";
+  orderKey: string;
   total: number;
   currency: string;
   referrerCode: string | null;
@@ -38,6 +39,27 @@ const DELIVERED_ORDER_STATUSES = new Set([
   "completed",
   "complete",
   "fulfilled",
+]);
+
+const CANCELLED_PAYMENT_STATUSES = new Set([
+  "refunded",
+  "refund",
+  "voided",
+  "void",
+  "canceled",
+  "cancelled",
+  "cancel",
+]);
+
+const CANCELLED_ORDER_STATUSES = new Set([
+  "refunded",
+  "refund",
+  "voided",
+  "void",
+  "canceled",
+  "cancelled",
+  "cancel",
+  "rejected",
 ]);
 
 /**
@@ -76,6 +98,23 @@ export function isPaymentConfirmed(
     : false;
 
   return paymentPaid || orderDelivered;
+}
+
+export function isOrderCancelled(
+  paymentStatus: string | null,
+  orderStatus: string | null
+): boolean {
+  const normalizedPayment = normalizeStatus(paymentStatus);
+  const normalizedOrder = normalizeStatus(orderStatus);
+
+  const paymentCancelled = normalizedPayment
+    ? CANCELLED_PAYMENT_STATUSES.has(normalizedPayment)
+    : false;
+  const orderCancelled = normalizedOrder
+    ? CANCELLED_ORDER_STATUSES.has(normalizedOrder)
+    : false;
+
+  return paymentCancelled || orderCancelled;
 }
 
 /**
@@ -170,9 +209,23 @@ export function redactSensitiveFields(
 }
 
 /**
- * Generate idempotency key from webhook data
+ * Generate stable order key from webhook data
  */
-function generateIdempotencyKey(params: {
+function generateOrderKey(params: {
+  platform: string;
+  orderId: string;
+  storeId: string;
+}): string {
+  return crypto
+    .createHash("sha256")
+    .update(`${params.platform}:${params.storeId}:${params.orderId}`)
+    .digest("hex");
+}
+
+/**
+ * Generate delivery/event key from webhook data
+ */
+function generateEventKey(params: {
   platform: string;
   webhookId?: string | null;
   event: string;
@@ -180,8 +233,6 @@ function generateIdempotencyKey(params: {
   storeId: string;
   paymentStatus?: string | null;
   orderStatus?: string | null;
-  updatedAt?: Date | null;
-  createdAt?: Date | null;
 }): string {
   // If webhook provides its own ID, use that with platform prefix
   if (params.webhookId) {
@@ -199,7 +250,6 @@ function generateIdempotencyKey(params: {
     params.orderId,
     normalizeStatus(params.paymentStatus) ?? "unknown",
     normalizeStatus(params.orderStatus) ?? "unknown",
-    params.updatedAt?.toISOString() ?? params.createdAt?.toISOString() ?? "",
   ];
 
   return crypto.createHash("sha256").update(parts.join("|")).digest("hex");
@@ -241,10 +291,13 @@ export function normalizeZidOrderWebhook(
     dataStore?.id ??
     null;
 
-  if (!orderId || !storeId) {
+  const orderIdValue = toNullableString(orderId);
+  const storeIdValue = toNullableString(storeId);
+
+  if (!orderIdValue || !storeIdValue) {
     console.warn("Missing required fields in Zid webhook", {
-      hasOrderId: !!orderId,
-      hasStoreId: !!storeId,
+      hasOrderId: !!orderIdValue,
+      hasStoreId: !!storeIdValue,
       payloadKeys: Object.keys(payload),
       dataKeys: data ? Object.keys(data) : [],
     });
@@ -265,8 +318,8 @@ export function normalizeZidOrderWebhook(
   // Warn if total was defaulted and field wasn't actually 0
   if (total === 0 && totalRaw !== 0) {
     console.warn("Order total defaulted to 0, might be missing", {
-      storeId,
-      orderId,
+      storeId: storeIdValue,
+      orderId: orderIdValue,
       totalRaw,
       payloadKeys: Object.keys(payload),
     });
@@ -282,8 +335,8 @@ export function normalizeZidOrderWebhook(
 
   if (!currencyValue) {
     console.warn("Currency missing from webhook, defaulting to SAR", {
-      storeId,
-      orderId,
+      storeId: storeIdValue,
+      orderId: orderIdValue,
       payloadKeys: Object.keys(payload),
     });
   }
@@ -322,23 +375,28 @@ export function normalizeZidOrderWebhook(
 
   const updatedAt = parseDate(payload.updated_at ?? data?.updated_at ?? null);
 
-  const idempotencyKey = generateIdempotencyKey({
+  const orderKey = generateOrderKey({
+    platform: "zid",
+    orderId: orderIdValue,
+    storeId: storeIdValue,
+  });
+
+  const idempotencyKey = generateEventKey({
     platform: "zid",
     webhookId,
     event,
-    orderId: String(orderId),
-    storeId: String(storeId),
+    orderId: orderIdValue,
+    storeId: storeIdValue,
     paymentStatus,
     orderStatus,
-    updatedAt,
-    createdAt,
   });
 
   return {
     event,
-    orderId: String(orderId),
-    storeId: String(storeId),
+    orderId: orderIdValue,
+    storeId: storeIdValue,
     platform: "ZID",
+    orderKey,
     total,
     currency,
     referrerCode,
@@ -379,10 +437,13 @@ export function normalizeSallaOrderWebhook(
   const storeId =
     merchant?.id ?? dataMerchant?.id ?? payload.store_id ?? null;
 
-  if (!orderId || !storeId) {
+  const orderIdValue = toNullableString(orderId);
+  const storeIdValue = toNullableString(storeId);
+
+  if (!orderIdValue || !storeIdValue) {
     console.warn("Missing required fields in Salla webhook", {
-      hasOrderId: !!orderId,
-      hasStoreId: !!storeId,
+      hasOrderId: !!orderIdValue,
+      hasStoreId: !!storeIdValue,
       payloadKeys: Object.keys(payload),
       dataKeys: data ? Object.keys(data) : [],
     });
@@ -399,8 +460,8 @@ export function normalizeSallaOrderWebhook(
 
   if (total === 0 && totalRaw !== 0) {
     console.warn("Order total defaulted to 0, might be missing", {
-      storeId,
-      orderId,
+      storeId: storeIdValue,
+      orderId: orderIdValue,
       totalRaw,
       payloadKeys: Object.keys(payload),
     });
@@ -413,8 +474,8 @@ export function normalizeSallaOrderWebhook(
 
   if (!currencyValue) {
     console.warn("Currency missing from Salla webhook, defaulting to SAR", {
-      storeId,
-      orderId,
+      storeId: storeIdValue,
+      orderId: orderIdValue,
       payloadKeys: Object.keys(payload),
     });
   }
@@ -434,23 +495,28 @@ export function normalizeSallaOrderWebhook(
   const createdAt = parseDate(data?.created_at ?? dataDate?.created);
   const updatedAt = parseDate(data?.updated_at ?? dataDate?.updated);
 
-  const idempotencyKey = generateIdempotencyKey({
+  const orderKey = generateOrderKey({
+    platform: "salla",
+    orderId: orderIdValue,
+    storeId: storeIdValue,
+  });
+
+  const idempotencyKey = generateEventKey({
     platform: "salla",
     webhookId,
     event,
-    orderId: String(orderId),
-    storeId: String(storeId),
+    orderId: orderIdValue,
+    storeId: storeIdValue,
     paymentStatus,
     orderStatus,
-    updatedAt,
-    createdAt,
   });
 
   return {
     event,
-    orderId: String(orderId),
-    storeId: String(storeId),
+    orderId: orderIdValue,
+    storeId: storeIdValue,
     platform: "SALLA",
+    orderKey,
     total,
     currency,
     referrerCode,
@@ -487,18 +553,21 @@ export async function logProcessedWebhook(
     idempotencyKey: string;
     event: string;
     orderId: string;
+    orderKey: string;
     platform: "ZID" | "SALLA";
     storeId: string;
     merchantId: string;
     processed: boolean;
     error?: string;
-    rawPayload?: Record<string, unknown>;
+    rawPayload?: Record<string, unknown> | string;
   },
   prisma: PrismaClient
 ): Promise<void> {
   let sanitizedPayload: string | null = null;
 
-  if (data.rawPayload) {
+  if (typeof data.rawPayload === "string") {
+    sanitizedPayload = data.rawPayload;
+  } else if (data.rawPayload) {
     const sanitized = redactSensitiveFields(data.rawPayload);
     if (sanitized) {
       try {
@@ -515,6 +584,7 @@ export async function logProcessedWebhook(
       idempotencyKey: data.idempotencyKey,
       event: data.event,
       orderId: data.orderId,
+      orderKey: data.orderKey,
       platform: data.platform,
       storeId: data.storeId,
       merchantId: data.merchantId,
@@ -526,6 +596,7 @@ export async function logProcessedWebhook(
     update: {
       processed: data.processed,
       error: data.error ?? null,
+      orderKey: data.orderKey,
       processedAt: new Date(),
     },
   });
@@ -535,13 +606,23 @@ export async function logProcessedWebhook(
  * Config-driven signature verification
  */
 export interface SignatureConfig {
-  mode: "plain" | "hmac-sha256";
+  mode: "plain" | "sha256" | "hmac-sha256";
   secret: string;
 }
 
-function normalizeSignatureHeader(sig: string): string {
-  const s = sig.trim();
-  return s.startsWith("sha256=") ? s.slice("sha256=".length) : s;
+function normalizeSignatureHeader(
+  signature: string,
+  mode: SignatureConfig["mode"]
+): string {
+  const trimmed = signature.trim();
+  if (mode === "plain") {
+    return trimmed;
+  }
+
+  const normalized = trimmed.toLowerCase();
+  return normalized.startsWith("sha256=")
+    ? normalized.slice("sha256=".length)
+    : normalized;
 }
 
 export function verifySignature(
@@ -549,30 +630,57 @@ export function verifySignature(
   config: SignatureConfig,
   rawBody: string
 ): boolean {
-  const provided = normalizeSignatureHeader(signature);
+  const provided = normalizeSignatureHeader(signature, config.mode);
+  const rawBuffer = Buffer.from(rawBody, "utf8");
+  const secretBuffer = Buffer.from(config.secret, "utf8");
 
   if (config.mode === "plain") {
     return timingSafeEqual(provided, config.secret);
   }
 
-  if (config.mode === "hmac-sha256") {
+  if (config.mode === "sha256") {
     const expectedHex = crypto
-      .createHmac("sha256", config.secret)
-      .update(rawBody)
+      .createHash("sha256")
+      .update(Buffer.concat([secretBuffer, rawBuffer]))
       .digest("hex");
 
-    return timingSafeEqual(provided, expectedHex);
+    return timingSafeEqualHex(provided, expectedHex);
+  }
+
+  if (config.mode === "hmac-sha256") {
+    const expectedHex = crypto
+      .createHmac("sha256", secretBuffer)
+      .update(rawBuffer)
+      .digest("hex");
+
+    return timingSafeEqualHex(provided, expectedHex);
   }
 
   return false;
 }
 
 function timingSafeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
+  const aBuffer = Buffer.from(a, "utf8");
+  const bBuffer = Buffer.from(b, "utf8");
 
-  let result = 0;
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  if (aBuffer.length !== bBuffer.length) return false;
+  return crypto.timingSafeEqual(aBuffer, bBuffer);
+}
+
+function timingSafeEqualHex(aHex: string, bHex: string): boolean {
+  const aBuffer = hexToBuffer(aHex);
+  const bBuffer = hexToBuffer(bHex);
+  if (!aBuffer || !bBuffer) return false;
+  if (aBuffer.length !== bBuffer.length) return false;
+  return crypto.timingSafeEqual(aBuffer, bBuffer);
+}
+
+function hexToBuffer(hex: string): Buffer | null {
+  if (!hex || hex.length % 2 !== 0) {
+    return null;
   }
-  return result === 0;
+  if (!/^[0-9a-f]+$/i.test(hex)) {
+    return null;
+  }
+  return Buffer.from(hex, "hex");
 }

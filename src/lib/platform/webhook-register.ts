@@ -6,6 +6,13 @@ type RegisterResult =
   | { status: "registered"; webhooksCreated: number; response?: unknown }
   | { status: "partial"; webhooksCreated: number; errors: string[] };
 
+function appendTokenToUrl(url: string, token?: string): string {
+  if (!token) return url;
+  const parsed = new URL(url);
+  parsed.searchParams.set("token", token);
+  return parsed.toString();
+}
+
 async function postJson(
   url: string,
   headers: Record<string, string>,
@@ -39,8 +46,10 @@ export async function registerZidWebhooks(params: {
   managerToken?: string | null;
 }): Promise<RegisterResult> {
   const config = getZidConfig();
-  const callbackUrl =
-    config.webhook.callbackUrl || `${config.appBaseUrl}/api/zid/webhook`;
+  const callbackUrl = appendTokenToUrl(
+    config.webhook.callbackUrl || `${config.appBaseUrl}/api/zid/webhook`,
+    process.env.ZID_WEBHOOK_TOKEN
+  );
 
   // Validation
   if (!config.webhook.createUrl) {

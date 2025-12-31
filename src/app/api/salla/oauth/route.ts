@@ -1,5 +1,6 @@
 // src/app/api/salla/oauth/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { MerchantStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getSallaConfig } from "@/lib/platform/config";
 import { verifyOAuthState } from "@/lib/platform/oauth";
@@ -65,6 +66,25 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       { error: "Salla access token missing" },
       { status: 400 }
+    );
+  }
+
+  const merchant = await prisma.merchant.findUnique({
+    where: { id: payload.merchantId },
+    select: { status: true },
+  });
+
+  if (!merchant) {
+    return NextResponse.json({ error: "Merchant not found" }, { status: 404 });
+  }
+
+  if (
+    merchant.status === MerchantStatus.REJECTED ||
+    merchant.status === MerchantStatus.SUSPENDED
+  ) {
+    return NextResponse.json(
+      { error: "Merchant is disabled" },
+      { status: 403 }
     );
   }
 

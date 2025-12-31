@@ -11,6 +11,7 @@ const TEST_DATA = {
     storeUrl: "test-store.zid.sa",
     productId: "56367672",
     trackingId: "raff_test_zid_001",
+    expiredTrackingId: "raff_test_zid_expired",
   },
   salla: {
     merchantEmail: "test-salla@raff.local",
@@ -19,11 +20,16 @@ const TEST_DATA = {
     storeUrl: "test-store.salla.sa",
     productId: "987654321",
     trackingId: "raff_test_salla_001",
+    expiredTrackingId: "raff_test_salla_expired",
   },
 };
 
 function getExpiryDate(): Date {
   return new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+}
+
+function getExpiredDate(): Date {
+  return new Date(Date.now() - 60 * 60 * 1000);
 }
 
 async function seedTestData() {
@@ -174,6 +180,41 @@ async function seedTestData() {
   });
   console.log("Created Zid click tracking:", zidTracking.trackingId);
 
+  const zidExpiredTracking = await prisma.clickTracking.upsert({
+    where: { trackingId: TEST_DATA.zid.expiredTrackingId },
+    update: {
+      productId: zidProduct.id,
+      merchantId: zidMerchant.id,
+      platform: "ZID",
+      destinationUrl: `https://${TEST_DATA.zid.storeUrl}/products/${TEST_DATA.zid.productId}?ref=raff_test`,
+      clickedAt: new Date(),
+      expiresAt: getExpiredDate(),
+      converted: false,
+      convertedAt: null,
+      conversionId: null,
+      conversionValue: null,
+      commissionValue: null,
+      commissionRate: zidMerchant.commissionRate,
+      ipAddress: "127.0.0.1",
+      userAgent: "Mozilla/5.0 Test",
+      referrerUrl: null,
+      sessionId: null,
+    },
+    create: {
+      trackingId: TEST_DATA.zid.expiredTrackingId,
+      productId: zidProduct.id,
+      merchantId: zidMerchant.id,
+      platform: "ZID",
+      destinationUrl: `https://${TEST_DATA.zid.storeUrl}/products/${TEST_DATA.zid.productId}?ref=raff_test`,
+      clickedAt: new Date(),
+      expiresAt: getExpiredDate(),
+      converted: false,
+      ipAddress: "127.0.0.1",
+      userAgent: "Mozilla/5.0 Test",
+    },
+  });
+  console.log("Created Zid expired click tracking:", zidExpiredTracking.trackingId);
+
   // Create test click tracking for Salla
   const sallaTracking = await prisma.clickTracking.upsert({
     where: { trackingId: TEST_DATA.salla.trackingId },
@@ -210,17 +251,57 @@ async function seedTestData() {
   });
   console.log("Created Salla click tracking:", sallaTracking.trackingId);
 
+  const sallaExpiredTracking = await prisma.clickTracking.upsert({
+    where: { trackingId: TEST_DATA.salla.expiredTrackingId },
+    update: {
+      productId: sallaProduct.id,
+      merchantId: sallaMerchant.id,
+      platform: "SALLA",
+      destinationUrl: `https://${TEST_DATA.salla.storeUrl}/product/${TEST_DATA.salla.productId}?ref=raff_test`,
+      clickedAt: new Date(),
+      expiresAt: getExpiredDate(),
+      converted: false,
+      convertedAt: null,
+      conversionId: null,
+      conversionValue: null,
+      commissionValue: null,
+      commissionRate: sallaMerchant.commissionRate,
+      ipAddress: "127.0.0.1",
+      userAgent: "Mozilla/5.0 Test",
+      referrerUrl: null,
+      sessionId: null,
+    },
+    create: {
+      trackingId: TEST_DATA.salla.expiredTrackingId,
+      productId: sallaProduct.id,
+      merchantId: sallaMerchant.id,
+      platform: "SALLA",
+      destinationUrl: `https://${TEST_DATA.salla.storeUrl}/product/${TEST_DATA.salla.productId}?ref=raff_test`,
+      clickedAt: new Date(),
+      expiresAt: getExpiredDate(),
+      converted: false,
+      ipAddress: "127.0.0.1",
+      userAgent: "Mozilla/5.0 Test",
+    },
+  });
+  console.log(
+    "Created Salla expired click tracking:",
+    sallaExpiredTracking.trackingId
+  );
+
   console.log("\nTest Data Summary:");
   console.log("==========================================");
   console.log("Zid Merchant ID:", zidMerchant.id);
   console.log("Zid Store ID:", zidMerchant.zidStoreId);
   console.log("Zid Product ID:", zidProduct.zidProductId);
   console.log("Zid Tracking ID:", zidTracking.trackingId);
+  console.log("Zid Expired Tracking ID:", zidExpiredTracking.trackingId);
   console.log("");
   console.log("Salla Merchant ID:", sallaMerchant.id);
   console.log("Salla Store ID:", sallaMerchant.sallaStoreId);
   console.log("Salla Product ID:", sallaProduct.sallaProductId);
   console.log("Salla Tracking ID:", sallaTracking.trackingId);
+  console.log("Salla Expired Tracking ID:", sallaExpiredTracking.trackingId);
   console.log("==========================================\n");
 
   return {
@@ -229,12 +310,14 @@ async function seedTestData() {
       storeId: zidMerchant.zidStoreId!,
       productId: zidProduct.zidProductId!,
       trackingId: zidTracking.trackingId,
+      expiredTrackingId: zidExpiredTracking.trackingId,
     },
     salla: {
       merchantId: sallaMerchant.id,
       storeId: sallaMerchant.sallaStoreId!,
       productId: sallaProduct.sallaProductId!,
       trackingId: sallaTracking.trackingId,
+      expiredTrackingId: sallaExpiredTracking.trackingId,
     },
   };
 }
