@@ -1,0 +1,50 @@
+// src/lib/hooks/useProductClick.ts
+"use client";
+
+import { useState } from "react";
+
+interface TrackClickResponse {
+  success: boolean;
+  trackingId: string;
+  trackingUrl: string;
+  expiresAt: string;
+}
+
+export function useProductClick() {
+  const [isTracking, setIsTracking] = useState(false);
+
+  const trackAndRedirect = async (productId: string, userId?: string) => {
+    setIsTracking(true);
+
+    try {
+      const response = await fetch("/api/track/click", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productId,
+          userId: userId || null,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to track click");
+      }
+
+      const data: TrackClickResponse = await response.json();
+
+      // Redirect to the tracking URL (which redirects to merchant store)
+      window.location.href = data.trackingUrl;
+    } catch (error) {
+      console.error("Click tracking error:", error);
+      // On error, still redirect but without tracking
+      // You could add a fallback here
+      alert("Failed to track click. Please try again.");
+    } finally {
+      setIsTracking(false);
+    }
+  };
+
+  return { trackAndRedirect, isTracking };
+}

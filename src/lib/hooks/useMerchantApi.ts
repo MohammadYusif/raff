@@ -1,7 +1,7 @@
 // src/lib/hooks/useMerchantApi.ts
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 interface MerchantProfile {
   id: string;
@@ -98,7 +98,7 @@ export function useMerchantStats(merchantId: string | null, days: number = 30) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const refetch = async () => {
+  const refetch = useCallback(async () => {
     if (!merchantId) return;
 
     try {
@@ -119,11 +119,11 @@ export function useMerchantStats(merchantId: string | null, days: number = 30) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [merchantId, days]);
 
   useEffect(() => {
     refetch();
-  }, [merchantId, days]);
+  }, [refetch]);
 
   return { stats, loading, error, refetch };
 }
@@ -137,7 +137,7 @@ export function useMerchantSync(merchantId: string | null) {
     canSyncNow: boolean;
   } | null>(null);
 
-  const fetchSyncStatus = async () => {
+  const fetchSyncStatus = useCallback(async () => {
     if (!merchantId) return;
 
     try {
@@ -158,11 +158,11 @@ export function useMerchantSync(merchantId: string | null) {
     } catch (err) {
       console.error("Error fetching sync status:", err);
     }
-  };
+  }, [merchantId]);
 
   useEffect(() => {
     fetchSyncStatus();
-  }, [merchantId]);
+  }, [fetchSyncStatus]);
 
   const triggerSync = async () => {
     if (!merchantId) {

@@ -1,10 +1,10 @@
 // src/shared/components/SearchInput.tsx
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { Search, X, TrendingUp, Loader2 } from "lucide-react";
+import { Search, X, Loader2 } from "lucide-react";
 import { Input } from "@/shared/components/ui";
 import { cn, formatPrice, debounce } from "@/lib/utils";
 import Link from "next/link";
@@ -71,30 +71,34 @@ export function SearchInput({
   }, []);
 
   // Fetch suggestions with debounce
-  const fetchSuggestions = debounce(async (searchQuery: string) => {
-    if (!searchQuery.trim() || !showSuggestions) {
-      setSuggestions([]);
-      setIsLoading(false);
-      return;
-    }
+  const fetchSuggestions = useMemo(
+    () =>
+      debounce(async (searchQuery: string) => {
+        if (!searchQuery.trim() || !showSuggestions) {
+          setSuggestions([]);
+          setIsLoading(false);
+          return;
+        }
 
-    setIsLoading(true);
+        setIsLoading(true);
 
-    try {
-      const response = await fetch(
-        `/api/search?q=${encodeURIComponent(searchQuery)}&mode=suggestions&limit=5`
-      );
-      const data = await response.json();
+        try {
+          const response = await fetch(
+            `/api/search?q=${encodeURIComponent(searchQuery)}&mode=suggestions&limit=5`
+          );
+          const data = await response.json();
 
-      setSuggestions(data.suggestions || []);
-      setIsOpen(true);
-    } catch (error) {
-      console.error("Failed to fetch suggestions:", error);
-      setSuggestions([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, 300);
+          setSuggestions(data.suggestions || []);
+          setIsOpen(true);
+        } catch (error) {
+          console.error("Failed to fetch suggestions:", error);
+          setSuggestions([]);
+        } finally {
+          setIsLoading(false);
+        }
+      }, 300),
+    [showSuggestions]
+  );
 
   useEffect(() => {
     if (query.trim().length > 0) {
@@ -104,7 +108,7 @@ export function SearchInput({
       setIsOpen(false);
       setIsLoading(false);
     }
-  }, [query]);
+  }, [query, fetchSuggestions]);
 
   // Auto-submit after user stops typing (for search page)
   useEffect(() => {

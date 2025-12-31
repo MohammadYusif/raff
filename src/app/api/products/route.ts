@@ -3,6 +3,7 @@
 // PURPOSE: List all products with filtering, search, and pagination
 
 import { NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
       : undefined;
 
     // Build where clause
-    const where: any = {
+    const where: Prisma.ProductWhereInput = {
       isActive: true,
       inStock: true,
     };
@@ -63,7 +64,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build orderBy clause
-    let orderBy: any = {};
+    let orderBy: Prisma.ProductOrderByWithRelationInput = {};
     switch (sortBy) {
       case "trending":
         orderBy = { trendingScore: "desc" };

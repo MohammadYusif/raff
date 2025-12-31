@@ -1,5 +1,6 @@
 // src/app/auth/login/page.tsx
 import { Metadata } from "next";
+import Image from "next/image";
 import { LoginForm } from "./LoginForm";
 import { Container, Card, CardContent } from "@/shared/components/ui";
 import Link from "next/link";
@@ -18,9 +19,11 @@ export default function LoginPage() {
             {/* Logo */}
             <div className="mb-8 text-center">
               <Link href="/">
-                <img
+                <Image
                   src="/logo.png"
                   alt="Raff Logo"
+                  width={160}
+                  height={40}
                   className="mx-auto h-auto w-40 object-contain"
                 />
               </Link>
@@ -37,7 +40,7 @@ export default function LoginPage() {
 
             {/* Register Link */}
             <div className="mt-6 text-center text-sm text-raff-neutral-600">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <Link
                 href="/auth/register"
                 className="font-semibold text-raff-primary hover:underline"

@@ -30,7 +30,7 @@ export function getLocale(): string {
     if (stored) {
       return stored;
     }
-  } catch (e) {
+  } catch {
     // localStorage might not be available
   }
 
@@ -55,7 +55,7 @@ export function setLocale(locale: string): void {
   // Save to localStorage as backup
   try {
     localStorage.setItem(LOCALE_STORAGE_KEY, locale);
-  } catch (e) {
+  } catch {
     // localStorage might not be available
   }
 }

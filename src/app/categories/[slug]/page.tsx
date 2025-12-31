@@ -37,7 +37,7 @@ export async function generateMetadata({
       title: `${category.nameAr || category.name} - Raff`,
       description: category.descriptionAr || category.description || "",
     };
-  } catch (error) {
+  } catch {
     return {
       title: "Category - Raff",
     };
@@ -68,12 +68,11 @@ export default async function CategoryPage({
     "price_low",
     "price_high",
   ] as const;
-  const sortBy = validSortOptions.includes(searchParamsResolved.sortBy as any)
-    ? (searchParamsResolved.sortBy as
-        | "trending"
-        | "newest"
-        | "price_low"
-        | "price_high")
+  type SortOption = (typeof validSortOptions)[number];
+  const isSortOption = (value?: string): value is SortOption =>
+    !!value && validSortOptions.includes(value as SortOption);
+  const sortBy = isSortOption(searchParamsResolved.sortBy)
+    ? searchParamsResolved.sortBy
     : undefined;
 
   // Fetch products for this category

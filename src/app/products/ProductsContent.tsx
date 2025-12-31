@@ -21,25 +21,25 @@ import { formatPrice } from "@/lib/utils";
 interface Product {
   id: string;
   title: string;
-  titleAr?: string;
+  titleAr: string | null;
   slug: string;
   price: number;
-  originalPrice?: number;
+  originalPrice: number | null;
   trendingScore: number;
   merchant: {
     name: string;
-    nameAr?: string;
+    nameAr: string | null;
   };
   category: {
     name: string;
-    nameAr?: string;
+    nameAr: string | null;
   } | null;
 }
 
 interface Category {
   id: string;
   name: string;
-  nameAr?: string;
+  nameAr: string | null;
   slug: string;
   _count: {
     products: number;
@@ -106,9 +106,7 @@ export function ProductsContent({
   // ✅ Sync input with URL when URL changes (e.g., back button)
   useEffect(() => {
     const urlSearch = urlSearchParams.get("search") || "";
-    if (urlSearch !== searchQuery) {
-      setSearchQuery(urlSearch);
-    }
+    setSearchQuery((prev) => (prev === urlSearch ? prev : urlSearch));
   }, [urlSearchParams]);
 
   const handleSearch = (e: React.FormEvent) => {

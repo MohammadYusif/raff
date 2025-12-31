@@ -8,18 +8,17 @@ import { useTranslations, useLocale } from "next-intl";
 import { useLocale as useLocaleHook } from "@/core/i18n";
 import { Button } from "@/shared/components/ui";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 import {
   LayoutDashboard,
   Package,
   BarChart3,
   Settings,
-  Store,
   LogOut,
   Menu,
   X,
   Globe,
   Home,
-  TrendingUp,
   ShoppingBag,
 } from "lucide-react";
 
@@ -54,7 +53,6 @@ const menuItems = [
 export function MerchantSidebar() {
   const pathname = usePathname();
   const t = useTranslations("merchantSidebar");
-  const commonT = useTranslations("common");
   const currentLocale = useLocale();
   const { switchLocale } = useLocaleHook();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -92,9 +90,11 @@ export function MerchantSidebar() {
         {/* Logo */}
         <div className="flex h-16 items-center justify-center border-b border-raff-neutral-200 px-6">
           <Link href="/" className="flex items-center">
-            <img
+            <Image
               src="/logo.png"
               alt="Raff Logo"
+              width={128}
+              height={32}
               className="h-auto w-32 object-contain"
             />
           </Link>

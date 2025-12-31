@@ -18,7 +18,8 @@ import { Search, ExternalLink, Store, Package } from "lucide-react";
 import { ArrowForward, ArrowBackward } from "@/core/i18n";
 import { formatPrice } from "@/lib/utils";
 import { TrendingUp } from "lucide-react";
-import { getMerchantStoreUrl } from "@/lib/platform/store";
+import { getMerchantStoreUrlFromObject } from "@/lib/platform/store";
+import type { MerchantWithCount } from "@/types";
 
 interface Product {
   id: string;
@@ -34,22 +35,6 @@ interface Product {
   } | null;
 }
 
-interface Merchant {
-  id: string;
-  name: string;
-  nameAr: string | null;
-  description: string | null;
-  descriptionAr: string | null;
-  logo: string | null;
-  sallaStoreUrl: string | null;
-  zidStoreUrl: string | null;
-  phone: string | null;
-  email: string;
-  _count: {
-    products: number;
-  };
-}
-
 interface Pagination {
   page: number;
   limit: number;
@@ -60,7 +45,7 @@ interface Pagination {
 }
 
 interface MerchantDetailContentProps {
-  merchant: Merchant;
+  merchant: MerchantWithCount;
   initialProducts: Product[];
   pagination: Pagination;
 }
@@ -87,7 +72,7 @@ export function MerchantDetailContent({
     locale === "ar"
       ? merchant.descriptionAr || merchant.description
       : merchant.description;
-  const storeUrl = getMerchantStoreUrl(merchant);
+  const storeUrl = getMerchantStoreUrlFromObject(merchant);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

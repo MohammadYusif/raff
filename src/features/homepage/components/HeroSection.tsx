@@ -3,10 +3,10 @@
 
 import { useTranslations } from "next-intl";
 import { Container } from "@/shared/components/ui";
-import { ArrowForward } from "@/core/i18n";
 
 export function HeroSection() {
   const t = useTranslations("homepage.hero");
+  const statsT = useTranslations("homepage.stats");
 
   return (
     <section className="relative overflow-hidden from-raff-neutral-50 via-white to-raff-neutral-50 py-20 sm:py-32">
@@ -40,7 +40,7 @@ export function HeroSection() {
                   {stat.value}
                 </div>
                 <div className="mt-1 text-sm text-raff-neutral-600">
-                  {useTranslations("homepage.stats")(stat.label)}
+                  {statsT(stat.label)}
                 </div>
               </div>
             ))}

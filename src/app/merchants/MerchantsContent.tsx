@@ -13,24 +13,11 @@ import {
 } from "@/shared/components/ui";
 import { ArrowForward, ArrowBackward } from "@/core/i18n";
 import { Store, ExternalLink } from "lucide-react";
-import { getMerchantStoreUrl } from "@/lib/platform/store";
-
-interface Merchant {
-  id: string;
-  name: string;
-  nameAr: string | null;
-  description: string | null;
-  descriptionAr: string | null;
-  logo: string | null;
-  sallaStoreUrl: string | null;
-  zidStoreUrl: string | null;
-  _count: {
-    products: number;
-  };
-}
+import { getMerchantStoreUrlFromObject } from "@/lib/platform/store";
+import type { MerchantWithCount } from "@/types";
 
 interface MerchantsContentProps {
-  merchants: Merchant[];
+  merchants: MerchantWithCount[];
 }
 
 export function MerchantsContent({ merchants }: MerchantsContentProps) {
@@ -72,7 +59,7 @@ export function MerchantsContent({ merchants }: MerchantsContentProps) {
                   locale === "ar"
                     ? merchant.descriptionAr || merchant.description
                     : merchant.description;
-                const storeUrl = getMerchantStoreUrl(merchant);
+                const storeUrl = getMerchantStoreUrlFromObject(merchant);
 
                 return (
                   <Card

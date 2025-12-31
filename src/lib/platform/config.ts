@@ -1,6 +1,13 @@
 // src/lib/platform/config.ts
 
 type OptionalString = string | undefined | null;
+type WebhookSignatureMode = "plain" | "hmac-sha256";
+
+type WebhookConfig = {
+  secret?: string;
+  header?: string;
+  signatureMode?: WebhookSignatureMode;
+};
 
 function requireEnv(name: string, fallback?: OptionalString): string {
   const value = process.env[name] || fallback;
@@ -83,5 +90,25 @@ export function getSallaConfig() {
     productsApiUrl: process.env.SALLA_PRODUCTS_API_URL,
     productApiUrlTemplate: process.env.SALLA_PRODUCT_API_URL_TEMPLATE,
     categoriesApiUrl: process.env.SALLA_CATEGORIES_API_URL,
+  };
+}
+
+export function getZidWebhookConfig(): WebhookConfig {
+  return {
+    secret: process.env.ZID_WEBHOOK_SECRET,
+    header: process.env.ZID_WEBHOOK_HEADER,
+    signatureMode:
+      (process.env.ZID_WEBHOOK_SIGNATURE_MODE as WebhookSignatureMode) ??
+      "plain",
+  };
+}
+
+export function getSallaWebhookConfig(): WebhookConfig {
+  return {
+    secret: process.env.SALLA_WEBHOOK_SECRET,
+    header: process.env.SALLA_WEBHOOK_HEADER,
+    signatureMode:
+      (process.env.SALLA_WEBHOOK_SIGNATURE_MODE as WebhookSignatureMode) ??
+      "plain",
   };
 }

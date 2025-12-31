@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useTranslations, useLocale } from "next-intl";
 import { useLocale as useLocaleHook } from "@/core/i18n";
 import { Button, Container } from "@/shared/components/ui";
@@ -30,9 +31,11 @@ export function Navbar() {
         <div className="flex h-16 items-center justify-between gap-4">
           {/* Logo */}
           <Link href="/" className="flex shrink-0 items-center py-2">
-            <img
+            <Image
               src="/logo.png"
               alt="Raff Logo"
+              width={144}
+              height={36}
               className="h-auto w-28 object-contain sm:w-32 md:w-36"
             />
           </Link>

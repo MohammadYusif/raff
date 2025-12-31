@@ -33,9 +33,10 @@ export default async function ProductsPage({
     "price_low",
     "price_high",
   ] as const;
-  const sortBy = validSortOptions.includes(params.sortBy as any)
-    ? (params.sortBy as "trending" | "newest" | "price_low" | "price_high")
-    : undefined;
+  type SortOption = (typeof validSortOptions)[number];
+  const isSortOption = (value?: string): value is SortOption =>
+    !!value && validSortOptions.includes(value as SortOption);
+  const sortBy = isSortOption(params.sortBy) ? params.sortBy : undefined;
 
   // Fetch products with filters
   const { products, pagination } = await fetchProducts({

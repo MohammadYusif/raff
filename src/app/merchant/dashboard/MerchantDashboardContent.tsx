@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Container,
   Card,
@@ -92,7 +93,7 @@ function useMerchantStats(merchantId: string | null, days = 30) {
           throw new Error(`Failed to fetch stats: ${response.status}`);
         }
 
-        const data = await response.json();
+        const data = (await response.json()) as { stats?: MerchantStats };
         const apiStats = data?.stats;
 
         if (!apiStats) return;
@@ -105,7 +106,7 @@ function useMerchantStats(merchantId: string | null, days = 30) {
           totalRevenue: apiStats.totalRevenue ?? 0,
           conversionRate: apiStats.conversionRate ?? 0,
           ordersGrowth: apiStats.ordersGrowth ?? 0,
-          topProducts: (apiStats.topProducts ?? []).map((product: any) => ({
+          topProducts: (apiStats.topProducts ?? []).map((product) => ({
             id: product.id,
             title: product.title,
             titleAr: product.titleAr ?? null,
@@ -113,11 +114,12 @@ function useMerchantStats(merchantId: string | null, days = 30) {
             orders: product.orders ?? 0,
           })),
         });
-      } catch (err: any) {
-        if (err?.name !== "AbortError") {
-          console.error("Failed to load merchant stats:", err);
-          setError(err);
+      } catch (err) {
+        if (err instanceof Error && err.name === "AbortError") {
+          return;
         }
+        console.error("Failed to load merchant stats:", err);
+        setError(err instanceof Error ? err : new Error("Unknown error"));
       } finally {
         setLoading(false);
       }
@@ -199,9 +201,11 @@ export function MerchantDashboardContent() {
                         disabled={!!connectingPlatform}
                         className="gap-2"
                       >
-                        <img
+                        <Image
                           src="/salla-icon.png"
                           alt="Salla"
+                          width={20}
+                          height={20}
                           className="h-5 w-5"
                           onError={(e) => {
                             e.currentTarget.style.display = "none";
@@ -226,9 +230,11 @@ export function MerchantDashboardContent() {
                         disabled={!!connectingPlatform}
                         className="gap-2"
                       >
-                        <img
+                        <Image
                           src="/zid-icon.png"
                           alt="Zid"
+                          width={20}
+                          height={20}
                           className="h-5 w-5"
                           onError={(e) => {
                             e.currentTarget.style.display = "none";

@@ -1,7 +1,4 @@
 // src/lib/platform/store.ts
-import type { Merchant } from "@prisma/client";
-
-type MerchantStoreFields = Pick<Merchant, "zidStoreUrl" | "sallaStoreUrl">;
 
 export function normalizeStoreUrl(value?: string | null): string | null {
   if (!value) return null;
@@ -13,9 +10,23 @@ export function normalizeStoreUrl(value?: string | null): string | null {
   return `https://${trimmed}`;
 }
 
-export function getMerchantStoreUrl(merchant: MerchantStoreFields): string | null {
-  return (
-    normalizeStoreUrl(merchant.zidStoreUrl) ??
-    normalizeStoreUrl(merchant.sallaStoreUrl)
-  );
+/**
+ * Get the merchant's store URL (prioritizes Zid over Salla)
+ */
+export function getMerchantStoreUrl(
+  sallaStoreUrl: string | null,
+  zidStoreUrl: string | null
+): string | null {
+  // Prioritize Zid store URL, fallback to Salla
+  return zidStoreUrl || sallaStoreUrl || null;
+}
+
+/**
+ * Get the merchant's store URL from merchant object
+ */
+export function getMerchantStoreUrlFromObject(merchant: {
+  sallaStoreUrl: string | null;
+  zidStoreUrl: string | null;
+}): string | null {
+  return merchant.zidStoreUrl || merchant.sallaStoreUrl || null;
 }

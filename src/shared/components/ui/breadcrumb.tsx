@@ -9,7 +9,7 @@ const Breadcrumb = React.forwardRef<
     separator?: React.ReactNode;
   }
 >(({ className, ...props }, ref) => (
-  <nav ref={ref} aria-label="breadcrumb" {...props} />
+  <nav ref={ref} aria-label="breadcrumb" className={className} {...props} />
 ));
 Breadcrumb.displayName = "Breadcrumb";
 

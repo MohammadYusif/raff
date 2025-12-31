@@ -29,7 +29,7 @@ export async function generateMetadata({
         images: product.thumbnail ? [product.thumbnail] : [],
       },
     };
-  } catch (error) {
+  } catch {
     return {
       title: "Product Not Found - Raff",
     };
@@ -45,7 +45,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   try {
     const data = await fetchProduct(slug);
     product = data.product;
-  } catch (error) {
+  } catch {
     notFound();
   }
 

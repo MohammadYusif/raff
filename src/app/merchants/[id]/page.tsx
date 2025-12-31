@@ -31,7 +31,7 @@ export async function generateMetadata({
       title: `${merchant.nameAr || merchant.name} - Raff`,
       description: merchant.descriptionAr || merchant.description || "",
     };
-  } catch (error) {
+  } catch {
     return {
       title: "Merchant Not Found - Raff",
     };
@@ -51,7 +51,7 @@ export default async function MerchantPage({
   try {
     const data = await fetchMerchant(id);
     merchant = data.merchant;
-  } catch (error) {
+  } catch {
     notFound();
   }
 
@@ -62,12 +62,11 @@ export default async function MerchantPage({
     "price_low",
     "price_high",
   ] as const;
-  const sortBy = validSortOptions.includes(searchParamsResolved.sortBy as any)
-    ? (searchParamsResolved.sortBy as
-        | "trending"
-        | "newest"
-        | "price_low"
-        | "price_high")
+  type SortOption = (typeof validSortOptions)[number];
+  const isSortOption = (value?: string): value is SortOption =>
+    !!value && validSortOptions.includes(value as SortOption);
+  const sortBy = isSortOption(searchParamsResolved.sortBy)
+    ? searchParamsResolved.sortBy
     : undefined;
 
   // Fetch products for this merchant

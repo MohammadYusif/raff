@@ -1,5 +1,6 @@
 // src/lib/auth.ts
-import { NextAuthOptions } from "next-auth";
+import type { NextAuthOptions, User } from "next-auth";
+import type { Adapter } from "next-auth/adapters";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
@@ -29,7 +30,7 @@ declare module "next-auth/jwt" {
 }
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma) as any,
+  adapter: PrismaAdapter(prisma) as Adapter,
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -57,20 +58,26 @@ export const authOptions: NextAuthOptions = {
             email: true,
             name: true,
             nameAr: true,
-            password: true,
             status: true,
             isActive: true,
             logo: true,
           },
         });
 
-        if (!merchant || !merchant.password) {
+        const userRecord = await prisma.user.findUnique({
+          where: { email: credentials.email },
+          select: {
+            password: true,
+          },
+        });
+
+        if (!merchant || !userRecord?.password) {
           throw new Error("Invalid email or password");
         }
 
         const isPasswordValid = await bcrypt.compare(
           credentials.password,
-          merchant.password
+          userRecord.password
         );
 
         if (!isPasswordValid) {
@@ -89,13 +96,15 @@ export const authOptions: NextAuthOptions = {
           );
         }
 
-        return {
+        const user: User = {
           id: merchant.id,
           email: merchant.email,
           name: merchant.name,
           nameAr: merchant.nameAr,
-          image: merchant.logo,
-        } as any;
+          image: merchant.logo ?? undefined,
+        };
+
+        return user;
       },
     }),
   ],
