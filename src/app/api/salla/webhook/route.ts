@@ -262,8 +262,9 @@ export async function POST(request: NextRequest) {
 
   try {
     const webhookConfig = getSallaWebhookConfig();
-    const skipVerification = process.env.SKIP_WEBHOOK_VERIFICATION === "true";
     const isProd = process.env.NODE_ENV === "production";
+    const skipVerification =
+      !isProd && process.env.SKIP_WEBHOOK_VERIFICATION === "true";
     const canVerify = !!(webhookConfig.secret && webhookConfig.header);
 
     if (isProd && !skipVerification && !canVerify) {

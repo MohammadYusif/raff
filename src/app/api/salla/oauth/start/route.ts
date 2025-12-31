@@ -8,8 +8,17 @@ import { createOAuthState } from "@/lib/platform/oauth";
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  const merchantId =
-    request.nextUrl.searchParams.get("merchantId") || session?.user?.id;
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const requestedMerchantId =
+    request.nextUrl.searchParams.get("merchantId");
+  if (requestedMerchantId && requestedMerchantId !== session.user.id) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const merchantId = session.user.id;
 
   if (!merchantId) {
     return NextResponse.json(

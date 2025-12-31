@@ -1,10 +1,23 @@
 // src/app/api/merchant/stats/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
+import { authOptions } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   try {
-    const merchantId = request.nextUrl.searchParams.get("merchantId");
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const requestedMerchantId =
+      request.nextUrl.searchParams.get("merchantId");
+    if (requestedMerchantId && requestedMerchantId !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const merchantId = session.user.id;
 
     if (!merchantId) {
       return NextResponse.json(

@@ -1,15 +1,28 @@
 // src/app/api/merchant/sync/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { syncZidProducts } from "@/lib/services/zid.service";
 import { syncSallaProducts } from "@/lib/services/salla.service";
+import { authOptions } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
     const { merchantId, platform: requestedPlatform } = body;
 
-    if (!merchantId) {
+    if (merchantId && merchantId !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const resolvedMerchantId = session.user.id;
+
+    if (!resolvedMerchantId) {
       return NextResponse.json(
         { error: "Merchant ID is required" },
         { status: 400 }
@@ -19,7 +32,7 @@ export async function POST(request: NextRequest) {
     // ✅ FIX: Use findFirst instead of findUnique
     const merchant = await prisma.merchant.findFirst({
       where: {
-        id: merchantId,
+        id: resolvedMerchantId,
         status: "APPROVED",
         isActive: true,
       },
@@ -121,7 +134,7 @@ export async function POST(request: NextRequest) {
 
     try {
       await prisma.merchant.update({
-        where: { id: merchantId },
+        where: { id: resolvedMerchantId },
         data: { lastSyncAt: syncStartedAt },
       });
 
@@ -146,12 +159,12 @@ export async function POST(request: NextRequest) {
             });
 
       await prisma.merchant.update({
-        where: { id: merchantId },
+        where: { id: resolvedMerchantId },
         data: { lastSyncAt: new Date() },
       });
     } catch (error) {
       await prisma.merchant.update({
-        where: { id: merchantId },
+        where: { id: resolvedMerchantId },
         data: { lastSyncAt: previousLastSyncAt },
       });
       throw error;
@@ -194,7 +207,18 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const merchantId = request.nextUrl.searchParams.get("merchantId");
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const requestedMerchantId =
+      request.nextUrl.searchParams.get("merchantId");
+    if (requestedMerchantId && requestedMerchantId !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const merchantId = session.user.id;
 
     if (!merchantId) {
       return NextResponse.json(
