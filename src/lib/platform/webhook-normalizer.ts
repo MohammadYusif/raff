@@ -170,9 +170,10 @@ export function redactSensitiveFields(
 ): Record<string, unknown> | null {
   try {
     // Deep clone to avoid mutating original
-    const sanitized = JSON.parse(
-      JSON.stringify(payload)
-    ) as Record<string, unknown>;
+    const sanitized = JSON.parse(JSON.stringify(payload)) as Record<
+      string,
+      unknown
+    >;
 
     // Define sensitive field paths to remove
     const sensitiveFields: Array<Array<string>> = [
@@ -278,18 +279,10 @@ export function normalizeZidOrderWebhook(
   );
 
   const orderId =
-    payload.order_id ??
-    data?.id ??
-    data?.order_id ??
-    order?.id ??
-    null;
+    payload.order_id ?? data?.id ?? data?.order_id ?? order?.id ?? null;
 
   const storeId =
-    payload.store_id ??
-    data?.store_id ??
-    store?.id ??
-    dataStore?.id ??
-    null;
+    payload.store_id ?? data?.store_id ?? store?.id ?? dataStore?.id ?? null;
 
   const orderIdValue = toNullableString(orderId);
   const storeIdValue = toNullableString(storeId);
@@ -434,8 +427,7 @@ export function normalizeSallaOrderWebhook(
 
   const orderId = data?.id ?? order?.id ?? null;
 
-  const storeId =
-    merchant?.id ?? dataMerchant?.id ?? payload.store_id ?? null;
+  const storeId = merchant?.id ?? dataMerchant?.id ?? payload.store_id ?? null;
 
   const orderIdValue = toNullableString(orderId);
   const storeIdValue = toNullableString(storeId);
@@ -450,11 +442,7 @@ export function normalizeSallaOrderWebhook(
     return null;
   }
 
-  const totalRaw =
-    dataTotal?.amount ??
-    dataAmounts?.total ??
-    data?.total ??
-    0;
+  const totalRaw = dataTotal?.amount ?? dataAmounts?.total ?? data?.total ?? 0;
 
   const total = parseNumber(totalRaw, 0);
 
@@ -635,7 +623,7 @@ export function verifySignature(
   const secretBuffer = Buffer.from(config.secret, "utf8");
 
   if (config.mode === "plain") {
-    return timingSafeEqual(provided, config.secret);
+    return timingSafeEqual(provided, config.secret.trim());
   }
 
   if (config.mode === "sha256") {
