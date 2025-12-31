@@ -139,12 +139,9 @@ async function processOrderWebhook(
     riskScore = 100;
   }
 
-  const desiredStatus: CommissionStatus =
-    riskEnabled && riskScore >= riskThreshold
-      ? CommissionStatus.ON_HOLD
-      : paymentConfirmed
-        ? CommissionStatus.APPROVED
-        : CommissionStatus.PENDING;
+  const desiredStatus: CommissionStatus = paymentConfirmed
+    ? CommissionStatus.APPROVED
+    : CommissionStatus.PENDING;
 
   const mergeStatus = (
     current: CommissionStatus | null | undefined,
@@ -154,10 +151,8 @@ async function processOrderWebhook(
     if (current === CommissionStatus.APPROVED) {
       return CommissionStatus.APPROVED;
     }
-    if (current === CommissionStatus.ON_HOLD) {
-      return next === CommissionStatus.APPROVED
-        ? CommissionStatus.APPROVED
-        : CommissionStatus.ON_HOLD;
+    if (current === CommissionStatus.CANCELLED) {
+      return CommissionStatus.CANCELLED;
     }
     return next;
   };

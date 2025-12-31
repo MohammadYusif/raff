@@ -14,9 +14,17 @@ import {
   Badge,
   Input,
 } from "@/shared/components/ui";
-import { TrendingUp, Search, SlidersHorizontal, X } from "lucide-react";
+import {
+  TrendingUp,
+  Search,
+  SlidersHorizontal,
+  X,
+  ShoppingCart,
+} from "lucide-react";
 import { ArrowForward, ArrowBackward } from "@/core/i18n";
 import { formatPrice } from "@/lib/utils";
+import { useCart } from "@/lib/hooks/useCart";
+import { toast } from "sonner";
 
 interface Product {
   id: string;
@@ -25,6 +33,7 @@ interface Product {
   slug: string;
   price: number;
   originalPrice: number | null;
+  currency: string;
   trendingScore: number;
   merchant: {
     name: string;
@@ -69,9 +78,11 @@ export function ProductsContent({
 }: ProductsContentProps) {
   const t = useTranslations("products");
   const commonT = useTranslations("common");
+  const productT = useTranslations("product");
   const locale = useLocale();
   const router = useRouter();
   const urlSearchParams = useSearchParams();
+  const { addItem } = useCart();
 
   const [searchQuery, setSearchQuery] = useState(
     urlSearchParams.get("search") || ""
@@ -407,22 +418,47 @@ export function ProductsContent({
                                 </div>
                               </div>
 
-                              {/* View Details Button - Always at Bottom */}
-                              <Link
-                                href={`/products/${product.slug}`}
-                                className="block"
-                              >
+                              <div className="flex flex-col gap-2">
                                 <Button
                                   variant="outline"
-                                  className="group/btn w-full transition-all hover:bg-raff-primary hover:text-white hover:border-raff-primary"
                                   size="sm"
+                                  className="w-full gap-2"
+                                  onClick={() => {
+                                    addItem(
+                                      {
+                                        id: product.id,
+                                        slug: product.slug,
+                                        title: productTitle,
+                                        price: product.price,
+                                        currency: product.currency,
+                                        merchantName,
+                                      },
+                                      1
+                                    );
+                                    toast.success(productT("addedToCart"));
+                                  }}
                                 >
-                                  <span className="flex-1">
-                                    {commonT("actions.viewDetails")}
-                                  </span>
-                                  <ArrowForward className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+                                  {productT("addToCart")}
+                                  <ShoppingCart className="h-4 w-4" />
                                 </Button>
-                              </Link>
+
+                                {/* View Details Button - Always at Bottom */}
+                                <Link
+                                  href={`/products/${product.slug}`}
+                                  className="block"
+                                >
+                                  <Button
+                                    variant="outline"
+                                    className="group/btn w-full transition-all hover:bg-raff-primary hover:text-white hover:border-raff-primary"
+                                    size="sm"
+                                  >
+                                    <span className="flex-1">
+                                      {commonT("actions.viewDetails")}
+                                    </span>
+                                    <ArrowForward className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+                                  </Button>
+                                </Link>
+                              </div>
                             </div>
                           </CardContent>
                         </Card>

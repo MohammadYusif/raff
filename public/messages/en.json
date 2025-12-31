@@ -4,7 +4,8 @@
     "products": "Products",
     "trending": "Trending",
     "categories": "Categories",
-    "merchants": "Merchants"
+    "merchants": "Merchants",
+    "cart": "Cart"
   },
   "common": {
     "nav": {
@@ -97,9 +98,27 @@
     "limitedStock": "Only {count} left in stock",
     "taxIncluded": "Tax included",
     "buyNow": "Buy Now",
+    "addToCart": "Add to Cart",
+    "addedToCart": "Added to cart",
     "visitStore": "Visit Store",
     "backToProducts": "Back to Products",
     "redirectNotice": "You'll be redirected to {merchant}'s store to complete your purchase"
+  },
+  "cart": {
+    "title": "Your Cart",
+    "itemCount": "{count} items",
+    "emptyTitle": "Your cart is empty",
+    "emptyDescription": "Add products to save them for later.",
+    "continueShopping": "Continue Shopping",
+    "merchantFallback": "Unknown merchant",
+    "quantity": "Qty: {count}",
+    "remove": "Remove",
+    "summaryTitle": "Summary",
+    "itemsLabel": "Items",
+    "total": "Estimated total",
+    "multiCurrency": "Multiple currencies",
+    "checkoutNotice": "You'll be redirected to each merchant to complete purchases.",
+    "clearCart": "Clear cart"
   },
   "categories": {
     "title": "Categories",

@@ -58,6 +58,7 @@ model Merchant {
   // Relations
   products       Product[]
   clickTrackings ClickTracking[]
+  outboundClickEvents OutboundClickEvent[]
   commissions    Commission[]
   orders         Order[]
   fraudSignals   FraudSignal[]
@@ -120,6 +121,7 @@ model Product {
   orders         Order[]
   savedByUsers   User[]          @relation("SavedProducts")
   clickTrackings ClickTracking[]
+  outboundClickEvents OutboundClickEvent[]
 
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -369,6 +371,39 @@ model ClickTracking {
   @@index([converted])
   @@index([expiresAt])
   @@index([conversionId])
+}
+
+// ============================================
+// OUTBOUND CLICK EVENT MODEL
+// ============================================
+
+model OutboundClickEvent {
+  id String @id @default(cuid())
+
+  trackingId String?
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  merchantId String
+  merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  platform Platform
+
+  ipHash        String?
+  userAgentHash String?
+
+  qualified        Boolean @default(false)
+  disqualifyReason String?
+
+  createdAt DateTime @default(now())
+
+  @@index([trackingId])
+  @@index([productId])
+  @@index([merchantId])
+  @@index([platform])
+  @@index([qualified])
+  @@index([createdAt])
 }
 
 // ============================================

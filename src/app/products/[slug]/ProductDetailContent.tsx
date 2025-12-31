@@ -11,11 +11,19 @@ import {
   Button,
   Badge,
 } from "@/shared/components/ui";
-import { TrendingUp, ExternalLink, Package, Loader2 } from "lucide-react";
+import {
+  TrendingUp,
+  ExternalLink,
+  Package,
+  Loader2,
+  ShoppingCart,
+} from "lucide-react";
 import { ArrowBackward } from "@/core/i18n";
 import { formatPrice } from "@/lib/utils";
 import { getMerchantStoreUrl } from "@/lib/platform/store";
 import { useProductClick } from "@/lib/hooks/useProductClick"; // ✅ NEW
+import { useCart } from "@/lib/hooks/useCart";
+import { toast } from "sonner";
 
 interface Product {
   id: string;
@@ -56,6 +64,7 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
 
   // ✅ NEW: Use click tracking hook
   const { trackAndRedirect, isTracking } = useProductClick();
+  const { addItem } = useCart();
 
   const productTitle =
     locale === "ar" ? product.titleAr || product.title : product.title;
@@ -82,6 +91,21 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
   const handleBuyNow = () => {
     // TODO: Get userId from session when we implement customer auth
     trackAndRedirect(product.id);
+  };
+
+  const handleAddToCart = () => {
+    addItem(
+      {
+        id: product.id,
+        slug: product.slug,
+        title: productTitle,
+        price: product.price,
+        currency: product.currency,
+        merchantName,
+      },
+      1
+    );
+    toast.success(t("addedToCart"));
   };
 
   return (
@@ -192,6 +216,16 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
 
               {/* Buy Now Button - UPDATED */}
               <div className="flex flex-col gap-4">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="w-full text-lg"
+                  onClick={handleAddToCart}
+                  disabled={!product.inStock}
+                >
+                  {t("addToCart")}
+                  <ShoppingCart className="ms-2 h-5 w-5" />
+                </Button>
                 <Button
                   size="lg"
                   className="w-full text-lg"

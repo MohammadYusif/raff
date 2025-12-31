@@ -1,22 +1,21 @@
-// src/app/auth/login/page.tsx
+// src/app/auth/register/page.tsx
 import { Metadata } from "next";
 import Image from "next/image";
-import { LoginForm } from "./LoginForm";
-import { Container, Card, CardContent } from "@/shared/components/ui";
 import Link from "next/link";
+import { RegisterForm } from "./RegisterForm";
+import { Container, Card, CardContent } from "@/shared/components/ui";
 
 export const metadata: Metadata = {
-  title: "Login - Raff",
-  description: "Login to your Raff account",
+  title: "Register - Raff",
+  description: "Create your Raff account",
 };
 
-export default function LoginPage() {
+export default function RegisterPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-raff-neutral-50">
       <Container maxWidth="sm">
         <Card className="border-raff-neutral-200">
           <CardContent className="p-8">
-            {/* Logo */}
             <div className="mb-8 text-center">
               <Link href="/">
                 <Image
@@ -28,24 +27,22 @@ export default function LoginPage() {
                 />
               </Link>
               <h1 className="mt-4 text-2xl font-bold text-raff-primary">
-                Login
+                Create Account
               </h1>
               <p className="mt-2 text-sm text-raff-neutral-600">
-                Sign in to your account
+                Join Raff to save products and track your cart
               </p>
             </div>
 
-            {/* Login Form */}
-            <LoginForm />
+            <RegisterForm />
 
-            {/* Register Link */}
             <div className="mt-6 text-center text-sm text-raff-neutral-600">
-              Don&apos;t have an account?{" "}
+              Already have an account?{" "}
               <Link
-                href="/auth/register"
+                href="/auth/login"
                 className="font-semibold text-raff-primary hover:underline"
               >
-                Create one
+                Sign in
               </Link>
             </div>
           </CardContent>

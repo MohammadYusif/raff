@@ -65,13 +65,6 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Invalid email or password");
         }
 
-        if (
-          userRecord.role !== UserRole.MERCHANT &&
-          userRecord.role !== UserRole.ADMIN
-        ) {
-          throw new Error("Access denied");
-        }
-
         if (userRecord.role === UserRole.MERCHANT) {
           const merchantProfile = await prisma.merchant.findFirst({
             where: { userId: userRecord.id },

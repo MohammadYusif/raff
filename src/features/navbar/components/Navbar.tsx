@@ -8,7 +8,8 @@ import { useTranslations, useLocale } from "next-intl";
 import { useLocale as useLocaleHook } from "@/core/i18n";
 import { Button, Container } from "@/shared/components/ui";
 import { SearchInput } from "@/shared/components/SearchInput";
-import { Menu, X, Globe } from "lucide-react";
+import { Menu, X, Globe, ShoppingCart } from "lucide-react";
+import { useCart } from "@/lib/hooks/useCart";
 
 export function Navbar() {
   const t = useTranslations("nav");
@@ -16,6 +17,7 @@ export function Navbar() {
   const currentLocale = useLocale();
   const { switchLocale } = useLocaleHook();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { itemCount } = useCart();
 
   const navItems = [
     { label: t("home"), href: "/" },
@@ -64,6 +66,18 @@ export function Navbar() {
 
           {/* Right Section */}
           <div className="flex shrink-0 items-center gap-3">
+            {/* Cart */}
+            <Link href="/cart" className="relative">
+              <Button variant="ghost" size="icon" className="hover:bg-raff-neutral-100">
+                <ShoppingCart className="h-5 w-5" />
+              </Button>
+              {itemCount > 0 && (
+                <span className="absolute -end-1 -top-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-raff-accent px-1 text-[10px] font-semibold text-white">
+                  {itemCount > 99 ? "99+" : itemCount}
+                </span>
+              )}
+            </Link>
+
             {/* Language Switcher */}
             <Button
               variant="ghost"
@@ -75,13 +89,15 @@ export function Navbar() {
             </Button>
 
             {/* Login Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              className="hidden border-raff-primary text-raff-primary hover:bg-raff-primary hover:text-white sm:inline-flex"
-            >
-              {commonT("actions.login")}
-            </Button>
+            <Link href="/auth/login" className="hidden sm:inline-flex">
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-raff-primary text-raff-primary hover:bg-raff-primary hover:text-white"
+              >
+                {commonT("actions.login")}
+              </Button>
+            </Link>
 
             {/* Mobile Menu Toggle */}
             <Button
@@ -124,13 +140,24 @@ export function Navbar() {
                   {item.label}
                 </Link>
               ))}
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full border-raff-primary text-raff-primary"
-              >
-                {commonT("actions.login")}
-              </Button>
+              <Link href="/cart" onClick={() => setMobileMenuOpen(false)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full border-raff-primary text-raff-primary"
+                >
+                  {t("cart")}
+                </Button>
+              </Link>
+              <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full border-raff-primary text-raff-primary"
+                >
+                  {commonT("actions.login")}
+                </Button>
+              </Link>
             </div>
           </Container>
         </div>

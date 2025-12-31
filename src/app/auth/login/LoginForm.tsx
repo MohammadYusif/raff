@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button, Input } from "@/shared/components/ui";
 import { toast } from "sonner";
@@ -35,7 +35,13 @@ export function LoginForm() {
 
       if (result?.ok) {
         toast.success("Login successful!");
-        router.push("/merchant/dashboard");
+        const session = await getSession();
+        const role = session?.user?.role;
+        if (role === "MERCHANT" || role === "ADMIN") {
+          router.push("/merchant/dashboard");
+        } else {
+          router.push("/");
+        }
         router.refresh();
       }
     } catch (error) {

@@ -5,9 +5,11 @@ import { useState } from "react";
 
 interface TrackClickResponse {
   success: boolean;
-  trackingId: string;
-  trackingUrl: string;
-  expiresAt: string;
+  trackingId: string | null;
+  redirectUrl: string;
+  expiresAt: string | null;
+  qualified?: boolean;
+  disqualifyReason?: string | null;
 }
 
 export function useProductClick() {
@@ -33,8 +35,8 @@ export function useProductClick() {
 
       const data: TrackClickResponse = await response.json();
 
-      // Redirect to the tracking URL (which redirects to merchant store)
-      window.location.href = data.trackingUrl;
+      // Redirect to the merchant destination
+      window.location.href = data.redirectUrl;
     } catch (error) {
       console.error("Click tracking error:", error);
       // On error, still redirect but without tracking
