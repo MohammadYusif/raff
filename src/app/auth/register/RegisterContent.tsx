@@ -7,6 +7,18 @@ import { useTranslations } from "next-intl";
 import { RegisterForm } from "./RegisterForm";
 import { Container, Card, CardContent, Button } from "@/shared/components/ui";
 
+/**
+ * Register Content Component
+ *
+ * Provides the registration interface with:
+ * - Centered layout for focused authentication experience
+ * - Logo and branding
+ * - Registration form with name/email/password/confirm password
+ * - Links to login and home page
+ *
+ * Note: This component intentionally doesn't use PageLayout to provide
+ * a distraction-free authentication experience without navbar/footer.
+ */
 export function RegisterContent() {
   const t = useTranslations("auth.register");
   const actionsT = useTranslations("common.actions");

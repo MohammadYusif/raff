@@ -7,6 +7,18 @@ import { useTranslations } from "next-intl";
 import { LoginForm } from "./LoginForm";
 import { Container, Card, CardContent, Button } from "@/shared/components/ui";
 
+/**
+ * Login Content Component
+ *
+ * Provides the login interface with:
+ * - Centered layout for focused authentication experience
+ * - Logo and branding
+ * - Login form with email/password
+ * - Links to registration and home page
+ *
+ * Note: This component intentionally doesn't use PageLayout to provide
+ * a distraction-free authentication experience without navbar/footer.
+ */
 export function LoginContent() {
   const t = useTranslations("auth.login");
   const actionsT = useTranslations("common.actions");

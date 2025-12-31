@@ -6,14 +6,21 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 export type CartItem = {
   id: string;
   slug: string;
-  title: string;
+  name: string; // Changed from "title" to match product naming
+  nameAr?: string | null;
+  image?: string | null;
   price: number;
   currency: string;
   quantity: number;
-  merchantName?: string | null;
+  merchantName: string;
+  merchantNameAr?: string | null;
+  categoryName?: string | null;
+  categoryNameAr?: string | null;
+  externalUrl: string;
+  trendingScore?: number | null;
 };
 
-const CART_STORAGE_KEY = "raff_cart_v1";
+const CART_STORAGE_KEY = "raff_cart_v2"; // Updated version key
 const CART_EVENT = "raff-cart-updated";
 
 function readCart(): CartItem[] {
@@ -55,13 +62,16 @@ export function useCart() {
     };
   }, []);
 
-  const updateItems = useCallback((updater: (prev: CartItem[]) => CartItem[]) => {
-    setItems((prev) => {
-      const next = updater(prev);
-      writeCart(next);
-      return next;
-    });
-  }, []);
+  const updateItems = useCallback(
+    (updater: (prev: CartItem[]) => CartItem[]) => {
+      setItems((prev) => {
+        const next = updater(prev);
+        writeCart(next);
+        return next;
+      });
+    },
+    []
+  );
 
   const addItem = useCallback(
     (item: Omit<CartItem, "quantity">, quantity: number = 1) => {
@@ -91,9 +101,7 @@ export function useCart() {
     (id: string, quantity: number) => {
       updateItems((prev) =>
         prev
-          .map((entry) =>
-            entry.id === id ? { ...entry, quantity } : entry
-          )
+          .map((entry) => (entry.id === id ? { ...entry, quantity } : entry))
           .filter((entry) => entry.quantity > 0)
       );
     },
