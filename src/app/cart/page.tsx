@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useTranslations, useLocale } from "next-intl";
 import { useSession } from "next-auth/react";
 import { PageLayout } from "@/shared/components/layouts";
@@ -18,6 +19,8 @@ import { ShoppingCart, TrendingUp, Trash2 } from "lucide-react";
 import { ArrowForward } from "@/core/i18n";
 import { useCart } from "@/lib/hooks/useCart";
 import { formatPrice } from "@/lib/utils";
+
+const passthroughImageLoader = ({ src }: { src: string }) => src;
 
 /**
  * Cart Page
@@ -255,6 +258,9 @@ export default function CartPage() {
                       locale === "ar" && item.nameAr ? item.nameAr : item.name;
                     const merchantName = item.merchantName;
                     const categoryName = item.categoryName;
+                    const isExternalUrl = /^https?:\/\//i.test(
+                      item.externalUrl
+                    );
 
                     return (
                       <Card
@@ -275,10 +281,14 @@ export default function CartPage() {
                         <Link href={`/products/${item.slug}`}>
                           <div className="relative aspect-square overflow-hidden">
                             {item.image ? (
-                              <img
+                              <Image
                                 src={item.image}
                                 alt={productTitle}
-                                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                fill
+                                sizes="(min-width: 1280px) 320px, (min-width: 640px) 50vw, 100vw"
+                                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                loader={passthroughImageLoader}
+                                unoptimized
                               />
                             ) : (
                               <div className="flex h-full items-center justify-center from-raff-neutral-50 to-raff-neutral-100">
@@ -341,21 +351,34 @@ export default function CartPage() {
                           </div>
 
                           {/* View on Store Button */}
-                          <a
-                            href={item.externalUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full"
-                          >
-                            <Button
-                              variant="outline"
-                              className="w-full gap-2"
-                              size="sm"
+                          {isExternalUrl ? (
+                            <a
+                              href={item.externalUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-full"
                             >
-                              {productT("viewOnStore")}
-                              <ArrowForward className="h-4 w-4" />
-                            </Button>
-                          </a>
+                              <Button
+                                variant="outline"
+                                className="w-full gap-2"
+                                size="sm"
+                              >
+                                {productT("viewOnStore")}
+                                <ArrowForward className="h-4 w-4" />
+                              </Button>
+                            </a>
+                          ) : (
+                            <Link href={item.externalUrl} className="w-full">
+                              <Button
+                                variant="outline"
+                                className="w-full gap-2"
+                                size="sm"
+                              >
+                                {productT("viewOnStore")}
+                                <ArrowForward className="h-4 w-4" />
+                              </Button>
+                            </Link>
+                          )}
                         </CardContent>
                       </Card>
                     );

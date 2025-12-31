@@ -1,8 +1,16 @@
 // src/app/products/[slug]/page.tsx
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import { fetchProduct } from "@/lib/api";
+import { cookies } from "next/headers";
+import { prisma } from "@/lib/prisma";
 import { ProductDetailContent } from "./ProductDetailContent";
+import { addCartFields } from "@/lib/products/cart";
+
+const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
+const NOT_FOUND_TITLES = {
+  ar: "المنتج غير موجود - Raff",
+  en: "Product Not Found - Raff",
+} as const;
 
 interface ProductPageProps {
   params: Promise<{
@@ -18,20 +26,52 @@ export async function generateMetadata({
   const { slug } = await params;
 
   try {
-    const { product } = await fetchProduct(slug);
+    const cookieStore = await cookies();
+    const storedLocale = cookieStore.get(LOCALE_COOKIE_NAME)?.value;
+    const locale = storedLocale === "en" ? "en" : "ar";
+
+    const product = await prisma.product.findUnique({
+      where: { slug },
+      select: {
+        title: true,
+        titleAr: true,
+        description: true,
+        descriptionAr: true,
+        thumbnail: true,
+        images: true,
+      },
+    });
+
+    if (!product) {
+      return {
+        title: NOT_FOUND_TITLES[locale],
+      };
+    }
+
+    const title =
+      locale === "ar" ? product.titleAr || product.title : product.title;
+    const description =
+      locale === "ar"
+        ? product.descriptionAr || product.description
+        : product.description;
+    const image = product.thumbnail || product.images?.[0] || null;
 
     return {
-      title: `${product.titleAr || product.title} - Raff`,
-      description: product.descriptionAr || product.description || "",
+      title: `${title} - Raff`,
+      description: description || "",
       openGraph: {
-        title: product.titleAr || product.title,
-        description: product.descriptionAr || product.description || "",
-        images: product.thumbnail ? [product.thumbnail] : [],
+        title,
+        description: description || "",
+        images: image ? [image] : [],
       },
     };
   } catch {
+    const cookieStore = await cookies();
+    const storedLocale = cookieStore.get(LOCALE_COOKIE_NAME)?.value;
+    const locale = storedLocale === "en" ? "en" : "ar";
+
     return {
-      title: "Product Not Found - Raff",
+      title: NOT_FOUND_TITLES[locale],
     };
   }
 }
@@ -43,8 +83,37 @@ export default async function ProductPage({ params }: ProductPageProps) {
   let product;
 
   try {
-    const data = await fetchProduct(slug);
-    product = data.product;
+    const data = await prisma.product.findUnique({
+      where: { slug },
+      include: {
+        merchant: {
+          select: {
+            id: true,
+            name: true,
+            nameAr: true,
+            logo: true,
+            description: true,
+            descriptionAr: true,
+            sallaStoreUrl: true,
+            zidStoreUrl: true,
+            phone: true,
+            email: true,
+          },
+        },
+        category: {
+          select: {
+            id: true,
+            name: true,
+            nameAr: true,
+            slug: true,
+          },
+        },
+      },
+    });
+    if (!data) {
+      notFound();
+    }
+    product = addCartFields(data);
   } catch {
     notFound();
   }

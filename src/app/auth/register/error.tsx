@@ -17,6 +17,7 @@ export default function RegisterError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  void error;
   return (
     <div className="flex min-h-screen items-center justify-center bg-raff-neutral-50">
       <Container maxWidth="sm">

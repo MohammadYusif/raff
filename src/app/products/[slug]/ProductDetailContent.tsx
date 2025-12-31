@@ -24,37 +24,10 @@ import { getMerchantStoreUrl } from "@/lib/platform/store";
 import { useProductClick } from "@/lib/hooks/useProductClick"; // ✅ NEW
 import { useCart } from "@/lib/hooks/useCart";
 import { toast } from "sonner";
-
-interface Product {
-  id: string;
-  title: string;
-  titleAr: string | null;
-  slug: string;
-  description: string | null;
-  descriptionAr: string | null;
-  price: number;
-  originalPrice: number | null;
-  currency: string;
-  trendingScore: number;
-  inStock: boolean;
-  quantity: number | null;
-  merchant: {
-    id: string;
-    name: string;
-    nameAr: string | null;
-    logo: string | null;
-    sallaStoreUrl: string | null;
-    zidStoreUrl: string | null;
-  };
-  category: {
-    name: string;
-    nameAr: string | null;
-    slug: string;
-  } | null;
-}
+import type { ProductWithCartFields } from "@/types";
 
 interface ProductDetailContentProps {
-  product: Product;
+  product: ProductWithCartFields;
 }
 
 export function ProductDetailContent({ product }: ProductDetailContentProps) {
@@ -98,10 +71,24 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
       {
         id: product.id,
         slug: product.slug,
-        title: productTitle,
+        name: product.title,
+        nameAr: product.titleAr,
+        image: product.imageUrl || null,
         price: product.price,
         currency: product.currency,
-        merchantName,
+        merchantName:
+          locale === "ar"
+            ? product.merchant.nameAr || product.merchant.name
+            : product.merchant.name,
+        merchantNameAr: product.merchant.nameAr,
+        categoryName: product.category
+          ? (locale === "ar"
+              ? product.category.nameAr || product.category.name
+              : product.category.name)
+          : null,
+        categoryNameAr: product.category?.nameAr,
+        externalUrl: product.externalUrl,
+        trendingScore: product.trendingScore,
       },
       1
     );

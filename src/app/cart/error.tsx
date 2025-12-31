@@ -13,6 +13,7 @@ export default function CartError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  void error;
   return (
     <PageLayout>
       <div className="min-h-screen bg-raff-neutral-50">

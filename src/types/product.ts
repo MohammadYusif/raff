@@ -17,7 +17,11 @@ export type ProductWithRelations = Product & {
     | "descriptionAr"
   >;
   category: Pick<Category, "id" | "name" | "nameAr" | "slug"> | null;
-  externalProductUrl?: string;
+};
+
+export type ProductWithCartFields = ProductWithRelations & {
+  imageUrl: string | null;
+  externalUrl: string;
 };
 
 /**

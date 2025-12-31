@@ -30,7 +30,18 @@ function readCart(): CartItem[] {
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(Boolean) as CartItem[];
+    return parsed
+      .filter(Boolean)
+      .map((item) => {
+        const slug =
+          item && typeof item.slug === "string" ? item.slug : undefined;
+        const fallbackUrl = slug ? `/products/${slug}` : "/products";
+        const externalUrl =
+          item && typeof item.externalUrl === "string" && item.externalUrl
+            ? item.externalUrl
+            : fallbackUrl;
+        return { ...item, externalUrl } as CartItem;
+      });
   } catch {
     return [];
   }

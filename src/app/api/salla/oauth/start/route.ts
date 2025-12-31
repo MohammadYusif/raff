@@ -6,6 +6,7 @@ import { createOAuthState } from "@/lib/platform/oauth";
 import { requireMerchant } from "@/lib/auth/guards";
 
 export async function GET(_request: NextRequest) {
+  void _request;
   const auth = await requireMerchant("api");
   if ("response" in auth) return auth.response;
   const { session } = auth;

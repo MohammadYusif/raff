@@ -1,15 +1,61 @@
 // src/app/categories/page.tsx
-import { fetchCategories } from "@/lib/api";
+import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import { prisma } from "@/lib/prisma";
 import { CategoriesContent } from "./CategoriesContent";
 
-export const metadata = {
-  title: "Categories - Raff",
-  description: "Browse products by category",
-};
+const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
+const TITLES = {
+  ar: "التصنيفات - Raff",
+  en: "Categories - Raff",
+} as const;
+const DESCRIPTIONS = {
+  ar: "تصفح المنتجات حسب التصنيف",
+  en: "Browse products by category",
+} as const;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const cookieStore = await cookies();
+  const storedLocale = cookieStore.get(LOCALE_COOKIE_NAME)?.value;
+  const locale = storedLocale === "en" ? "en" : "ar";
+
+  return {
+    title: TITLES[locale],
+    description: DESCRIPTIONS[locale],
+  };
+}
 
 export default async function CategoriesPage() {
   // Fetch all categories with product counts
-  const { categories } = await fetchCategories();
+  const categories = await prisma.category.findMany({
+    where: {
+      isActive: true,
+      parentId: null,
+    },
+    orderBy: {
+      order: "asc",
+    },
+    include: {
+      _count: {
+        select: {
+          products: {
+            where: {
+              isActive: true,
+              inStock: true,
+            },
+          },
+        },
+      },
+      children: {
+        where: {
+          isActive: true,
+        },
+        orderBy: {
+          order: "asc",
+        },
+      },
+    },
+  });
 
   return <CategoriesContent categories={categories} />;
 }

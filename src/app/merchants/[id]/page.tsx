@@ -1,9 +1,20 @@
 // src/app/merchants/[id]/page.tsx
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import { fetchMerchant } from "@/lib/api/merchants";
-import { fetchProducts } from "@/lib/api";
+import { cookies } from "next/headers";
+import { prisma } from "@/lib/prisma";
+import { fetchProductsServer } from "@/lib/server/products";
 import { MerchantDetailContent } from "./MerchantDetailContent";
+
+const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
+const NOT_FOUND_TITLES = {
+  ar: "التاجر غير موجود - Raff",
+  en: "Merchant Not Found - Raff",
+} as const;
+const DEFAULT_TITLES = {
+  ar: "التاجر - Raff",
+  en: "Merchant - Raff",
+} as const;
 
 interface MerchantPageProps {
   params: Promise<{
@@ -25,15 +36,48 @@ export async function generateMetadata({
   const { id } = await params;
 
   try {
-    const { merchant } = await fetchMerchant(id);
+    const cookieStore = await cookies();
+    const storedLocale = cookieStore.get(LOCALE_COOKIE_NAME)?.value;
+    const locale = storedLocale === "en" ? "en" : "ar";
+
+    const merchant = await prisma.merchant.findFirst({
+      where: {
+        id,
+        isActive: true,
+        status: "APPROVED",
+      },
+      select: {
+        name: true,
+        nameAr: true,
+        description: true,
+        descriptionAr: true,
+      },
+    });
+
+    if (!merchant) {
+      return {
+        title: NOT_FOUND_TITLES[locale],
+      };
+    }
+
+    const title =
+      locale === "ar" ? merchant.nameAr || merchant.name : merchant.name;
+    const description =
+      locale === "ar"
+        ? merchant.descriptionAr || merchant.description
+        : merchant.description;
 
     return {
-      title: `${merchant.nameAr || merchant.name} - Raff`,
-      description: merchant.descriptionAr || merchant.description || "",
+      title: `${title} - Raff`,
+      description: description || "",
     };
   } catch {
+    const cookieStore = await cookies();
+    const storedLocale = cookieStore.get(LOCALE_COOKIE_NAME)?.value;
+    const locale = storedLocale === "en" ? "en" : "ar";
+
     return {
-      title: "Merchant Not Found - Raff",
+      title: DEFAULT_TITLES[locale],
     };
   }
 }
@@ -49,8 +93,38 @@ export default async function MerchantPage({
   // Fetch merchant details
   let merchant;
   try {
-    const data = await fetchMerchant(id);
-    merchant = data.merchant;
+    merchant = await prisma.merchant.findFirst({
+      where: {
+        id,
+        isActive: true,
+        status: "APPROVED",
+      },
+      select: {
+        id: true,
+        name: true,
+        nameAr: true,
+        description: true,
+        descriptionAr: true,
+        logo: true,
+        phone: true,
+        email: true,
+        sallaStoreUrl: true,
+        zidStoreUrl: true,
+        _count: {
+          select: {
+            products: {
+              where: {
+                isActive: true,
+                inStock: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    if (!merchant) {
+      notFound();
+    }
   } catch {
     notFound();
   }
@@ -70,7 +144,7 @@ export default async function MerchantPage({
     : undefined;
 
   // Fetch products for this merchant
-  const { products, pagination } = await fetchProducts({
+  const { products, pagination } = await fetchProductsServer({
     page: searchParamsResolved.page ? parseInt(searchParamsResolved.page) : 1,
     limit: 12,
     merchantId: id, // Filter by merchant ID

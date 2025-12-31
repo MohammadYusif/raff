@@ -1,8 +1,20 @@
 // src/app/categories/[slug]/page.tsx
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import { fetchProducts, fetchCategories } from "@/lib/api";
+import { cookies } from "next/headers";
+import { prisma } from "@/lib/prisma";
+import { fetchProductsServer } from "@/lib/server/products";
 import { CategoryDetailContent } from "./CategoryDetailContent";
+
+const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
+const NOT_FOUND_TITLES = {
+  ar: "التصنيف غير موجود - Raff",
+  en: "Category Not Found - Raff",
+} as const;
+const DEFAULT_TITLES = {
+  ar: "التصنيف - Raff",
+  en: "Category - Raff",
+} as const;
 
 interface CategoryPageProps {
   params: Promise<{
@@ -24,22 +36,44 @@ export async function generateMetadata({
   const { slug } = await params;
 
   try {
-    const { categories } = await fetchCategories();
-    const category = categories.find((c) => c.slug === slug);
+    const cookieStore = await cookies();
+    const storedLocale = cookieStore.get(LOCALE_COOKIE_NAME)?.value;
+    const locale = storedLocale === "en" ? "en" : "ar";
+
+    const category = await prisma.category.findUnique({
+      where: { slug },
+      select: {
+        name: true,
+        nameAr: true,
+        description: true,
+        descriptionAr: true,
+      },
+    });
 
     if (!category) {
       return {
-        title: "Category Not Found - Raff",
+        title: NOT_FOUND_TITLES[locale],
       };
     }
 
+    const title =
+      locale === "ar" ? category.nameAr || category.name : category.name;
+    const description =
+      locale === "ar"
+        ? category.descriptionAr || category.description
+        : category.description;
+
     return {
-      title: `${category.nameAr || category.name} - Raff`,
-      description: category.descriptionAr || category.description || "",
+      title: `${title} - Raff`,
+      description: description || "",
     };
   } catch {
+    const cookieStore = await cookies();
+    const storedLocale = cookieStore.get(LOCALE_COOKIE_NAME)?.value;
+    const locale = storedLocale === "en" ? "en" : "ar";
+
     return {
-      title: "Category - Raff",
+      title: DEFAULT_TITLES[locale],
     };
   }
 }
@@ -52,9 +86,28 @@ export default async function CategoryPage({
   const { slug } = await params;
   const searchParamsResolved = await searchParams;
 
-  // Fetch all categories to find the current one
-  const { categories } = await fetchCategories();
-  const category = categories.find((c) => c.slug === slug);
+  const category = await prisma.category.findUnique({
+    where: { slug },
+    select: {
+      id: true,
+      name: true,
+      nameAr: true,
+      slug: true,
+      description: true,
+      descriptionAr: true,
+      icon: true,
+      _count: {
+        select: {
+          products: {
+            where: {
+              isActive: true,
+              inStock: true,
+            },
+          },
+        },
+      },
+    },
+  });
 
   // If category not found, show 404
   if (!category) {
@@ -76,7 +129,7 @@ export default async function CategoryPage({
     : undefined;
 
   // Fetch products for this category
-  const { products, pagination } = await fetchProducts({
+  const { products, pagination } = await fetchProductsServer({
     page: searchParamsResolved.page ? parseInt(searchParamsResolved.page) : 1,
     limit: 12,
     category: slug, // Filter by category slug

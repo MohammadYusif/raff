@@ -1,6 +1,10 @@
 // src/app/products/page.tsx
-import { fetchProducts, fetchCategories } from "@/lib/api";
+import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import { prisma } from "@/lib/prisma";
+import { fetchProductsServer } from "@/lib/server/products";
 import { ProductsContent } from "./ProductsContent";
+import { addCartFields } from "@/lib/products/cart";
 
 interface ProductsPageProps {
   searchParams: Promise<{
@@ -13,12 +17,26 @@ interface ProductsPageProps {
   }>;
 }
 
-// Dynamic metadata will be handled by next-intl or removed for now
-// Since metadata can't use useTranslations, we'll keep it simple
-export const metadata = {
-  title: "Products - Raff",
-  description: "Browse products from Saudi stores",
-};
+const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
+const TITLES = {
+  ar: "المنتجات - Raff",
+  en: "Products - Raff",
+} as const;
+const DESCRIPTIONS = {
+  ar: "تصفح المنتجات من المتاجر السعودية",
+  en: "Browse products from Saudi stores",
+} as const;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const cookieStore = await cookies();
+  const storedLocale = cookieStore.get(LOCALE_COOKIE_NAME)?.value;
+  const locale = storedLocale === "en" ? "en" : "ar";
+
+  return {
+    title: TITLES[locale],
+    description: DESCRIPTIONS[locale],
+  };
+}
 
 export default async function ProductsPage({
   searchParams,
@@ -39,7 +57,7 @@ export default async function ProductsPage({
   const sortBy = isSortOption(params.sortBy) ? params.sortBy : undefined;
 
   // Fetch products with filters
-  const { products, pagination } = await fetchProducts({
+  const { products, pagination } = await fetchProductsServer({
     page: params.page ? parseInt(params.page) : 1,
     limit: 12,
     category: params.category,
@@ -50,11 +68,41 @@ export default async function ProductsPage({
   });
 
   // Fetch categories for filter sidebar
-  const { categories } = await fetchCategories();
+  const categories = await prisma.category.findMany({
+    where: {
+      isActive: true,
+      parentId: null,
+    },
+    orderBy: {
+      order: "asc",
+    },
+    include: {
+      _count: {
+        select: {
+          products: {
+            where: {
+              isActive: true,
+              inStock: true,
+            },
+          },
+        },
+      },
+      children: {
+        where: {
+          isActive: true,
+        },
+        orderBy: {
+          order: "asc",
+        },
+      },
+    },
+  });
+
+  const productsWithCartFields = products.map(addCartFields);
 
   return (
     <ProductsContent
-      initialProducts={products}
+      initialProducts={productsWithCartFields}
       pagination={pagination}
       categories={categories}
     />

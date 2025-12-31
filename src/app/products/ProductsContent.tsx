@@ -25,25 +25,7 @@ import { ArrowForward, ArrowBackward } from "@/core/i18n";
 import { formatPrice } from "@/lib/utils";
 import { useCart } from "@/lib/hooks/useCart";
 import { toast } from "sonner";
-
-interface Product {
-  id: string;
-  title: string;
-  titleAr: string | null;
-  slug: string;
-  price: number;
-  originalPrice: number | null;
-  currency: string;
-  trendingScore: number;
-  merchant: {
-    name: string;
-    nameAr: string | null;
-  };
-  category: {
-    name: string;
-    nameAr: string | null;
-  } | null;
-}
+import type { ProductWithCartFields } from "@/types";
 
 interface Category {
   id: string;
@@ -66,7 +48,7 @@ interface Pagination {
 }
 
 interface ProductsContentProps {
-  initialProducts: Product[];
+  initialProducts: ProductWithCartFields[];
   pagination: Pagination;
   categories: Category[];
 }
@@ -428,10 +410,26 @@ export function ProductsContent({
                                       {
                                         id: product.id,
                                         slug: product.slug,
-                                        title: productTitle,
+                                        name: product.title,
+                                        nameAr: product.titleAr,
+                                        image: product.imageUrl || null,
                                         price: product.price,
                                         currency: product.currency,
-                                        merchantName,
+                                        merchantName:
+                                          locale === "ar"
+                                            ? product.merchant.nameAr ||
+                                              product.merchant.name
+                                            : product.merchant.name,
+                                        merchantNameAr: product.merchant.nameAr,
+                                        categoryName: product.category
+                                          ? (locale === "ar"
+                                              ? product.category.nameAr ||
+                                                product.category.name
+                                              : product.category.name)
+                                          : null,
+                                        categoryNameAr: product.category?.nameAr,
+                                        externalUrl: product.externalUrl,
+                                        trendingScore: product.trendingScore,
                                       },
                                       1
                                     );

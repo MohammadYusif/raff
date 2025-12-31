@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireMerchant } from "@/lib/auth/guards";
 
 export async function GET(_request: NextRequest) {
+  void _request;
   try {
     const auth = await requireMerchant("api");
     if ("response" in auth) return auth.response;

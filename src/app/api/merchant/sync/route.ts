@@ -198,6 +198,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(_request: NextRequest) {
+  void _request;
   try {
     const auth = await requireMerchant("api");
     if ("response" in auth) return auth.response;

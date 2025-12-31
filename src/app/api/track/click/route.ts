@@ -178,10 +178,7 @@ export async function POST(request: NextRequest) {
     const parsed = trackClickSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Invalid request" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
     const { productId } = parsed.data;
@@ -273,10 +270,13 @@ export async function POST(request: NextRequest) {
       windowMs: 60_000,
       max: 30,
     });
-    const productLimit = rateLimit(`track-click:ip:${ip}:product:${productId}`, {
-      windowMs: 60_000,
-      max: 10,
-    });
+    const productLimit = rateLimit(
+      `track-click:ip:${ip}:product:${productId}`,
+      {
+        windowMs: 60_000,
+        max: 10,
+      }
+    );
 
     let disqualifyReason: DisqualifyReason | null = null;
 
@@ -403,10 +403,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (disqualifyReason === DISQUALIFY_REASONS.rateLimit) {
-      return NextResponse.json(
-        { error: "Too many requests" },
-        { status: 429 }
-      );
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 
     return NextResponse.json({
