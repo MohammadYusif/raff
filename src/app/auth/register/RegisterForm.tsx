@@ -2,12 +2,14 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Button, Input } from "@/shared/components/ui";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
 export function RegisterForm() {
+  const t = useTranslations("auth.register");
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -22,7 +24,7 @@ export function RegisterForm() {
     setLoading(true);
 
     if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match");
+      toast.error(t("passwordMismatch"));
       setLoading(false);
       return;
     }
@@ -43,16 +45,16 @@ export function RegisterForm() {
       const data = await response.json().catch(() => null);
 
       if (!response.ok) {
-        toast.error(data?.error || "Registration failed");
+        toast.error(data?.error || t("error"));
         setLoading(false);
         return;
       }
 
-      toast.success("Account created! You can sign in now.");
+      toast.success(t("success"));
       router.push("/auth/login");
     } catch (error) {
       console.error("Registration error:", error);
-      toast.error("An error occurred. Please try again.");
+      toast.error(t("error"));
       setLoading(false);
     }
   };
@@ -64,14 +66,14 @@ export function RegisterForm() {
           htmlFor="name"
           className="mb-2 block text-sm font-medium text-raff-neutral-700"
         >
-          Full Name
+          {t("nameLabel")}
         </label>
         <Input
           id="name"
           type="text"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          placeholder="Your name"
+          placeholder={t("namePlaceholder")}
           required
           disabled={loading}
         />
@@ -82,14 +84,14 @@ export function RegisterForm() {
           htmlFor="email"
           className="mb-2 block text-sm font-medium text-raff-neutral-700"
         >
-          Email Address
+          {t("emailLabel")}
         </label>
         <Input
           id="email"
           type="email"
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          placeholder="you@example.com"
+          placeholder={t("emailPlaceholder")}
           required
           disabled={loading}
         />
@@ -100,7 +102,7 @@ export function RegisterForm() {
           htmlFor="password"
           className="mb-2 block text-sm font-medium text-raff-neutral-700"
         >
-          Password
+          {t("passwordLabel")}
         </label>
         <Input
           id="password"
@@ -109,7 +111,7 @@ export function RegisterForm() {
           onChange={(e) =>
             setFormData({ ...formData, password: e.target.value })
           }
-          placeholder="Create a password"
+          placeholder={t("passwordPlaceholder")}
           required
           disabled={loading}
         />
@@ -120,7 +122,7 @@ export function RegisterForm() {
           htmlFor="confirmPassword"
           className="mb-2 block text-sm font-medium text-raff-neutral-700"
         >
-          Confirm Password
+          {t("confirmPasswordLabel")}
         </label>
         <Input
           id="confirmPassword"
@@ -129,7 +131,7 @@ export function RegisterForm() {
           onChange={(e) =>
             setFormData({ ...formData, confirmPassword: e.target.value })
           }
-          placeholder="Re-enter your password"
+          placeholder={t("confirmPasswordPlaceholder")}
           required
           disabled={loading}
         />
@@ -139,10 +141,10 @@ export function RegisterForm() {
         {loading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Creating account...
+            {t("submitting")}
           </>
         ) : (
-          "Create Account"
+          t("submit")
         )}
       </Button>
     </form>

@@ -118,7 +118,11 @@
     "total": "Estimated total",
     "multiCurrency": "Multiple currencies",
     "checkoutNotice": "You'll be redirected to each merchant to complete purchases.",
-    "clearCart": "Clear cart"
+    "clearCart": "Clear cart",
+    "authNoticeTitle": "Save your cart",
+    "authNoticeDescription": "Sign in or create an account to keep these items and track purchases.",
+    "registerCta": "Register",
+    "loginCta": "Login"
   },
   "categories": {
     "title": "Categories",
@@ -261,5 +265,40 @@
     "subtitle": "Manage your account and preferences",
     "comingSoon": "Coming Soon",
     "comingSoonDesc": "Account settings and preferences coming soon"
+  },
+  "auth": {
+    "login": {
+      "title": "Login",
+      "subtitle": "Sign in to your account",
+      "registerPrompt": "Don't have an account?",
+      "registerCta": "Create one",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "submit": "Sign In",
+      "submitting": "Signing in...",
+      "success": "Login successful!",
+      "error": "An error occurred. Please try again."
+    },
+    "register": {
+      "title": "Create Account",
+      "subtitle": "Join Raff to save products and track your cart",
+      "loginPrompt": "Already have an account?",
+      "loginCta": "Sign in",
+      "nameLabel": "Full Name",
+      "namePlaceholder": "Your name",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Create a password",
+      "confirmPasswordLabel": "Confirm Password",
+      "confirmPasswordPlaceholder": "Re-enter your password",
+      "submit": "Create Account",
+      "submitting": "Creating account...",
+      "passwordMismatch": "Passwords do not match",
+      "success": "Account created! You can sign in now.",
+      "error": "An error occurred. Please try again."
+    }
   }
 }

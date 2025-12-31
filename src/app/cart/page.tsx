@@ -3,6 +3,7 @@
 
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
+import { useSession } from "next-auth/react";
 import { PageLayout } from "@/shared/components/layouts";
 import { Button, Card, CardContent, Container, Badge } from "@/shared/components/ui";
 import { ExternalLink, ShoppingCart, Trash2 } from "lucide-react";
@@ -14,6 +15,7 @@ export default function CartPage() {
   const t = useTranslations("cart");
   const productT = useTranslations("product");
   const locale = useLocale();
+  const { data: session, status } = useSession();
   const { items, itemCount, removeItem, clearCart } = useCart();
   const { trackAndRedirect, isTracking } = useProductClick();
 
@@ -23,6 +25,10 @@ export default function CartPage() {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
+
+  const showAuthNotice =
+    status === "unauthenticated" ||
+    (status === "authenticated" && session?.user?.role !== "CUSTOMER");
 
   return (
     <PageLayout>
@@ -46,6 +52,31 @@ export default function CartPage() {
         </div>
 
         <Container className="py-8">
+          {showAuthNotice && (
+            <Card className="mb-6">
+              <CardContent className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-raff-primary">
+                    {t("authNoticeTitle")}
+                  </h2>
+                  <p className="text-sm text-raff-neutral-600">
+                    {t("authNoticeDescription")}
+                  </p>
+                </div>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Link href="/auth/login">
+                    <Button variant="outline">{t("loginCta")}</Button>
+                  </Link>
+                  <Link href="/auth/register">
+                    <Button>{t("registerCta")}</Button>
+                  </Link>
+                  <Link href="/products">
+                    <Button variant="outline">{t("continueShopping")}</Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          )}
           {items.length === 0 ? (
             <Card>
               <CardContent className="py-16 text-center">
