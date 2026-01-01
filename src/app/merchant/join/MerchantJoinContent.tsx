@@ -5,6 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
+import { useSession } from "next-auth/react";
 import { PageLayout } from "@/shared/components/layouts";
 import { Container, Card, CardContent, Button } from "@/shared/components/ui";
 import { ArrowForward } from "@/core/i18n";
@@ -19,6 +20,7 @@ import { TrendingUp, Zap, Shield, BarChart3, CheckCircle } from "lucide-react";
  */
 export function MerchantJoinContent() {
   const t = useTranslations("merchantJoin");
+  const { data: session, status } = useSession();
   const [connectingPlatform, setConnectingPlatform] = useState<
     "salla" | "zid" | null
   >(null);
@@ -30,6 +32,10 @@ export function MerchantJoinContent() {
   };
 
   const isConnecting = connectingPlatform !== null;
+
+  // Check if user is already a merchant
+  const isMerchant = session?.user?.role === "MERCHANT";
+  const isAuthenticated = status === "authenticated";
 
   return (
     <PageLayout navbarVariant="minimal">
@@ -66,13 +72,13 @@ export function MerchantJoinContent() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white/10">
-                        <svg
-                          className="h-7 w-7"
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                        >
-                          <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z" />
-                        </svg>
+                        <Image
+                          src="/images/brands/salla.svg"
+                          alt="Salla"
+                          width={28}
+                          height={28}
+                          className="h-7 w-7 brightness-0 invert"
+                        />
                       </div>
                       <div className="text-start">
                         <div className="text-xl font-bold">
@@ -106,13 +112,13 @@ export function MerchantJoinContent() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white/10">
-                        <svg
-                          className="h-7 w-7"
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                        >
-                          <path d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2z" />
-                        </svg>
+                        <Image
+                          src="/images/brands/zid.svg"
+                          alt="Zid"
+                          width={28}
+                          height={28}
+                          className="h-7 w-7 brightness-0 invert"
+                        />
                       </div>
                       <div className="text-start">
                         <div className="text-xl font-bold">
@@ -313,15 +319,28 @@ export function MerchantJoinContent() {
               {t("footer.contact")}
             </Button>
 
-            <div className="text-sm text-raff-neutral-600">
-              {t("footer.alreadyMerchant")}{" "}
-              <Link
-                href="/merchant/dashboard"
-                className="font-semibold text-raff-primary hover:underline"
-              >
-                {t("footer.signIn")}
-              </Link>
-            </div>
+            {/* Conditional Sign-in / Dashboard Link */}
+            {isMerchant ? (
+              <div className="text-sm text-raff-neutral-600">
+                {t("footer.alreadyMerchant")}{" "}
+                <Link
+                  href="/merchant/dashboard"
+                  className="font-semibold text-raff-primary hover:underline"
+                >
+                  {t("footer.goToDashboard")}
+                </Link>
+              </div>
+            ) : (
+              <div className="text-sm text-raff-neutral-600">
+                {t("footer.alreadyMerchant")}{" "}
+                <Link
+                  href="/auth/login?callbackUrl=/merchant/dashboard"
+                  className="font-semibold text-raff-primary hover:underline"
+                >
+                  {t("footer.signIn")}
+                </Link>
+              </div>
+            )}
           </div>
         </Container>
       </div>

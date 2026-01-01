@@ -339,7 +339,8 @@
       "questions": "Have questions?",
       "contact": "Contact Support",
       "alreadyMerchant": "Already a merchant?",
-      "signIn": "Sign in to dashboard"
+      "signIn": "Sign in to dashboard",
+      "goToDashboard": "Go to dashboard"
     }
   },
   "auth": {
