@@ -5,7 +5,8 @@
     "trending": "Trending",
     "categories": "Categories",
     "merchants": "Merchants",
-    "cart": "Cart"
+    "cart": "Cart",
+    "joinAsMerchant": "Join as Merchant"
   },
   "common": {
     "nav": {
@@ -39,23 +40,23 @@
     },
     "trending": {
       "title": "Trending Now",
-      "subtitle": "Discover the most popular products right now",
+      "subtitle": "Discover the most popular products",
       "viewAll": "View All Trending"
     },
     "howItWorks": {
       "title": "How It Works",
       "subtitle": "Discover, save, and buy in three simple steps",
       "step1": {
-        "title": "Search & Discover",
-        "description": "Browse thousands of products from verified Saudi stores"
+        "title": "Discover",
+        "description": "Browse trending products from verified Saudi stores"
       },
       "step2": {
-        "title": "Save Favorites",
-        "description": "Create wishlists and track products you love"
+        "title": "Compare",
+        "description": "Find the best prices and read reviews"
       },
       "step3": {
-        "title": "Shop Directly",
-        "description": "Buy directly from merchant stores with confidence"
+        "title": "Shop",
+        "description": "Purchase directly from the merchant's store"
       }
     }
   },
@@ -68,47 +69,64 @@
     "startSearching": "Start Your Search",
     "startSearchingDescription": "Enter keywords to find products from Saudi stores"
   },
+  "product": {
+    "backToProducts": "Back to Products",
+    "addToCart": "Add to Cart",
+    "viewOnStore": "View on Store",
+    "merchantLabel": "Sold by",
+    "categoryLabel": "Category",
+    "priceLabel": "Price",
+    "addedToCart": "Added to cart",
+    "description": "Description",
+    "noDescription": "No description available",
+    "similarProducts": "Similar Products",
+    "notFound": {
+      "title": "Product Not Found",
+      "description": "The product you're looking for doesn't exist or is no longer available",
+      "browseProducts": "Browse Products"
+    }
+  },
   "products": {
-    "title": "All Products",
-    "subtitle": "Browse products from Saudi stores",
+    "title": "Products",
+    "subtitle": "Browse our collection",
     "searchPlaceholder": "Search products...",
     "resultsCount": "{count} products found",
     "noResults": "No products found",
-    "noResultsDescription": "Try adjusting your filters or search terms",
+    "noResultsDescription": "Try adjusting your filters or search query",
+    "filters": {
+      "title": "Filters",
+      "categories": "Categories",
+      "priceRange": "Price Range",
+      "minPrice": "Min",
+      "maxPrice": "Max",
+      "apply": "Apply",
+      "clear": "Clear Filters"
+    },
+    "sort": {
+      "label": "Sort by",
+      "trending": "Trending",
+      "newest": "Newest",
+      "priceLow": "Price: Low to High",
+      "priceHigh": "Price: High to Low"
+    },
+    "noProducts": "No products found",
+    "noProductsDescription": "Try adjusting your filters or search query",
+    "viewAllProducts": "View All Products",
     "sortTrending": "Trending",
     "sortPriceLow": "Price: Low to High",
     "sortPriceHigh": "Price: High to Low",
     "sortNewest": "Newest",
     "categories": "Categories",
     "allCategories": "All Categories",
-    "filters": "Filters",
     "search": "Search",
     "previous": "Previous",
     "next": "Next"
   },
-  "product": {
-    "notFound": {
-      "title": "Product Not Found",
-      "description": "The product you're looking for doesn't exist or has been removed",
-      "browseProducts": "Browse Products"
-    },
-    "description": "Description",
-    "inStock": "In Stock",
-    "outOfStock": "Out of Stock",
-    "limitedStock": "Only {count} left in stock",
-    "taxIncluded": "Tax included",
-    "buyNow": "Buy Now",
-    "addToCart": "Add to Cart",
-    "addedToCart": "Added to cart",
-    "visitStore": "Visit Store",
-    "backToProducts": "Back to Products",
-    "redirectNotice": "You'll be redirected to {merchant}'s store to complete your purchase"
-  },
   "cart": {
-    "title": "Your Cart",
+    "title": "Shopping Cart",
     "itemCount": "{count} items",
     "emptyTitle": "Your cart is empty",
-    "emptyDescription": "Add products to save them for later.",
+    "emptyDescription": "Add some products to save for later.",
     "continueShopping": "Continue Shopping",
     "merchantFallback": "Unknown merchant",
     "quantity": "Qty: {count}",
@@ -265,6 +283,64 @@
     "subtitle": "Manage your account and preferences",
     "comingSoon": "Coming Soon",
     "comingSoonDesc": "Account settings and preferences coming soon"
+  },
+  "merchantJoin": {
+    "title": "Join Raff as a Merchant",
+    "subtitle": "Connect your store and start reaching thousands of customers across Saudi Arabia",
+    "heading": "Choose Your Platform",
+    "description": "Connect your existing Salla or Zid store with one click. No manual setup required.",
+    "benefits": {
+      "title": "Why Join Raff?",
+      "visibility": {
+        "title": "Increased Visibility",
+        "description": "Get discovered by thousands of customers actively searching for trending products"
+      },
+      "integration": {
+        "title": "Seamless Integration",
+        "description": "Connect your Salla or Zid store in seconds with our one-click OAuth integration"
+      },
+      "control": {
+        "title": "Full Control",
+        "description": "Maintain complete control over your pricing, inventory, and customer relationships"
+      },
+      "tracking": {
+        "title": "Performance Tracking",
+        "description": "Monitor views, clicks, and conversions with our comprehensive analytics dashboard"
+      }
+    },
+    "buttons": {
+      "connectSalla": "Connect Salla Store",
+      "connectZid": "Connect Zid Store",
+      "connecting": "Connecting..."
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "step1": {
+        "title": "1. Connect Your Store",
+        "description": "Choose your platform and authorize Raff to access your product catalog"
+      },
+      "step2": {
+        "title": "2. Sync Products",
+        "description": "Your products are automatically synced and displayed to our customers"
+      },
+      "step3": {
+        "title": "3. Track Performance",
+        "description": "Monitor your sales and engagement through our merchant dashboard"
+      }
+    },
+    "features": {
+      "title": "What You Get",
+      "analytics": "Detailed analytics and insights",
+      "customers": "Access to thousands of Saudi shoppers",
+      "commission": "Competitive commission rates",
+      "support": "24/7 merchant support"
+    },
+    "footer": {
+      "questions": "Have questions?",
+      "contact": "Contact Support",
+      "alreadyMerchant": "Already a merchant?",
+      "signIn": "Sign in to dashboard"
+    }
   },
   "auth": {
     "login": {

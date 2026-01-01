@@ -10,22 +10,51 @@ import { Button, Container } from "@/shared/components/ui";
 import { SearchInput } from "@/shared/components/SearchInput";
 import { Menu, X, Globe, ShoppingCart } from "lucide-react";
 import { useCart } from "@/lib/hooks/useCart";
+import {
+  navbarConfig,
+  getNavItemsForVariant,
+  isFeatureEnabled,
+  type NavbarVariant,
+} from "../config/navbar.config";
 
-export function Navbar() {
-  const t = useTranslations("nav");
-  const commonT = useTranslations("common");
+export interface NavbarProps {
+  variant?: NavbarVariant;
+}
+
+/**
+ * Navbar Component
+ *
+ * Configurable navbar with multiple variants:
+ * - main: Full navbar with all features (default)
+ * - minimal: Logo, home, and language switcher only
+ * - merchant: For merchant-specific pages
+ * - auth: For authentication pages
+ *
+ * @param variant - The navbar variant to render (default: "main")
+ *
+ * @example
+ * // Main navbar (default)
+ * <Navbar />
+ *
+ * @example
+ * // Minimal navbar for merchant pages
+ * <Navbar variant="minimal" />
+ */
+export function Navbar({ variant = "main" }: NavbarProps) {
+  const t = useTranslations();
   const currentLocale = useLocale();
   const { switchLocale } = useLocaleHook();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { itemCount } = useCart();
 
-  const navItems = [
-    { label: t("home"), href: "/" },
-    { label: t("products"), href: "/products" },
-    { label: t("trending"), href: "/trending" },
-    { label: t("categories"), href: "/categories" },
-    { label: t("merchants"), href: "/merchants" },
-  ];
+  const navItems = getNavItemsForVariant(variant);
+  const showSearch = isFeatureEnabled("search", variant);
+  const showCart = isFeatureEnabled("cart", variant);
+  const showAuth = isFeatureEnabled("auth", variant);
+  const showLanguageSwitcher = isFeatureEnabled("languageSwitcher", variant);
+
+  // Determine if this is a minimal variant
+  const isMinimal = variant === "minimal" || variant === "auth";
 
   return (
     <nav className="fixed top-0 z-50 w-full border-b border-raff-neutral-200 bg-white/95 backdrop-blur">
@@ -34,99 +63,119 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex shrink-0 items-center py-2">
             <Image
-              src="/logo.png"
-              alt="Raff Logo"
-              width={144}
-              height={36}
+              src={navbarConfig.logo.src}
+              alt={navbarConfig.logo.alt}
+              width={navbarConfig.logo.width}
+              height={navbarConfig.logo.height}
               className="h-auto w-28 object-contain sm:w-32 md:w-36"
             />
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden items-center gap-6 md:flex">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="whitespace-nowrap text-sm font-medium text-raff-neutral-700 transition-colors hover:text-raff-primary"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
+          {/* Desktop Navigation - Only show if not minimal */}
+          {!isMinimal && navItems.length > 0 && (
+            <div className="hidden items-center gap-6 md:flex">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="whitespace-nowrap text-sm font-medium text-raff-neutral-700 transition-colors hover:text-raff-primary"
+                >
+                  {t(item.label)}
+                </Link>
+              ))}
+            </div>
+          )}
 
           {/* Search - Desktop Only */}
-          <div className="hidden flex-1 max-w-md lg:block">
-            <SearchInput
-              placeholder={commonT("searchPlaceholder")}
-              size="sm"
-              showSuggestions={true}
-            />
-          </div>
+          {showSearch && (
+            <div className="hidden flex-1 max-w-md lg:block">
+              <SearchInput
+                placeholder={t("common.searchPlaceholder")}
+                size="sm"
+                showSuggestions={true}
+              />
+            </div>
+          )}
 
           {/* Right Section */}
           <div className="flex shrink-0 items-center gap-3">
             {/* Cart */}
-            <Link href="/cart" className="relative">
-              <Button variant="ghost" size="icon" className="hover:bg-raff-neutral-100">
-                <ShoppingCart className="h-5 w-5" />
-              </Button>
-              {itemCount > 0 && (
-                <span className="absolute -end-1 -top-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-raff-accent px-1 text-[10px] font-semibold text-white">
-                  {itemCount > 99 ? "99+" : itemCount}
-                </span>
-              )}
-            </Link>
+            {showCart && (
+              <Link href="/cart" className="relative">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="hover:bg-raff-neutral-100"
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                </Button>
+                {itemCount > 0 && (
+                  <span className="absolute -end-1 -top-1 flex h-5 items-center justify-center rounded-full bg-raff-accent px-1 text-[10px] font-semibold text-white">
+                    {itemCount > 99 ? "99+" : itemCount}
+                  </span>
+                )}
+              </Link>
+            )}
 
             {/* Language Switcher */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => switchLocale(currentLocale === "ar" ? "en" : "ar")}
-              className="hover:bg-raff-neutral-100"
-            >
-              <Globe className="h-5 w-5" />
-            </Button>
-
-            {/* Login Button */}
-            <Link href="/auth/login" className="hidden sm:inline-flex">
+            {showLanguageSwitcher && (
               <Button
-                variant="outline"
-                size="sm"
-                className="border-raff-primary text-raff-primary hover:bg-raff-primary hover:text-white"
+                variant="ghost"
+                size="icon"
+                onClick={() =>
+                  switchLocale(currentLocale === "ar" ? "en" : "ar")
+                }
+                className="hover:bg-raff-neutral-100"
               >
-                {commonT("actions.login")}
+                <Globe className="h-5 w-5" />
               </Button>
-            </Link>
+            )}
 
-            {/* Mobile Menu Toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? (
-                <X className="h-5 w-5" />
-              ) : (
-                <Menu className="h-5 w-5" />
-              )}
-            </Button>
+            {/* Login Button - Desktop */}
+            {showAuth && (
+              <Link href="/auth/login" className="hidden sm:inline-flex">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-raff-primary text-raff-primary hover:bg-raff-primary hover:text-white"
+                >
+                  {t("common.actions.login")}
+                </Button>
+              </Link>
+            )}
+
+            {/* Mobile Menu Toggle - Only show if not minimal or has items */}
+            {(!isMinimal || navItems.length > 0) && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                {mobileMenuOpen ? (
+                  <X className="h-5 w-5" />
+                ) : (
+                  <Menu className="h-5 w-5" />
+                )}
+              </Button>
+            )}
           </div>
         </div>
 
-        {/* Mobile Search Bar - Improved spacing */}
-        <div className="pb-3 pt-2 lg:hidden">
-          <SearchInput
-            placeholder={commonT("searchPlaceholder")}
-            size="md"
-            showSuggestions={true}
-          />
-        </div>
+        {/* Mobile Search Bar - Only show if search is enabled */}
+        {showSearch && (
+          <div className="pb-3 pt-2 lg:hidden">
+            <SearchInput
+              placeholder={t("common.searchPlaceholder")}
+              size="md"
+              showSuggestions={true}
+            />
+          </div>
+        )}
       </Container>
 
       {/* Mobile Menu */}
-      {mobileMenuOpen && (
+      {mobileMenuOpen && !isMinimal && (
         <div className="border-t border-raff-neutral-200 bg-white md:hidden">
           <Container>
             <div className="flex flex-col gap-4 py-4">
@@ -137,27 +186,36 @@ export function Navbar() {
                   className="text-sm font-medium text-raff-neutral-700 hover:text-raff-primary"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  {item.label}
+                  {t(item.label)}
                 </Link>
               ))}
-              <Link href="/cart" onClick={() => setMobileMenuOpen(false)}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full border-raff-primary text-raff-primary"
+
+              {showCart && (
+                <Link href="/cart" onClick={() => setMobileMenuOpen(false)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full border-raff-primary text-raff-primary"
+                  >
+                    {t("nav.cart")}
+                  </Button>
+                </Link>
+              )}
+
+              {showAuth && (
+                <Link
+                  href="/auth/login"
+                  onClick={() => setMobileMenuOpen(false)}
                 >
-                  {t("cart")}
-                </Button>
-              </Link>
-              <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full border-raff-primary text-raff-primary"
-                >
-                  {commonT("actions.login")}
-                </Button>
-              </Link>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full border-raff-primary text-raff-primary"
+                  >
+                    {t("common.actions.login")}
+                  </Button>
+                </Link>
+              )}
             </div>
           </Container>
         </div>
