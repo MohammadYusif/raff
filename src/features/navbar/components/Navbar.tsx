@@ -6,10 +6,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { useTranslations, useLocale } from "next-intl";
 import { useLocale as useLocaleHook } from "@/core/i18n";
+import { useSession } from "next-auth/react";
 import { Button, Container } from "@/shared/components/ui";
 import { SearchInput } from "@/shared/components/SearchInput";
 import { Menu, X, Globe, ShoppingCart } from "lucide-react";
 import { useCart } from "@/lib/hooks/useCart";
+import { UserMenu } from "./UserMenu";
 import {
   navbarConfig,
   getNavItemsForVariant,
@@ -44,6 +46,7 @@ export function Navbar({ variant = "main" }: NavbarProps) {
   const t = useTranslations();
   const currentLocale = useLocale();
   const { switchLocale } = useLocaleHook();
+  const { data: session, status } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { itemCount } = useCart();
 
@@ -55,6 +58,9 @@ export function Navbar({ variant = "main" }: NavbarProps) {
 
   // Determine if this is a minimal variant
   const isMinimal = variant === "minimal" || variant === "auth";
+
+  // Check if user is logged in
+  const isAuthenticated = status === "authenticated" && session?.user;
 
   return (
     <nav className="fixed top-0 z-50 w-full border-b border-raff-neutral-200 bg-white/95 backdrop-blur">
@@ -131,17 +137,27 @@ export function Navbar({ variant = "main" }: NavbarProps) {
               </Button>
             )}
 
-            {/* Login Button - Desktop */}
+            {/* Auth Section - Show either UserMenu or Login button */}
             {showAuth && (
-              <Link href="/auth/login" className="hidden sm:inline-flex">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-raff-primary text-raff-primary hover:bg-raff-primary hover:text-white"
-                >
-                  {t("common.actions.login")}
-                </Button>
-              </Link>
+              <>
+                {isAuthenticated ? (
+                  // Show User Menu when logged in
+                  <div className="hidden sm:block">
+                    <UserMenu />
+                  </div>
+                ) : (
+                  // Show Login button when not logged in
+                  <Link href="/auth/login" className="hidden sm:inline-flex">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-raff-primary text-raff-primary hover:bg-raff-primary hover:text-white"
+                    >
+                      {t("common.actions.login")}
+                    </Button>
+                  </Link>
+                )}
+              </>
             )}
 
             {/* Mobile Menu Toggle - Only show if not minimal or has items */}
@@ -203,18 +219,28 @@ export function Navbar({ variant = "main" }: NavbarProps) {
               )}
 
               {showAuth && (
-                <Link
-                  href="/auth/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full border-raff-primary text-raff-primary"
-                  >
-                    {t("common.actions.login")}
-                  </Button>
-                </Link>
+                <>
+                  {isAuthenticated ? (
+                    // Show User Menu in mobile
+                    <div className="border-t border-raff-neutral-200 pt-4">
+                      <UserMenu />
+                    </div>
+                  ) : (
+                    // Show Login button when not logged in
+                    <Link
+                      href="/auth/login"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full border-raff-primary text-raff-primary"
+                      >
+                        {t("common.actions.login")}
+                      </Button>
+                    </Link>
+                  )}
+                </>
               )}
             </div>
           </Container>
