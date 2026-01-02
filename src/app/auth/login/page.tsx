@@ -1,5 +1,6 @@
 // src/app/auth/login/page.tsx
-import { Metadata } from "next";
+import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { LoginContent } from "./LoginContent";
 
 /**
@@ -10,10 +11,26 @@ import { LoginContent } from "./LoginContent";
  * navigation and footer elements that might distract from the login flow.
  */
 
-export const metadata: Metadata = {
-  title: "Login - Raff",
-  description: "Login to your Raff account",
-};
+const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
+const TITLES = {
+  ar: "تسجيل الدخول - رف",
+  en: "Login - Raff",
+} as const;
+const DESCRIPTIONS = {
+  ar: "سجّل الدخول إلى حساب رف",
+  en: "Login to your Raff account",
+} as const;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const cookieStore = await cookies();
+  const storedLocale = cookieStore.get(LOCALE_COOKIE_NAME)?.value;
+  const locale = storedLocale === "en" ? "en" : "ar";
+
+  return {
+    title: TITLES[locale],
+    description: DESCRIPTIONS[locale],
+  };
+}
 
 export default function LoginPage() {
   return <LoginContent />;

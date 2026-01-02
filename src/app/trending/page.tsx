@@ -6,7 +6,7 @@ import { TrendingContent } from "./TrendingContent";
 
 const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 const TITLES = {
-  ar: "المنتجات الرائجة - Raff",
+  ar: "المنتجات الرائجة - رف",
   en: "Trending Products - Raff",
 } as const;
 const DESCRIPTIONS = {

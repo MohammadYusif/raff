@@ -6,7 +6,7 @@ import { CategoriesContent } from "./CategoriesContent";
 
 const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 const TITLES = {
-  ar: "التصنيفات - Raff",
+  ar: "التصنيفات - رف",
   en: "Categories - Raff",
 } as const;
 const DESCRIPTIONS = {

@@ -1,5 +1,6 @@
 // src/app/auth/register/page.tsx
-import { Metadata } from "next";
+import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { RegisterContent } from "./RegisterContent";
 
 /**
@@ -10,10 +11,26 @@ import { RegisterContent } from "./RegisterContent";
  * navigation and footer elements that might distract from the registration flow.
  */
 
-export const metadata: Metadata = {
-  title: "Register - Raff",
-  description: "Create your Raff account",
-};
+const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
+const TITLES = {
+  ar: "إنشاء حساب - رف",
+  en: "Register - Raff",
+} as const;
+const DESCRIPTIONS = {
+  ar: "أنشئ حساب رف الخاص بك",
+  en: "Create your Raff account",
+} as const;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const cookieStore = await cookies();
+  const storedLocale = cookieStore.get(LOCALE_COOKIE_NAME)?.value;
+  const locale = storedLocale === "en" ? "en" : "ar";
+
+  return {
+    title: TITLES[locale],
+    description: DESCRIPTIONS[locale],
+  };
+}
 
 export default function RegisterPage() {
   return <RegisterContent />;

@@ -19,7 +19,7 @@ interface ProductsPageProps {
 
 const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 const TITLES = {
-  ar: "المنتجات - Raff",
+  ar: "المنتجات - رف",
   en: "Products - Raff",
 } as const;
 const DESCRIPTIONS = {

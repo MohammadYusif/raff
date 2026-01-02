@@ -8,11 +8,11 @@ import { CategoryDetailContent } from "./CategoryDetailContent";
 
 const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 const NOT_FOUND_TITLES = {
-  ar: "التصنيف غير موجود - Raff",
+  ar: "التصنيف غير موجود - رف",
   en: "Category Not Found - Raff",
 } as const;
 const DEFAULT_TITLES = {
-  ar: "التصنيف - Raff",
+  ar: "التصنيف - رف",
   en: "Category - Raff",
 } as const;
 
@@ -39,6 +39,7 @@ export async function generateMetadata({
     const cookieStore = await cookies();
     const storedLocale = cookieStore.get(LOCALE_COOKIE_NAME)?.value;
     const locale = storedLocale === "en" ? "en" : "ar";
+    const brandName = locale === "ar" ? "رف" : "Raff";
 
     const category = await prisma.category.findUnique({
       where: { slug },
@@ -64,7 +65,7 @@ export async function generateMetadata({
         : category.description;
 
     return {
-      title: `${title} - Raff`,
+      title: `${title} - ${brandName}`,
       description: description || "",
     };
   } catch {

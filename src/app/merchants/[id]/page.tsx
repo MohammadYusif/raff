@@ -8,11 +8,11 @@ import { MerchantDetailContent } from "./MerchantDetailContent";
 
 const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 const NOT_FOUND_TITLES = {
-  ar: "التاجر غير موجود - Raff",
+  ar: "التاجر غير موجود - رف",
   en: "Merchant Not Found - Raff",
 } as const;
 const DEFAULT_TITLES = {
-  ar: "التاجر - Raff",
+  ar: "التاجر - رف",
   en: "Merchant - Raff",
 } as const;
 
@@ -39,6 +39,7 @@ export async function generateMetadata({
     const cookieStore = await cookies();
     const storedLocale = cookieStore.get(LOCALE_COOKIE_NAME)?.value;
     const locale = storedLocale === "en" ? "en" : "ar";
+    const brandName = locale === "ar" ? "رف" : "Raff";
 
     const merchant = await prisma.merchant.findFirst({
       where: {
@@ -68,7 +69,7 @@ export async function generateMetadata({
         : merchant.description;
 
     return {
-      title: `${title} - Raff`,
+      title: `${title} - ${brandName}`,
       description: description || "",
     };
   } catch {

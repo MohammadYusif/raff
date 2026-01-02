@@ -8,7 +8,7 @@ import { addCartFields } from "@/lib/products/cart";
 
 const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 const NOT_FOUND_TITLES = {
-  ar: "المنتج غير موجود - Raff",
+  ar: "المنتج غير موجود - رف",
   en: "Product Not Found - Raff",
 } as const;
 
@@ -29,6 +29,7 @@ export async function generateMetadata({
     const cookieStore = await cookies();
     const storedLocale = cookieStore.get(LOCALE_COOKIE_NAME)?.value;
     const locale = storedLocale === "en" ? "en" : "ar";
+    const brandName = locale === "ar" ? "رف" : "Raff";
 
     const product = await prisma.product.findUnique({
       where: { slug },
@@ -57,7 +58,7 @@ export async function generateMetadata({
     const image = product.thumbnail || product.images?.[0] || null;
 
     return {
-      title: `${title} - Raff`,
+      title: `${title} - ${brandName}`,
       description: description || "",
       openGraph: {
         title,

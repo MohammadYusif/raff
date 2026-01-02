@@ -21,12 +21,12 @@ const geistMono = Geist_Mono({
 const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 
 const TITLES = {
-  ar: "رَفّ Raff - اكتشف المنتجات الرائجة",
+  ar: "رف - اكتشف المنتجات",
   en: "Raff - Discover Trending Products",
 } as const;
 
 const DESCRIPTIONS = {
-  ar: "منصة رَفّ - اكتشف أفضل المنتجات من المتاجر السعودية",
+  ar: "منصة رف - اكتشف أفضل المنتجات من المتاجر السعودية",
   en: "Raff Platform - Discover the best products from Saudi stores",
 } as const;
 

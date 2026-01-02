@@ -6,7 +6,7 @@ import { MerchantsContent } from "./MerchantsContent";
 
 const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 const TITLES = {
-  ar: "التجار - Raff",
+  ar: "التجار - رف",
   en: "Merchants - Raff",
 } as const;
 const DESCRIPTIONS = {
