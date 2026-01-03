@@ -1,5 +1,5 @@
 // prisma/seed.ts
-import { PrismaClient, MerchantStatus, OrderStatus, UserRole } from '@prisma/client';
+import { PrismaClient, MerchantStatus, OrderStatus, UserRole, Platform } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -109,8 +109,6 @@ async function main() {
     { name: 'Tech Galaxy', email: 'contact@techgalaxy.sa' },
     { name: 'Fashion House', email: 'info@fashionhouse.sa' },
     { name: 'Home Essentials', email: 'hello@homeessentials.sa' },
-    { name: 'Beauty Corner', email: 'care@beautycorner.sa' },
-    { name: 'Sports Pro', email: 'support@sportspro.sa' },
   ];
 
   const merchantUsers = await Promise.all(
@@ -186,40 +184,6 @@ async function main() {
         descriptionAr: 'منتجات منزلية ومطبخية عالية الجودة',
         sallaStoreId: 'store_home_essentials_003',
         sallaStoreUrl: 'https://homeessentials.salla.sa',
-        status: MerchantStatus.APPROVED,
-        approvedAt: new Date(),
-        isActive: true,
-        autoSyncProducts: true,
-      },
-    }),
-    prisma.merchant.create({
-      data: {
-        name: 'Beauty Corner',
-        nameAr: 'ركن الجمال',
-        email: 'care@beautycorner.sa',
-        userId: getMerchantUserId('care@beautycorner.sa'),
-        phone: '+966504567890',
-        description: 'Premium beauty and skincare',
-        descriptionAr: 'منتجات جمال وعناية بالبشرة مميزة',
-        sallaStoreId: 'store_beauty_corner_004',
-        sallaStoreUrl: 'https://beautycorner.salla.sa',
-        status: MerchantStatus.APPROVED,
-        approvedAt: new Date(),
-        isActive: true,
-        autoSyncProducts: true,
-      },
-    }),
-    prisma.merchant.create({
-      data: {
-        name: 'Sports Pro',
-        nameAr: 'سبورتس برو',
-        email: 'support@sportspro.sa',
-        userId: getMerchantUserId('support@sportspro.sa'),
-        phone: '+966505678901',
-        description: 'Professional sports equipment',
-        descriptionAr: 'معدات رياضية احترافية',
-        sallaStoreId: 'store_sports_pro_005',
-        sallaStoreUrl: 'https://sportspro.salla.sa',
         status: MerchantStatus.APPROVED,
         approvedAt: new Date(),
         isActive: true,
@@ -423,7 +387,7 @@ async function main() {
       },
     }),
 
-    // Beauty & Health - Beauty Corner
+    // Beauty & Health - Fashion House
     prisma.product.create({
       data: {
         title: 'Vitamin C Serum Set',
@@ -437,8 +401,8 @@ async function main() {
         thumbnail: '/products/serum-1.jpg',
         categoryId: categories[3].id,
         sallaProductId: 'prod_serum_008',
-        sallaUrl: 'https://beautycorner.salla.sa/product/vitamin-c-serum',
-        merchantId: merchants[3].id,
+        sallaUrl: 'https://fashionhouse.salla.sa/product/vitamin-c-serum',
+        merchantId: merchants[1].id,
         isActive: true,
         inStock: true,
         quantity: 85,
@@ -462,8 +426,8 @@ async function main() {
         thumbnail: '/products/perfume-1.jpg',
         categoryId: categories[3].id,
         sallaProductId: 'prod_perfume_009',
-        sallaUrl: 'https://beautycorner.salla.sa/product/luxury-perfume',
-        merchantId: merchants[3].id,
+        sallaUrl: 'https://fashionhouse.salla.sa/product/luxury-perfume',
+        merchantId: merchants[1].id,
         isActive: true,
         inStock: true,
         quantity: 50,
@@ -476,7 +440,7 @@ async function main() {
       },
     }),
 
-    // Sports & Outdoors - Sports Pro
+    // Sports & Outdoors - Home Essentials
     prisma.product.create({
       data: {
         title: 'Yoga Mat Premium',
@@ -489,12 +453,12 @@ async function main() {
         thumbnail: '/products/yoga-mat-1.jpg',
         categoryId: categories[4].id,
         sallaProductId: 'prod_yoga_010',
-        sallaUrl: 'https://sportspro.salla.sa/product/yoga-mat',
-        merchantId: merchants[4].id,
+        sallaUrl: 'https://homeessentials.salla.sa/product/yoga-mat',
+        merchantId: merchants[2].id,
         isActive: true,
         inStock: true,
         quantity: 150,
-        trendingScore: 73.9,
+        trendingScore: 0,
         viewCount: 480,
         clickCount: 135,
         orderCount: 34,
@@ -515,12 +479,12 @@ async function main() {
         thumbnail: '/products/dumbbells-1.jpg',
         categoryId: categories[4].id,
         sallaProductId: 'prod_dumbbells_011',
-        sallaUrl: 'https://sportspro.salla.sa/product/dumbbells',
-        merchantId: merchants[4].id,
+        sallaUrl: 'https://homeessentials.salla.sa/product/dumbbells',
+        merchantId: merchants[2].id,
         isActive: true,
         inStock: true,
         quantity: 32,
-        trendingScore: 81.5,
+        trendingScore: 0,
         viewCount: 720,
         clickCount: 195,
         orderCount: 49,
@@ -529,7 +493,7 @@ async function main() {
       },
     }),
 
-    // More trending products
+    // Additional products
     prisma.product.create({
       data: {
         title: 'Wireless Keyboard & Mouse Combo',
@@ -547,7 +511,7 @@ async function main() {
         isActive: true,
         inStock: true,
         quantity: 95,
-        trendingScore: 68.2,
+        trendingScore: 0,
         viewCount: 420,
         clickCount: 115,
         orderCount: 28,
@@ -567,12 +531,12 @@ async function main() {
         thumbnail: '/products/bottle-1.jpg',
         categoryId: categories[4].id,
         sallaProductId: 'prod_bottle_013',
-        sallaUrl: 'https://sportspro.salla.sa/product/water-bottle',
-        merchantId: merchants[4].id,
+        sallaUrl: 'https://homeessentials.salla.sa/product/water-bottle',
+        merchantId: merchants[2].id,
         isActive: true,
         inStock: true,
         quantity: 200,
-        trendingScore: 65.7,
+        trendingScore: 0,
         viewCount: 380,
         clickCount: 98,
         orderCount: 24,
@@ -597,7 +561,7 @@ async function main() {
         isActive: true,
         inStock: true,
         quantity: 88,
-        trendingScore: 62.4,
+        trendingScore: 0,
         viewCount: 310,
         clickCount: 82,
         orderCount: 19,
@@ -622,12 +586,216 @@ async function main() {
         isActive: true,
         inStock: true,
         quantity: 110,
-        trendingScore: 70.1,
+        trendingScore: 0,
         viewCount: 450,
         clickCount: 125,
         orderCount: 31,
         slug: 'scented-candle-gift-set',
         tags: ['candles', 'home', 'fragrance', 'gift'],
+      },
+    }),
+    prisma.product.create({
+      data: {
+        title: '4K UHD Monitor 27-Inch',
+        titleAr: '4K UHD Monitor 27-Inch',
+        description: '27-inch 4K UHD monitor with HDR support and ultra-thin bezels.',
+        descriptionAr: '27-inch 4K UHD monitor with HDR support and ultra-thin bezels.',
+        price: 1299.00,
+        originalPrice: 1599.00,
+        currency: 'SAR',
+        images: ['/products/monitor-1.jpg'],
+        thumbnail: '/products/monitor-1.jpg',
+        categoryId: categories[0].id,
+        sallaProductId: 'prod_monitor_016',
+        sallaUrl: 'https://techgalaxy.salla.sa/product/4k-uhd-monitor',
+        merchantId: merchants[0].id,
+        isActive: true,
+        inStock: true,
+        quantity: 30,
+        trendingScore: 0,
+        viewCount: 220,
+        clickCount: 65,
+        orderCount: 12,
+        slug: '4k-uhd-monitor-27-inch',
+        tags: ['monitor', 'display', '4k', 'electronics'],
+      },
+    }),
+    prisma.product.create({
+      data: {
+        title: 'USB-C Docking Station',
+        titleAr: 'USB-C Docking Station',
+        description: '7-in-1 USB-C dock with HDMI, USB-A, SD card, and 100W power delivery.',
+        descriptionAr: '7-in-1 USB-C dock with HDMI, USB-A, SD card, and 100W power delivery.',
+        price: 399.00,
+        currency: 'SAR',
+        images: ['/products/dock-1.jpg'],
+        thumbnail: '/products/dock-1.jpg',
+        categoryId: categories[0].id,
+        sallaProductId: 'prod_dock_017',
+        sallaUrl: 'https://techgalaxy.salla.sa/product/usb-c-dock',
+        merchantId: merchants[0].id,
+        isActive: true,
+        inStock: true,
+        quantity: 75,
+        trendingScore: 0,
+        viewCount: 180,
+        clickCount: 52,
+        orderCount: 9,
+        slug: 'usb-c-docking-station',
+        tags: ['usb-c', 'dock', 'laptop', 'accessories'],
+      },
+    }),
+    prisma.product.create({
+      data: {
+        title: 'Linen Summer Dress',
+        titleAr: 'Linen Summer Dress',
+        description: 'Breathable linen dress with a relaxed fit and adjustable waist.',
+        descriptionAr: 'Breathable linen dress with a relaxed fit and adjustable waist.',
+        price: 329.00,
+        originalPrice: 449.00,
+        currency: 'SAR',
+        images: ['/products/linen-dress-1.jpg'],
+        thumbnail: '/products/linen-dress-1.jpg',
+        categoryId: categories[1].id,
+        sallaProductId: 'prod_dress_018',
+        sallaUrl: 'https://fashionhouse.salla.sa/product/linen-summer-dress',
+        merchantId: merchants[1].id,
+        isActive: true,
+        inStock: true,
+        quantity: 50,
+        trendingScore: 0,
+        viewCount: 140,
+        clickCount: 42,
+        orderCount: 11,
+        slug: 'linen-summer-dress',
+        tags: ['dress', 'linen', 'summer', 'fashion'],
+      },
+    }),
+    prisma.product.create({
+      data: {
+        title: 'Air Fryer XL',
+        titleAr: 'Air Fryer XL',
+        description: 'XL air fryer with 8 preset programs and easy-clean basket.',
+        descriptionAr: 'XL air fryer with 8 preset programs and easy-clean basket.',
+        price: 799.00,
+        originalPrice: 999.00,
+        currency: 'SAR',
+        images: ['/products/air-fryer-1.jpg'],
+        thumbnail: '/products/air-fryer-1.jpg',
+        categoryId: categories[2].id,
+        sallaProductId: 'prod_airfryer_019',
+        sallaUrl: 'https://homeessentials.salla.sa/product/air-fryer-xl',
+        merchantId: merchants[2].id,
+        isActive: true,
+        inStock: true,
+        quantity: 40,
+        trendingScore: 0,
+        viewCount: 260,
+        clickCount: 70,
+        orderCount: 16,
+        slug: 'air-fryer-xl',
+        tags: ['air-fryer', 'kitchen', 'appliance', 'home'],
+      },
+    }),
+    prisma.product.create({
+      data: {
+        title: 'Hydrating Face Mask Pack',
+        titleAr: 'Hydrating Face Mask Pack',
+        description: 'Pack of 10 hydrating masks with aloe and hyaluronic acid.',
+        descriptionAr: 'Pack of 10 hydrating masks with aloe and hyaluronic acid.',
+        price: 149.00,
+        currency: 'SAR',
+        images: ['/products/face-mask-1.jpg'],
+        thumbnail: '/products/face-mask-1.jpg',
+        categoryId: categories[3].id,
+        sallaProductId: 'prod_mask_020',
+        sallaUrl: 'https://fashionhouse.salla.sa/product/hydrating-face-mask',
+        merchantId: merchants[1].id,
+        isActive: true,
+        inStock: true,
+        quantity: 120,
+        trendingScore: 0,
+        viewCount: 120,
+        clickCount: 40,
+        orderCount: 8,
+        slug: 'hydrating-face-mask-pack',
+        tags: ['skincare', 'mask', 'hydration', 'beauty'],
+      },
+    }),
+    prisma.product.create({
+      data: {
+        title: 'Trail Running Shoes',
+        titleAr: 'Trail Running Shoes',
+        description: 'Lightweight trail runners with durable outsole and shock absorption.',
+        descriptionAr: 'Lightweight trail runners with durable outsole and shock absorption.',
+        price: 589.00,
+        originalPrice: 749.00,
+        currency: 'SAR',
+        images: ['/products/trail-shoes-1.jpg'],
+        thumbnail: '/products/trail-shoes-1.jpg',
+        categoryId: categories[4].id,
+        sallaProductId: 'prod_trailshoes_021',
+        sallaUrl: 'https://homeessentials.salla.sa/product/trail-running-shoes',
+        merchantId: merchants[2].id,
+        isActive: true,
+        inStock: true,
+        quantity: 65,
+        trendingScore: 0,
+        viewCount: 160,
+        clickCount: 50,
+        orderCount: 10,
+        slug: 'trail-running-shoes',
+        tags: ['shoes', 'running', 'outdoors', 'sports'],
+      },
+    }),
+    prisma.product.create({
+      data: {
+        title: 'Productivity Planner 2025',
+        titleAr: 'Productivity Planner 2025',
+        description: 'Weekly planner with habit tracking, goals, and note pages.',
+        descriptionAr: 'Weekly planner with habit tracking, goals, and note pages.',
+        price: 89.00,
+        currency: 'SAR',
+        images: ['/products/planner-1.jpg'],
+        thumbnail: '/products/planner-1.jpg',
+        categoryId: categories[5].id,
+        sallaProductId: 'prod_planner_022',
+        sallaUrl: 'https://homeessentials.salla.sa/product/productivity-planner-2025',
+        merchantId: merchants[2].id,
+        isActive: true,
+        inStock: true,
+        quantity: 140,
+        trendingScore: 0,
+        viewCount: 100,
+        clickCount: 30,
+        orderCount: 6,
+        slug: 'productivity-planner-2025',
+        tags: ['planner', 'stationery', 'productivity', 'books'],
+      },
+    }),
+    prisma.product.create({
+      data: {
+        title: 'Premium Notebook Set',
+        titleAr: 'Premium Notebook Set',
+        description: 'Set of 3 hardcover notebooks with dotted pages.',
+        descriptionAr: 'Set of 3 hardcover notebooks with dotted pages.',
+        price: 119.00,
+        currency: 'SAR',
+        images: ['/products/notebook-1.jpg'],
+        thumbnail: '/products/notebook-1.jpg',
+        categoryId: categories[5].id,
+        sallaProductId: 'prod_notebook_023',
+        sallaUrl: 'https://homeessentials.salla.sa/product/premium-notebook-set',
+        merchantId: merchants[2].id,
+        isActive: true,
+        inStock: true,
+        quantity: 130,
+        trendingScore: 0,
+        viewCount: 95,
+        clickCount: 28,
+        orderCount: 5,
+        slug: 'premium-notebook-set',
+        tags: ['notebook', 'stationery', 'office', 'paper'],
       },
     }),
   ]);
@@ -671,17 +839,113 @@ async function main() {
         emailVerified: new Date(),
       },
     }),
+    prisma.user.create({
+      data: {
+        name: 'Mosef Bel',
+        email: 'mosefbel@gmail.com',
+        passwordHash: defaultPasswordHash,
+        phone: '+966500000000',
+        role: UserRole.CUSTOMER,
+        language: 'ar',
+        emailVerified: new Date(),
+      },
+    }),
   ]);
 
   console.log(`✅ Created ${users.length} users`);
 
+  const mosefUser = users.find((user) => user.email === 'mosefbel@gmail.com');
+  if (!mosefUser) {
+    throw new Error('Missing seeded user for mosefbel@gmail.com');
+  }
+
+  const daysAgo = (days: number) =>
+    new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+  // ============================================
+  // ORDERS
+  // ============================================
+  console.log('Creating orders for seeded user...');
+  const orders = await Promise.all([
+    prisma.order.create({
+      data: {
+        orderNumber: 'RAFF-1001',
+        merchantId: products[0].merchantId,
+        platform: Platform.SALLA,
+        customerId: mosefUser.id,
+        customerName: mosefUser.name,
+        customerEmail: mosefUser.email,
+        productId: products[0].id,
+        quantity: 1,
+        totalPrice: products[0].price,
+        currency: products[0].currency,
+        sallaOrderId: 'salla_order_10001',
+        sallaStatus: 'delivered',
+        status: OrderStatus.DELIVERED,
+        trackingNumber: 'SHIP-10001',
+        trackingUrl: 'https://shipping.example.com/track/SHIP-10001',
+        paymentMethod: 'CARD',
+        paymentStatus: 'PAID',
+        createdAt: daysAgo(12),
+        confirmedAt: daysAgo(11),
+        shippedAt: daysAgo(10),
+        deliveredAt: daysAgo(8),
+      },
+    }),
+    prisma.order.create({
+      data: {
+        orderNumber: 'RAFF-1002',
+        merchantId: products[3].merchantId,
+        platform: Platform.SALLA,
+        customerId: mosefUser.id,
+        customerName: mosefUser.name,
+        customerEmail: mosefUser.email,
+        productId: products[3].id,
+        quantity: 2,
+        totalPrice: products[3].price * 2,
+        currency: products[3].currency,
+        sallaOrderId: 'salla_order_10002',
+        sallaStatus: 'shipped',
+        status: OrderStatus.SHIPPED,
+        trackingNumber: 'SHIP-10002',
+        trackingUrl: 'https://shipping.example.com/track/SHIP-10002',
+        paymentMethod: 'APPLE_PAY',
+        paymentStatus: 'PAID',
+        createdAt: daysAgo(6),
+        confirmedAt: daysAgo(5),
+        shippedAt: daysAgo(3),
+      },
+    }),
+    prisma.order.create({
+      data: {
+        orderNumber: 'RAFF-1003',
+        merchantId: products[11].merchantId,
+        platform: Platform.SALLA,
+        customerId: mosefUser.id,
+        customerName: mosefUser.name,
+        customerEmail: mosefUser.email,
+        productId: products[11].id,
+        quantity: 1,
+        totalPrice: products[11].price,
+        currency: products[11].currency,
+        sallaOrderId: 'salla_order_10003',
+        sallaStatus: 'processing',
+        status: OrderStatus.PROCESSING,
+        paymentMethod: 'MADA',
+        paymentStatus: 'PENDING',
+        createdAt: daysAgo(2),
+        confirmedAt: daysAgo(1),
+      },
+    }),
+  ]);
+  console.log(`Created ${orders.length} orders`);
   // ============================================
   // TRENDING LOGS
   // ============================================
   console.log('📊 Creating trending logs...');
   const trendingLogs = [];
   
-  for (const product of products.slice(0, 8)) {
+  for (const product of products.slice(0, 9)) {
     // Simulate various engagement events
     for (let i = 0; i < Math.floor(Math.random() * 50) + 10; i++) {
       trendingLogs.push(
@@ -708,6 +972,7 @@ async function main() {
   console.log(`   Merchants: ${merchants.length}`);
   console.log(`   Products: ${products.length}`);
   console.log(`   Users: ${users.length}`);
+  console.log(`   Orders: ${orders.length}`);
   console.log(`   Trending Logs: ${trendingLogs.length}`);
   console.log('');
 }
