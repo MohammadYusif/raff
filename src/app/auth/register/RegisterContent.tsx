@@ -36,7 +36,7 @@ export function RegisterContent() {
             <div className="mb-8 text-center">
               <Link href="/">
                 <Image
-                  src="/logo.png"
+                  src="/logo.svg"
                   alt="Raff Logo"
                   width={160}
                   height={40}
