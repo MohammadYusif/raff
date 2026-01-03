@@ -9,9 +9,9 @@ export default function CategoriesLoading() {
         {/* Header Skeleton */}
         <div className="border-b border-raff-neutral-200 bg-white">
           <Container className="py-8">
-            <Skeleton className="mb-4 h-10 w-32" />
-            <Skeleton className="mb-4 h-10 w-48" />
-            <Skeleton className="h-6 w-96" />
+            <Skeleton variant="shimmer" className="mb-4 h-10 w-32" />
+            <Skeleton variant="shimmer" className="mb-4 h-10 w-48" />
+            <Skeleton variant="shimmer" className="h-6 w-96" />
           </Container>
         </div>
 
@@ -23,13 +23,13 @@ export default function CategoriesLoading() {
                 <CardContent className="p-6">
                   <div className="mb-4 flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <Skeleton className="h-12 w-12 rounded-lg" />
-                      <Skeleton className="h-6 w-32" />
+                      <Skeleton variant="shimmer" className="h-12 w-12 rounded-lg" />
+                      <Skeleton variant="shimmer" className="h-6 w-32" />
                     </div>
-                    <Skeleton className="h-6 w-8" />
+                    <Skeleton variant="shimmer" className="h-6 w-8" />
                   </div>
-                  <Skeleton className="mb-4 h-10 w-full" />
-                  <Skeleton className="h-5 w-24" />
+                  <Skeleton variant="shimmer" className="mb-4 h-10 w-full" />
+                  <Skeleton variant="shimmer" className="h-5 w-24" />
                 </CardContent>
               </Card>
             ))}
@@ -37,7 +37,7 @@ export default function CategoriesLoading() {
 
           {/* Bottom button skeleton */}
           <div className="mt-12 text-center">
-            <Skeleton className="mx-auto h-11 w-48" />
+            <Skeleton variant="shimmer" className="mx-auto h-11 w-48" />
           </div>
         </Container>
       </div>

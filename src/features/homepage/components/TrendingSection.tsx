@@ -7,7 +7,6 @@ import {
   Container,
   Card,
   CardContent,
-  Button,
   Badge,
   Skeleton,
 } from "@/shared/components/ui";
@@ -15,6 +14,7 @@ import { TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { ArrowForward } from "@/core/i18n";
 import { formatPrice } from "@/lib/utils";
+import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
 interface Product {
   id: string;
@@ -71,12 +71,12 @@ export function TrendingSection() {
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {[...Array(8)].map((_, i) => (
               <Card key={i} className="overflow-hidden">
-                <Skeleton className="aspect-square w-full" />
+                <Skeleton variant="shimmer" className="aspect-square w-full" />
                 <CardContent className="space-y-3 p-4">
-                  <Skeleton className="h-4 w-2/3" />
-                  <Skeleton className="h-5 w-full" />
-                  <Skeleton className="h-6 w-1/2" />
-                  <Skeleton className="h-10 w-full" />
+                  <Skeleton variant="shimmer" className="h-4 w-2/3" />
+                  <Skeleton variant="shimmer" className="h-5 w-full" />
+                  <Skeleton variant="shimmer" className="h-6 w-1/2" />
+                  <Skeleton variant="shimmer" className="h-10 w-full" />
                 </CardContent>
               </Card>
             ))}
@@ -162,14 +162,14 @@ export function TrendingSection() {
 
                   {/* View Button */}
                   <Link href={`/products/${product.slug}`}>
-                    <Button
+                    <AnimatedButton
                       variant="outline"
                       className="w-full gap-2"
                       size="sm"
                     >
                       {commonT("actions.viewDetails")}
                       <ArrowForward className="h-4 w-4" />
-                    </Button>
+                    </AnimatedButton>
                   </Link>
                 </CardContent>
               </Card>
@@ -180,10 +180,10 @@ export function TrendingSection() {
         {/* View All Button */}
         <div className="mt-12 text-center">
           <Link href="/trending">
-            <Button size="lg" variant="outline" className="gap-2">
+            <AnimatedButton size="lg" variant="outline" className="gap-2">
               {t("viewAll")}
               <ArrowForward className="h-5 w-5" />
-            </Button>
+            </AnimatedButton>
           </Link>
         </div>
       </Container>

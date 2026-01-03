@@ -9,9 +9,9 @@ export default function MerchantsLoading() {
         {/* Header Skeleton */}
         <div className="border-b border-raff-neutral-200 bg-white">
           <Container className="py-8">
-            <Skeleton className="mb-4 h-10 w-32" />
-            <Skeleton className="mb-4 h-10 w-48" />
-            <Skeleton className="h-6 w-96" />
+            <Skeleton variant="shimmer" className="mb-4 h-10 w-32" />
+            <Skeleton variant="shimmer" className="mb-4 h-10 w-48" />
+            <Skeleton variant="shimmer" className="h-6 w-96" />
           </Container>
         </div>
 
@@ -23,15 +23,15 @@ export default function MerchantsLoading() {
                 <CardContent className="p-6">
                   <div className="mb-4 flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <Skeleton className="h-12 w-12 rounded-lg" />
-                      <Skeleton className="h-6 w-32" />
+                      <Skeleton variant="shimmer" className="h-12 w-12 rounded-lg" />
+                      <Skeleton variant="shimmer" className="h-6 w-32" />
                     </div>
-                    <Skeleton className="h-6 w-8" />
+                    <Skeleton variant="shimmer" className="h-6 w-8" />
                   </div>
-                  <Skeleton className="mb-4 h-16 w-full" />
+                  <Skeleton variant="shimmer" className="mb-4 h-16 w-full" />
                   <div className="space-y-2">
-                    <Skeleton className="h-9 w-full" />
-                    <Skeleton className="h-9 w-full" />
+                    <Skeleton variant="shimmer" className="h-9 w-full" />
+                    <Skeleton variant="shimmer" className="h-9 w-full" />
                   </div>
                 </CardContent>
               </Card>
@@ -40,7 +40,7 @@ export default function MerchantsLoading() {
 
           {/* Bottom button skeleton */}
           <div className="mt-12 text-center">
-            <Skeleton className="mx-auto h-11 w-48" />
+            <Skeleton variant="shimmer" className="mx-auto h-11 w-48" />
           </div>
         </Container>
       </div>

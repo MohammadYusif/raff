@@ -19,8 +19,8 @@ export default function CartLoading() {
                 <ShoppingCart className="h-5 w-5 text-raff-primary md:h-6 md:w-6" />
               </div>
               <div>
-                <Skeleton className="mb-2 h-7 w-32 md:h-8 md:w-40" />
-                <Skeleton className="h-4 w-20" />
+                <Skeleton variant="shimmer" className="mb-2 h-7 w-32 md:h-8 md:w-40" />
+                <Skeleton variant="shimmer" className="h-4 w-20" />
               </div>
             </div>
           </Container>
@@ -34,35 +34,35 @@ export default function CartLoading() {
                 <div className="flex flex-col items-center text-center">
                   {/* Icon Skeleton */}
                   <div className="mb-6 rounded-full bg-raff-neutral-100 p-8">
-                    <Skeleton className="h-16 w-16 rounded-full md:h-20 md:w-20" />
+                    <Skeleton variant="shimmer" className="h-16 w-16 rounded-full md:h-20 md:w-20" />
                   </div>
 
                   {/* Title Skeleton */}
-                  <Skeleton className="mb-3 h-9 w-64 md:h-10 md:w-80" />
+                  <Skeleton variant="shimmer" className="mb-3 h-9 w-64 md:h-10 md:w-80" />
 
                   {/* Description Skeleton */}
-                  <Skeleton className="mb-8 h-6 w-48 md:w-64" />
+                  <Skeleton variant="shimmer" className="mb-8 h-6 w-48 md:w-64" />
 
                   {/* Button Skeleton */}
-                  <Skeleton className="mb-8 h-11 w-48" />
+                  <Skeleton variant="shimmer" className="mb-8 h-11 w-48" />
 
                   {/* Auth Notice Section Skeleton */}
                   <div className="w-full border-t border-raff-neutral-200 pt-8">
                     <div className="rounded-xl from-raff-accent/10 via-raff-accent/5 to-transparent p-6">
                       <div className="flex flex-col items-center gap-4 sm:flex-row">
                         {/* Icon Skeleton */}
-                        <Skeleton className="h-12 w-12 shrink-0 rounded-lg" />
+                        <Skeleton variant="shimmer" className="h-12 w-12 shrink-0 rounded-lg" />
 
                         {/* Text Skeleton */}
                         <div className="flex-1 space-y-2">
-                          <Skeleton className="h-5 w-32" />
-                          <Skeleton className="h-4 w-full max-w-md" />
+                          <Skeleton variant="shimmer" className="h-5 w-32" />
+                          <Skeleton variant="shimmer" className="h-4 w-full max-w-md" />
                         </div>
 
                         {/* Buttons Skeleton */}
                         <div className="flex gap-3">
-                          <Skeleton className="h-9 w-24" />
-                          <Skeleton className="h-9 w-20" />
+                          <Skeleton variant="shimmer" className="h-9 w-24" />
+                          <Skeleton variant="shimmer" className="h-9 w-20" />
                         </div>
                       </div>
                     </div>
