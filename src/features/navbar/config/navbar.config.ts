@@ -1,5 +1,5 @@
 // src/features/navbar/config/navbar.config.ts
-import { Globe, ShoppingCart, User, Home } from "lucide-react";
+import { Home } from "lucide-react";
 
 /**
  * Navbar Configuration
@@ -55,7 +55,7 @@ export type NavbarConfig = {
  */
 export const navbarConfig: NavbarConfig = {
   logo: {
-    src: "/logo.png",
+    src: "/logo.svg",
     alt: "Raff Logo",
     width: 144,
     height: 36,

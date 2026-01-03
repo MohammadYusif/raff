@@ -9,7 +9,7 @@ import { useLocale as useLocaleHook } from "@/core/i18n";
 import { useSession } from "next-auth/react";
 import { Button, Container } from "@/shared/components/ui";
 import { SearchInput } from "@/shared/components/SearchInput";
-import { Menu, X, Globe, ShoppingCart } from "lucide-react";
+import { Menu, X, Globe, ShoppingCart, Search } from "lucide-react";
 import { useCart } from "@/lib/hooks/useCart";
 import { UserMenu } from "./UserMenu";
 import {
@@ -48,6 +48,7 @@ export function Navbar({ variant = "main" }: NavbarProps) {
   const { switchLocale } = useLocaleHook();
   const { data: session, status } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const { itemCount } = useCart();
 
   const navItems = getNavItemsForVariant(variant);
@@ -92,7 +93,7 @@ export function Navbar({ variant = "main" }: NavbarProps) {
             </div>
           )}
 
-          {/* Search - Desktop Only */}
+          {/* Search - Desktop Only (lg and above) */}
           {showSearch && (
             <div className="hidden flex-1 max-w-md lg:block">
               <SearchInput
@@ -105,6 +106,21 @@ export function Navbar({ variant = "main" }: NavbarProps) {
 
           {/* Right Section */}
           <div className="flex shrink-0 items-center gap-3">
+            {/* Mobile Search Icon - Show on tablet and mobile (below lg) */}
+            {showSearch && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden hover:bg-raff-neutral-100"
+                onClick={() => {
+                  setMobileSearchOpen(!mobileSearchOpen);
+                  setMobileMenuOpen(false); // Close menu when opening search
+                }}
+              >
+                <Search className="h-5 w-5" />
+              </Button>
+            )}
+
             {/* Cart */}
             {showCart && (
               <Link href="/cart" className="relative">
@@ -160,13 +176,16 @@ export function Navbar({ variant = "main" }: NavbarProps) {
               </>
             )}
 
-            {/* Mobile Menu Toggle - Only show if not minimal or has items */}
-            {(!isMinimal || navItems.length > 0) && (
+            {/* Mobile Menu Toggle - Only show if not minimal AND has items */}
+            {!isMinimal && navItems.length > 0 && (
               <Button
                 variant="ghost"
                 size="icon"
                 className="md:hidden"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                onClick={() => {
+                  setMobileMenuOpen(!mobileMenuOpen);
+                  setMobileSearchOpen(false); // Close search when opening menu
+                }}
               >
                 {mobileMenuOpen ? (
                   <X className="h-5 w-5" />
@@ -178,9 +197,9 @@ export function Navbar({ variant = "main" }: NavbarProps) {
           </div>
         </div>
 
-        {/* Mobile Search Bar - Only show if search is enabled */}
-        {showSearch && (
-          <div className="pb-3 pt-2 lg:hidden">
+        {/* Mobile Search Dropdown - Only show when search icon is clicked */}
+        {showSearch && mobileSearchOpen && (
+          <div className="border-t border-raff-neutral-200 pb-4 pt-3 lg:hidden">
             <SearchInput
               placeholder={t("common.searchPlaceholder")}
               size="md"
