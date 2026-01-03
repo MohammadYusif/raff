@@ -133,7 +133,7 @@ export function Footer() {
         {/* Copyright */}
         <div className="border-t border-raff-neutral-200 py-6">
           <p className="text-center text-sm text-raff-neutral-600">
-            © 2024 Raff. {t("allRightsReserved")}
+            © 2026 Raff. {t("allRightsReserved")}
           </p>
         </div>
       </Container>
