@@ -24,14 +24,19 @@ export const smoothScroll = (targetId: string) => {
 };
 
 /**
- * Format price in SAR
+ * Format price with currency support
  * @param price - Price number
  * @param locale - Locale code (ar/en)
+ * @param currency - Currency code (default: SAR)
  */
-export function formatPrice(price: number, locale: string = "ar"): string {
+export function formatPrice(
+  price: number,
+  locale: string = "ar",
+  currency: string = "SAR"
+): string {
   return new Intl.NumberFormat(locale === "ar" ? "ar-SA" : "en-SA", {
     style: "currency",
-    currency: "SAR",
+    currency: currency,
     minimumFractionDigits: 2,
   }).format(price);
 }
