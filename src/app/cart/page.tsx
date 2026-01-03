@@ -2,7 +2,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { PageLayout } from "@/shared/components/layouts";
-import { CartContent } from "./CardContent";
+import { CartContent } from "./CartContent";
 
 const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 const TITLES = {

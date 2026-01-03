@@ -1,113 +1,75 @@
 // src/app/cart/loading.tsx
 import { PageLayout } from "@/shared/components/layouts";
 import { Container, Card, CardContent, Skeleton } from "@/shared/components/ui";
+import { ShoppingCart } from "lucide-react";
 
 /**
  * Loading state for cart page
- * Matches the grid layout used in products page for consistency
+ * Shows skeleton matching the empty cart layout with auth notice
  */
 export default function CartLoading() {
   return (
     <PageLayout>
       <div className="min-h-screen bg-raff-neutral-50">
-        {/* Header Skeleton */}
+        {/* Header */}
         <div className="border-b border-raff-neutral-200 bg-white">
-          <Container className="py-8">
+          <Container className="py-6 md:py-8">
             <div className="flex items-center gap-3">
-              <Skeleton className="h-12 w-12 shrink-0 rounded-full" />
-              <div className="flex-1">
-                <Skeleton className="mb-2 h-9 w-32" />
-                <Skeleton className="h-5 w-24" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-raff-primary/10 md:h-12 md:w-12">
+                <ShoppingCart className="h-5 w-5 text-raff-primary md:h-6 md:w-6" />
+              </div>
+              <div>
+                <Skeleton className="mb-2 h-7 w-32 md:h-8 md:w-40" />
+                <Skeleton className="h-4 w-20" />
               </div>
             </div>
           </Container>
         </div>
 
-        <Container className="py-8">
-          {/* Auth Notice Skeleton (optional) */}
-          <Card className="mb-6">
-            <CardContent className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex-1">
-                <Skeleton className="mb-2 h-6 w-48" />
-                <Skeleton className="h-4 w-64" />
-              </div>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <Skeleton className="h-10 w-24" />
-                <Skeleton className="h-10 w-24" />
-                <Skeleton className="h-10 w-32" />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Main Grid Layout */}
-          <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-            {/* Products Grid */}
-            <div>
-              {/* Summary Info Skeleton */}
-              <div className="mb-6 flex items-center justify-between">
-                <Skeleton className="h-5 w-32" />
-                <Skeleton className="h-9 w-24" />
-              </div>
-
-              {/* Product Cards Grid - Matching Products Page */}
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                {[...Array(6)].map((_, i) => (
-                  <Card key={i} className="overflow-hidden">
-                    {/* Product Image Skeleton */}
-                    <Skeleton className="aspect-square w-full" />
-
-                    {/* Product Info Skeleton */}
-                    <CardContent className="space-y-3 p-4">
-                      {/* Category */}
-                      <Skeleton className="h-3 w-20" />
-                      {/* Merchant */}
-                      <Skeleton className="h-3 w-24" />
-                      {/* Title */}
-                      <Skeleton className="h-5 w-full" />
-                      <Skeleton className="h-5 w-3/4" />
-                      {/* Price */}
-                      <Skeleton className="h-6 w-24" />
-                      {/* Button */}
-                      <Skeleton className="h-9 w-full" />
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-
-            {/* Summary Sidebar Skeleton */}
-            <aside className="lg:sticky lg:top-24 lg:h-fit">
-              <Card>
-                <CardContent className="space-y-4 p-6">
-                  <Skeleton className="h-7 w-32" />
-
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <Skeleton className="h-5 w-20" />
-                      <Skeleton className="h-5 w-16" />
-                    </div>
-                    <div className="flex justify-between">
-                      <Skeleton className="h-5 w-24" />
-                      <Skeleton className="h-5 w-16" />
-                    </div>
+        <Container className="py-8 md:py-12">
+          <div className="mx-auto max-w-2xl">
+            {/* Empty Cart Card Skeleton */}
+            <Card className="overflow-hidden">
+              <CardContent className="p-8 md:p-12">
+                <div className="flex flex-col items-center text-center">
+                  {/* Icon Skeleton */}
+                  <div className="mb-6 rounded-full bg-raff-neutral-100 p-8">
+                    <Skeleton className="h-16 w-16 rounded-full md:h-20 md:w-20" />
                   </div>
 
-                  <div className="border-t border-raff-neutral-200 pt-4">
-                    <div className="mb-4 flex justify-between">
-                      <Skeleton className="h-6 w-16" />
-                      <Skeleton className="h-6 w-20" />
+                  {/* Title Skeleton */}
+                  <Skeleton className="mb-3 h-9 w-64 md:h-10 md:w-80" />
+
+                  {/* Description Skeleton */}
+                  <Skeleton className="mb-8 h-6 w-48 md:w-64" />
+
+                  {/* Button Skeleton */}
+                  <Skeleton className="mb-8 h-11 w-48" />
+
+                  {/* Auth Notice Section Skeleton */}
+                  <div className="w-full border-t border-raff-neutral-200 pt-8">
+                    <div className="rounded-xl from-raff-accent/10 via-raff-accent/5 to-transparent p-6">
+                      <div className="flex flex-col items-center gap-4 sm:flex-row">
+                        {/* Icon Skeleton */}
+                        <Skeleton className="h-12 w-12 shrink-0 rounded-lg" />
+
+                        {/* Text Skeleton */}
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-5 w-32" />
+                          <Skeleton className="h-4 w-full max-w-md" />
+                        </div>
+
+                        {/* Buttons Skeleton */}
+                        <div className="flex gap-3">
+                          <Skeleton className="h-9 w-24" />
+                          <Skeleton className="h-9 w-20" />
+                        </div>
+                      </div>
                     </div>
                   </div>
-
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-3/4" />
-
-                  <div className="space-y-2">
-                    <Skeleton className="h-10 w-full" />
-                  </div>
-                </CardContent>
-              </Card>
-            </aside>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </Container>
       </div>
