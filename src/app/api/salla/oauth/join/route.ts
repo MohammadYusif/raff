@@ -12,11 +12,11 @@
  * 4. Salla redirects back to /api/salla/oauth/callback with code
  */
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getSallaConfig } from "@/lib/platform/config";
 import crypto from "crypto";
 
-export async function GET(_request: NextRequest) {
+export async function GET() {
   const config = getSallaConfig();
 
   // Generate a random state for CSRF protection

@@ -91,7 +91,7 @@ export function MerchantSidebar() {
         <div className="flex h-16 items-center justify-center border-b border-raff-neutral-200 px-6">
           <Link href="/" className="flex items-center">
             <Image
-              src="/logo.png"
+              src="/logo.svg"
               alt="Raff Logo"
               width={128}
               height={32}

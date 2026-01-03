@@ -12,11 +12,11 @@
  * 4. Zid redirects back to /api/zid/oauth/callback with code
  */
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getZidConfig } from "@/lib/platform/config";
 import crypto from "crypto";
 
-export async function GET(_request: NextRequest) {
+export async function GET() {
   const config = getZidConfig();
 
   // Generate a random state for CSRF protection

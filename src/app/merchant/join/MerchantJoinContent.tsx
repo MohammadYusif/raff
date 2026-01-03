@@ -20,7 +20,7 @@ import { TrendingUp, Zap, Shield, BarChart3, CheckCircle } from "lucide-react";
  */
 export function MerchantJoinContent() {
   const t = useTranslations("merchantJoin");
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const [connectingPlatform, setConnectingPlatform] = useState<
     "salla" | "zid" | null
   >(null);
@@ -35,7 +35,6 @@ export function MerchantJoinContent() {
 
   // Check if user is already a merchant
   const isMerchant = session?.user?.role === "MERCHANT";
-  const isAuthenticated = status === "authenticated";
 
   return (
     <PageLayout navbarVariant="minimal">

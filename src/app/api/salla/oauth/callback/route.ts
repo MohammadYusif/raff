@@ -167,7 +167,7 @@ async function handleJoinFlow(
   const passwordHash = await bcrypt.hash(tempPassword, 10);
 
   // Use transaction to create both user and merchant
-  const result = await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx) => {
     // Create user
     const user = await tx.user.create({
       data: {
