@@ -7,6 +7,7 @@ import { LocaleProvider } from "@/core/i18n/components/LocaleProvider";
 import { SessionProvider } from "@/components/SessionProvider"; // ← ADD THIS
 import { Toaster } from "@/shared/components/ui/toaster";
 import { ScrollToTop } from "@/shared/components/ScrollToTop";
+import { ToastProvider } from "@/shared/components/Toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -60,15 +61,12 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} overflow-x-hidden antialiased`}
       >
         <SessionProvider>
-          {" "}
-          {/* ← ADD THIS */}
           <LocaleProvider>
             <ScrollToTop />
-            {children}
+            <ToastProvider>{children}</ToastProvider>
             <Toaster />
           </LocaleProvider>
-        </SessionProvider>{" "}
-        {/* ← ADD THIS */}
+        </SessionProvider>
       </body>
     </html>
   );

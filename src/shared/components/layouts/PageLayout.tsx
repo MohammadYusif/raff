@@ -2,6 +2,7 @@
 import { ReactNode } from "react";
 import { Navbar } from "@/features/navbar/components/Navbar";
 import { Footer } from "@/features/footer/components/Footer";
+import { BackToTop } from "@/shared/components/BackToTop";
 import type { NavbarVariant } from "@/features/navbar/config/navbar.config";
 
 interface PageLayoutProps {
@@ -50,6 +51,7 @@ export function PageLayout({
       {/* Add padding-top to account for fixed navbar */}
       <div className={includeNavbar ? "pt-16" : ""}>{children}</div>
       {includeFooter && <Footer />}
+      <BackToTop />
     </>
   );
 }

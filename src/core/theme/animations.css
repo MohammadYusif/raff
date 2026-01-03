@@ -1,9 +1,9 @@
 /* src/core/theme/animations.css */
-/* Raff Animation System */
+/* Raff Enhanced Animation System with Framer Motion Support */
 
 :root {
   /* ==========================================
-     TIMING
+     TIMING & EASING
      ========================================== */
   --transition-fast: 150ms;
   --transition-base: 250ms;
@@ -14,11 +14,14 @@
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 /* ==========================================
-   KEYFRAMES
+   KEYFRAMES - Enhanced
    ========================================== */
+
+/* Fade Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -39,6 +42,18 @@
   }
 }
 
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Slide Animations */
 @keyframes slideUp {
   from {
     transform: translateY(20px);
@@ -68,6 +83,7 @@
   }
 }
 
+/* Scale Animations */
 @keyframes scaleIn {
   from {
     opacity: 0;
@@ -79,6 +95,107 @@
   }
 }
 
+@keyframes scaleUp {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Pulse & Bounce */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Shake Animation for Errors */
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-5px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(5px);
+  }
+}
+
+/* Shimmer Effect for Loading */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes shimmer-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* Skeleton Loading */
 @keyframes skeleton-pulse {
   0%,
   100% {
@@ -89,15 +206,64 @@
   }
 }
 
+/* Spin Animation */
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
 }
 
+/* Progress Bar */
+@keyframes progressBar {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+/* Ripple Effect */
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* Slide Up & Fade (for modals/toasts) */
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Badge Slide In */
+@keyframes badgeSlideIn {
+  from {
+    opacity: 0;
+    transform: translate(10px, -10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
+
 /* ==========================================
    UTILITY CLASSES
    ========================================== */
+
+/* Fade Animations */
 .animate-fade-in {
   animation: fadeIn 0.3s var(--ease-out);
 }
@@ -106,16 +272,58 @@
   animation: fadeInUp 0.5s var(--ease-out);
 }
 
+.animate-fade-in-down {
+  animation: fadeInDown 0.5s var(--ease-out);
+}
+
+/* Scale Animations */
 .animate-scale-in {
   animation: scaleIn 0.3s var(--ease-out);
 }
 
+.animate-pop {
+  animation: pop 0.3s var(--ease-bounce);
+}
+
+.animate-bounce-in {
+  animation: bounceIn 0.6s var(--ease-out);
+}
+
+/* Other Animations */
 .animate-spin {
   animation: spin 1s linear infinite;
 }
 
+.animate-pulse {
+  animation: pulse 2s var(--ease-in-out) infinite;
+}
+
+.animate-bounce {
+  animation: bounce 1s var(--ease-in-out) infinite;
+}
+
+.animate-shake {
+  animation: shake 0.5s var(--ease-in-out);
+}
+
+.animate-shimmer {
+  animation: shimmer 2s linear infinite;
+}
+
+/* Skeleton Loading */
 .skeleton-pulse {
   animation: skeleton-pulse 2s var(--ease-in-out) infinite;
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(var(--raff-neutral-200-rgb, 233, 236, 239), 1) 0%,
+    rgba(var(--raff-neutral-100-rgb, 241, 243, 245), 1) 50%,
+    rgba(var(--raff-neutral-200-rgb, 233, 236, 239), 1) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s linear infinite;
 }
 
 /* ==========================================
@@ -164,7 +372,7 @@
 }
 
 /* ==========================================
-   HOVER EFFECTS
+   HOVER EFFECTS - Enhanced
    ========================================== */
 .hover-lift {
   transition:
@@ -185,6 +393,38 @@
 
 .hover-scale:hover {
   transform: scale(1.05);
+}
+
+.hover-scale-sm {
+  transition: transform var(--transition-fast) var(--ease-out);
+}
+
+.hover-scale-sm:hover {
+  transform: scale(1.02);
+}
+
+/* Image Zoom Effect */
+.hover-zoom-image {
+  overflow: hidden;
+}
+
+.hover-zoom-image img,
+.hover-zoom-image > div {
+  transition: transform var(--transition-slow) var(--ease-out);
+}
+
+.hover-zoom-image:hover img,
+.hover-zoom-image:hover > div {
+  transform: scale(1.1);
+}
+
+/* Glow Effect */
+.hover-glow {
+  transition: box-shadow var(--transition-base) var(--ease-out);
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 20px rgba(22, 160, 133, 0.3);
 }
 
 /* ==========================================
@@ -212,4 +452,132 @@ input,
 select,
 textarea {
   transition: all var(--transition-base) var(--ease-out);
+}
+
+/* ==========================================
+   BUTTON PRESS EFFECT
+   ========================================== */
+.button-press {
+  transition: transform var(--transition-fast) var(--ease-out);
+}
+
+.button-press:active {
+  transform: scale(0.95);
+}
+
+/* ==========================================
+   BADGE ANIMATIONS
+   ========================================== */
+.badge-slide-in {
+  animation: badgeSlideIn 0.3s var(--ease-out);
+}
+
+/* ==========================================
+   LOADING STATES
+   ========================================== */
+.loading-spinner {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+/* ==========================================
+   RIPPLE EFFECT CONTAINER
+   ========================================== */
+.ripple-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  transform: scale(0);
+  animation: ripple 0.6s ease-out;
+  pointer-events: none;
+}
+
+/* ==========================================
+   PAGE TRANSITIONS (for Framer Motion)
+   ========================================== */
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
+}
+
+.page-transition-exit {
+  opacity: 1;
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+/* ==========================================
+   SCROLL REVEAL (for elements coming into view)
+   ========================================== */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition:
+    opacity 0.6s var(--ease-out),
+    transform 0.6s var(--ease-out);
+}
+
+.scroll-reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ==========================================
+   TOAST ANIMATIONS
+   ========================================== */
+.toast-enter {
+  animation: slideUpFade 0.3s var(--ease-out);
+}
+
+.toast-exit {
+  animation: fadeInDown 0.2s var(--ease-out) reverse;
+}
+
+/* ==========================================
+   PROGRESS BAR
+   ========================================== */
+.progress-bar {
+  animation: progressBar 3s var(--ease-out);
+}
+
+/* ==========================================
+   RTL SUPPORT
+   ========================================== */
+[dir="rtl"] .badge-slide-in {
+  animation: badgeSlideIn 0.3s var(--ease-out);
+}
+
+/* ==========================================
+   ACCESSIBILITY - Reduced Motion
+   ========================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
