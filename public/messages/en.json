@@ -24,7 +24,10 @@
       "backToHome": "Back to Home",
       "continueShopping": "Continue Shopping",
       "addToCart": "Add to Cart",
-      "removeFromCart": "Remove from Cart"
+      "removeFromCart": "Remove from Cart",
+      "orders": "My Orders",
+      "previous": "Previous",
+      "next": "Next"
     },
     "roles": {
       "customer": "Customer",
@@ -43,20 +46,29 @@
   },
   "homepage": {
     "hero": {
-      "title": "Discover Trending Products",
-      "subtitle": "Find the best products from Saudi stores",
-      "searchPlaceholder": "What are you looking for?",
-      "cta": "Search"
+      "title": "Discover Saudi Arabia's Trending Products",
+      "subtitle": "Find the best products from verified merchants on Salla and Zid",
+      "searchPlaceholder": "Search for products, categories, or merchants...",
+      "benefits": {
+        "verified": "Verified Saudi Merchants",
+        "trending": "Trending Products Daily",
+        "discover": "Discover New Favorites"
+      }
     },
     "stats": {
       "products": "Products",
-      "merchants": "Merchants",
-      "customers": "Customers"
+      "merchants": "Merchants"
     },
-    "trending": {
-      "title": "Trending Now",
-      "subtitle": "Discover the most popular products",
-      "viewAll": "View All Trending"
+    "featured": {
+      "badge": "Featured",
+      "title": "Featured Products",
+      "subtitle": "Handpicked trending products from top Saudi merchants",
+      "viewAll": "Browse All Products"
+    },
+    "categories": {
+      "title": "Shop by Category",
+      "subtitle": "Explore products across different categories",
+      "viewAll": "View All Categories"
     },
     "howItWorks": {
       "title": "How It Works",
@@ -73,6 +85,31 @@
         "title": "Shop",
         "description": "Purchase directly from the merchant's store"
       }
+    },
+    "merchants": {
+      "badge": "Featured Partners",
+      "title": "Featured Merchants",
+      "subtitle": "Trusted Saudi merchants bringing you quality products",
+      "productsLabel": "products",
+      "topProducts": "Featured Products",
+      "visitStore": "Visit Store",
+      "viewAll": "View All Merchants"
+    },
+    "cta": {
+      "title": "Ready to Start Discovering?",
+      "subtitle": "Join thousands of shoppers finding trending products every day",
+      "shoppersTitle": "For Shoppers",
+      "shoppersDescription": "Discover trending products from verified Saudi merchants",
+      "shoppersBenefit1": "Browse trending products daily",
+      "shoppersBenefit2": "Shop from verified merchants",
+      "shoppersBenefit3": "Find the best deals",
+      "shoppers": "Start Shopping",
+      "merchantsTitle": "For Merchants",
+      "merchantsDescription": "Reach thousands of customers across Saudi Arabia",
+      "merchantsBenefit1": "Increase your visibility",
+      "merchantsBenefit2": "Connect in seconds",
+      "merchantsBenefit3": "Track your performance",
+      "merchants": "Become a Merchant"
     }
   },
   "search": {
@@ -95,6 +132,13 @@
     "description": "Description",
     "noDescription": "No description available",
     "similarProducts": "Similar Products",
+    "taxIncluded": "Tax included",
+    "limitedStock": "Only {count} left in stock",
+    "inStock": "In Stock",
+    "outOfStock": "Out of Stock",
+    "buyNow": "Buy Now",
+    "visitStore": "Visit Store",
+    "redirectNotice": "You'll be redirected to {merchant}'s store to complete your purchase",
     "notFound": {
       "title": "Product Not Found",
       "description": "The product you're looking for doesn't exist or is no longer available",
@@ -379,53 +423,84 @@
     "login": {
       "title": "Login",
       "subtitle": "Sign in to your account",
-      "registerPrompt": "Don't have an account?",
-      "registerCta": "Create one",
       "emailLabel": "Email Address",
-      "emailPlaceholder": "you@example.com",
+      "emailPlaceholder": "Enter your email",
       "passwordLabel": "Password",
       "passwordPlaceholder": "Enter your password",
-      "submit": "Sign In",
-      "submitting": "Signing in...",
-      "success": "Welcome back!",
-      "successDescription": "Good to see you again, {name}",
-      "error": "An error occurred. Please try again.",
-      "errors": {
-        "emailRequired": "Email is required",
-        "emailInvalid": "Please enter a valid email address",
-        "passwordRequired": "Password is required",
-        "invalidCredentials": "Invalid email or password",
-        "tooManyAttempts": "Too many login attempts. Please try again later."
-      }
+      "submit": "Login",
+      "submitting": "Logging in...",
+      "registerPrompt": "Don't have an account?",
+      "registerCta": "Register now",
+      "success": "Login successful!",
+      "successDescription": "Welcome back, {name}!",
+      "error": "Login failed",
+      "errorDescription": "Please check your credentials and try again"
     },
     "register": {
-      "title": "Create Account",
-      "subtitle": "Join Raff to save products and track your cart",
-      "loginPrompt": "Already have an account?",
-      "loginCta": "Sign in",
+      "title": "Register",
+      "subtitle": "Create your account",
       "nameLabel": "Full Name",
-      "namePlaceholder": "Your name",
+      "namePlaceholder": "Enter your full name",
       "emailLabel": "Email Address",
-      "emailPlaceholder": "you@example.com",
+      "emailPlaceholder": "Enter your email",
       "passwordLabel": "Password",
       "passwordPlaceholder": "Create a password",
       "confirmPasswordLabel": "Confirm Password",
-      "confirmPasswordPlaceholder": "Re-enter your password",
+      "confirmPasswordPlaceholder": "Confirm your password",
       "submit": "Create Account",
       "submitting": "Creating account...",
-      "passwordMismatch": "Passwords do not match",
-      "success": "Account created successfully!",
-      "successDescription": "You can now sign in with your credentials",
-      "error": "An error occurred. Please try again.",
+      "loginPrompt": "Already have an account?",
+      "loginCta": "Login",
       "errors": {
         "nameRequired": "Name is required",
-        "nameMinLength": "Name must be at least 2 characters",
         "emailRequired": "Email is required",
-        "emailInvalid": "Please enter a valid email address",
-        "emailExists": "An account with this email already exists",
+        "emailInvalid": "Invalid email address",
         "passwordRequired": "Password is required",
-        "confirmPasswordRequired": "Please confirm your password"
-      }
+        "confirmPasswordRequired": "Please confirm your password",
+        "emailExists": "This email is already registered"
+      },
+      "passwordMismatch": "Passwords do not match",
+      "success": "Account created successfully!",
+      "successDescription": "Redirecting you to login...",
+      "error": "Something went wrong. Please try again."
+    },
+    "errors": {
+      "invalidCredentials": "Invalid email or password",
+      "emailTaken": "This email is already registered",
+      "generic": "Something went wrong. Please try again.",
+      "networkError": "Network error. Please check your connection.",
+      "serverError": "Server error. Please try again later."
+    }
+  },
+  "orders": {
+    "title": "Order History",
+    "subtitle": "Track your orders and purchases",
+    "noOrders": "No Orders Yet",
+    "noOrdersDescription": "You haven't placed any orders yet. Start shopping to see your order history here!",
+    "startShopping": "Start Shopping",
+    "orderNumber": "Order",
+    "quantity": "Quantity",
+    "merchant": "Merchant",
+    "unknownMerchant": "Unknown Merchant",
+    "total": "Total",
+    "trackingNumber": "Tracking Number",
+    "timeline": "Order Timeline",
+    "placed": "Order Placed",
+    "confirmed": "Confirmed",
+    "shipped": "Shipped",
+    "delivered": "Delivered",
+    "viewProduct": "View Product",
+    "visitStore": "Visit Store",
+    "trackShipment": "Track Shipment",
+    "pageInfo": "Page {page} of {totalPages}",
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "processing": "Processing",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled",
+      "refunded": "Refunded"
     }
   }
 }

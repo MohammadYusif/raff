@@ -24,7 +24,10 @@
       "backToHome": "العودة للرئيسية",
       "continueShopping": "متابعة التسوق",
       "addToCart": "أضف للسلة",
-      "removeFromCart": "إزالة من السلة"
+      "removeFromCart": "إزالة من السلة",
+      "orders": "طلباتي",
+      "previous": "السابق",
+      "next": "التالي"
     },
     "roles": {
       "customer": "عميل",
@@ -43,36 +46,70 @@
   },
   "homepage": {
     "hero": {
-      "title": "اكتشف المنتجات الرائجة",
-      "subtitle": "ابحث عن أفضل المنتجات من المتاجر السعودية",
-      "searchPlaceholder": "ماذا تبحث عنه؟",
-      "cta": "بحث"
+      "title": "اكتشف المنتجات الرائجة في السعودية",
+      "subtitle": "اعثر على أفضل المنتجات من التجار الموثوقين على سلة وزد",
+      "searchPlaceholder": "ابحث عن المنتجات أو الفئات أو التجار...",
+      "benefits": {
+        "verified": "تجار سعوديون موثوقون",
+        "trending": "منتجات رائجة يومياً",
+        "discover": "اكتشف مفضلاتك الجديدة"
+      }
     },
     "stats": {
       "products": "منتج",
-      "merchants": "متجر",
-      "customers": "عميل"
+      "merchants": "متجر"
     },
-    "trending": {
-      "title": "الرائج الآن",
-      "subtitle": "اكتشف المنتجات الأكثر شعبية",
-      "viewAll": "عرض كل الرائج"
+    "featured": {
+      "badge": "مميز",
+      "title": "المنتجات المميزة",
+      "subtitle": "منتجات رائجة منتقاة بعناية من أفضل التجار السعوديين",
+      "viewAll": "تصفح جميع المنتجات"
+    },
+    "categories": {
+      "title": "تسوق حسب الفئة",
+      "subtitle": "استكشف المنتجات عبر فئات مختلفة",
+      "viewAll": "عرض جميع الفئات"
     },
     "howItWorks": {
       "title": "كيف يعمل",
-      "subtitle": "اكتشف، احفظ، واشتري في ثلاث خطوات بسيطة",
+      "subtitle": "اكتشف، احفظ، واشترِ في ثلاث خطوات بسيطة",
       "step1": {
         "title": "اكتشف",
         "description": "تصفح المنتجات الرائجة من المتاجر السعودية الموثوقة"
       },
       "step2": {
         "title": "قارن",
-        "description": "ابحث عن أفضل الأسعار واقرأ التقييمات"
+        "description": "اعثر على أفضل الأسعار واقرأ التقييمات"
       },
       "step3": {
         "title": "تسوق",
-        "description": "اشتر مباشرة من متجر التاجر"
+        "description": "اشترِ مباشرة من متجر التاجر"
       }
+    },
+    "merchants": {
+      "badge": "شركاء مميزون",
+      "title": "التجار المميزون",
+      "subtitle": "تجار سعوديون موثوقون يقدمون لك منتجات عالية الجودة",
+      "productsLabel": "منتج",
+      "topProducts": "المنتجات المميزة",
+      "visitStore": "زيارة المتجر",
+      "viewAll": "عرض جميع التجار"
+    },
+    "cta": {
+      "title": "هل أنت مستعد للبدء؟",
+      "subtitle": "انضم لآلاف المتسوقين الذين يكتشفون المنتجات الرائجة يومياً",
+      "shoppersTitle": "للمتسوقين",
+      "shoppersDescription": "اكتشف المنتجات الرائجة من التجار السعوديين الموثوقين",
+      "shoppersBenefit1": "تصفح المنتجات الرائجة يومياً",
+      "shoppersBenefit2": "تسوق من تجار موثوقين",
+      "shoppersBenefit3": "اعثر على أفضل العروض",
+      "shoppers": "ابدأ التسوق",
+      "merchantsTitle": "للتجار",
+      "merchantsDescription": "تواصل مع آلاف العملاء في أنحاء السعودية",
+      "merchantsBenefit1": "زد من ظهورك",
+      "merchantsBenefit2": "اتصل في ثوانٍ",
+      "merchantsBenefit3": "تتبع أداءك",
+      "merchants": "كن تاجراً"
     }
   },
   "search": {
@@ -95,6 +132,13 @@
     "description": "الوصف",
     "noDescription": "لا يوجد وصف متاح",
     "similarProducts": "منتجات مشابهة",
+    "taxIncluded": "شامل الضريبة",
+    "limitedStock": "متبقي {count} فقط",
+    "inStock": "متوفر",
+    "outOfStock": "غير متوفر",
+    "buyNow": "اشتر الآن",
+    "visitStore": "زيارة المتجر",
+    "redirectNotice": "سيتم توجيهك لمتجر {merchant} لإتمام الشراء",
     "notFound": {
       "title": "المنتج غير موجود",
       "description": "المنتج الذي تبحث عنه غير موجود أو لم يعد متاحاً",
@@ -154,7 +198,7 @@
     "clearCart": "إفراغ السلة",
     "authNoticeTitle": "احفظ سلتك",
     "authNoticeDescription": "سجّل الدخول أو أنشئ حساباً للاحتفاظ بهذه العناصر ومتابعة مشترياتك.",
-    "registerCta": "التسجيل",
+    "registerCta": "إنشاء حساب",
     "loginCta": "تسجيل الدخول"
   },
   "categories": {
@@ -162,22 +206,22 @@
     "subtitle": "تصفح المنتجات حسب الفئة",
     "viewProducts": "عرض المنتجات",
     "noCategories": "لا توجد فئات متاحة",
-    "noCategoriesDescription": "ستظهر الفئات هنا بمجرد إضافتها",
+    "noCategoriesDescription": "ستظهر الفئات هنا بعد إضافتها",
     "viewAllProducts": "عرض كل المنتجات"
   },
   "category": {
     "backToCategories": "العودة للفئات",
     "noProducts": "لا توجد منتجات في هذه الفئة",
-    "noProductsDescription": "ستظهر المنتجات هنا بمجرد إضافتها"
+    "noProductsDescription": "ستظهر المنتجات هنا بعد إضافتها"
   },
   "merchants": {
     "title": "التجار",
-    "subtitle": "تصفح جميع المتاجر على رَفّ",
+    "subtitle": "تصفح جميع المتاجر في رَفّ",
     "viewProducts": "عرض المنتجات",
     "visitStore": "زيارة المتجر",
-    "products": "منتجات",
-    "noMerchants": "لا يوجد تجار متاحون",
-    "noMerchantsDescription": "سيظهر التجار هنا بمجرد انضمامهم",
+    "products": "منتج",
+    "noMerchants": "لا يوجد تجار متاحين",
+    "noMerchantsDescription": "سيظهر التجار هنا بعد انضمامهم",
     "viewAllProducts": "عرض كل المنتجات"
   },
   "merchant": {
@@ -185,7 +229,7 @@
     "products": "المنتجات",
     "visitStore": "زيارة المتجر",
     "noProducts": "لا توجد منتجات من هذا التاجر",
-    "noProductsDescription": "ستظهر المنتجات هنا بمجرد إضافتها",
+    "noProductsDescription": "ستظهر المنتجات هنا بعد إضافتها",
     "notFound": {
       "title": "التاجر غير موجود",
       "description": "التاجر الذي تبحث عنه غير موجود أو لم يعد نشطاً",
@@ -194,7 +238,7 @@
   },
   "trending": {
     "title": "المنتجات الرائجة",
-    "subtitle": "اكتشف أكثر المنتجات شعبية الآن",
+    "subtitle": "اكتشف المنتجات الأكثر شعبية الآن",
     "description": "يتم ترتيب المنتجات حسب الشعبية والمشاهدات والمبيعات",
     "noTrending": "لا توجد منتجات رائجة",
     "noTrendingDescription": "ستظهر المنتجات الرائجة هنا قريباً",
@@ -206,7 +250,7 @@
     "support": "الدعم",
     "legal": "قانوني",
     "joinAsStore": "انضم كتاجر",
-    "merchantDashboard": "لوحة تحكم التاجر",
+    "merchantDashboard": "لوحة التحكم للتاجر",
     "helpCenter": "مركز المساعدة",
     "contactUs": "اتصل بنا",
     "termsOfService": "شروط الخدمة",
@@ -228,14 +272,14 @@
     "viewStorefront": "عرض المتجر",
     "connectStore": {
       "title": "اربط متجرك برَفّ",
-      "description": "اربط متجر سلة أو زد لبدء عرض منتجاتك على رَفّ وتتبع التحويلات",
+      "description": "اربط متجر سلة أو زد الخاص بك لبدء عرض منتجاتك على رَفّ وتتبع التحويلات",
       "connectSalla": "ربط متجر سلة",
       "connectZid": "ربط متجر زد",
-      "connecting": "جارٍ الاتصال..."
+      "connecting": "جارٍ الربط..."
     },
     "storeConnected": {
       "title": "تم ربط المتجر بنجاح!",
-      "description": "متجرك على {{platform}} الآن متصل برَفّ",
+      "description": "متجرك على {{platform}} متصل الآن برَفّ",
       "manage": "إدارة الاتصال"
     },
     "stats": {
@@ -251,10 +295,10 @@
       "orders": "الطلبات"
     },
     "topProducts": {
-      "title": "المنتجات الأكثر أداءً",
-      "description": "أفضل المنتجات مبيعاً هذا الشهر",
-      "views": "مشاهدات",
-      "orders": "طلبات"
+      "title": "المنتجات الأفضل أداءً",
+      "description": "منتجاتك الأكثر مبيعاً هذا الشهر",
+      "views": "مشاهدة",
+      "orders": "طلب"
     },
     "quickActions": {
       "title": "إجراءات سريعة",
@@ -265,10 +309,10 @@
     },
     "gettingStarted": {
       "title": "دليل البدء",
-      "description": "اتبع هذه الخطوات لتحقيق أقصى استفادة من رَفّ",
+      "description": "اتبع هذه الخطوات للاستفادة القصوى من تجربتك مع رَفّ",
       "step1": "تم ربط المتجر",
-      "step1Desc": "متجرك الآن متصل وجاهز للمزامنة",
-      "step2": "زامن منتجاتك",
+      "step1Desc": "متجرك متصل الآن وجاهز للمزامنة",
+      "step2": "مزامنة منتجاتك",
       "step2Desc": "انقر على 'مزامنة المنتجات' لاستيراد كتالوج منتجاتك",
       "step3": "راقب الأداء",
       "step3Desc": "تتبع المشاهدات والنقرات والتحويلات في لوحة التحكم"
@@ -285,7 +329,7 @@
     "title": "التحليلات والتقارير",
     "subtitle": "تتبع أداء متجرك بالتفصيل",
     "comingSoon": "قريباً",
-    "comingSoonDesc": "التحليلات المتقدمة والتقارير التفصيلية قريباً"
+    "comingSoonDesc": "تحليلات متقدمة وتقارير تفصيلية قريباً"
   },
   "merchantOrders": {
     "title": "الطلبات",
@@ -300,62 +344,62 @@
     "comingSoonDesc": "إعدادات الحساب والتفضيلات قريباً"
   },
   "merchantJoin": {
-    "title": "انضم إلى رَفّ كتاجر",
-    "subtitle": "اربط متجرك وابدأ الوصول لآلاف العملاء في أنحاء المملكة",
+    "title": "انضم لرَفّ كتاجر",
+    "subtitle": "اربط متجرك وابدأ في الوصول لآلاف العملاء في أنحاء السعودية",
     "heading": "اختر منصتك",
-    "description": "اربط متجرك على سلة أو زد بنقرة واحدة. لا حاجة لإعداد يدوي.",
+    "description": "اربط متجرك الحالي على سلة أو زد بنقرة واحدة. لا حاجة للإعداد اليدوي.",
     "benefits": {
       "title": "لماذا الانضمام لرَفّ؟",
       "visibility": {
         "title": "زيادة الظهور",
-        "description": "اجعل آلاف العملاء الذين يبحثون عن المنتجات الرائجة يكتشفون متجرك"
+        "description": "اجعل آلاف العملاء الباحثين عن المنتجات الرائجة يكتشفون متجرك"
       },
       "integration": {
         "title": "تكامل سلس",
-        "description": "اربط متجرك على سلة أو زد في ثوانٍ بتكامل OAuth بنقرة واحدة"
+        "description": "اربط متجرك على سلة أو زد في ثوانٍ عبر التكامل بنقرة واحدة"
       },
       "control": {
         "title": "تحكم كامل",
-        "description": "احتفظ بالتحكم الكامل في الأسعار والمخزون وعلاقات العملاء"
+        "description": "احتفظ بالتحكم الكامل في التسعير والمخزون وعلاقات العملاء"
       },
       "tracking": {
         "title": "تتبع الأداء",
-        "description": "راقب المشاهدات والنقرات والتحويلات من خلال لوحة تحكم التحليلات الشاملة"
+        "description": "راقب المشاهدات والنقرات والتحويلات من خلال لوحة التحكم الشاملة"
       }
     },
     "buttons": {
       "connectSalla": "ربط متجر سلة",
       "connectZid": "ربط متجر زد",
-      "connecting": "جارٍ الاتصال..."
+      "connecting": "جارٍ الربط..."
     },
     "howItWorks": {
-      "title": "كيف يعمل",
+      "title": "كيف يعمل؟",
       "step1": {
-        "title": "١. اربط متجرك",
-        "description": "اختر منصتك وامنح رَفّ صلاحية الوصول لكتالوج منتجاتك"
+        "title": "1. اربط متجرك",
+        "description": "اختر منصتك وامنح رَفّ الإذن للوصول لكتالوج منتجاتك"
       },
       "step2": {
-        "title": "٢. زامن المنتجات",
+        "title": "2. مزامنة المنتجات",
         "description": "تتم مزامنة منتجاتك تلقائياً وعرضها لعملائنا"
       },
       "step3": {
-        "title": "٣. تتبع الأداء",
-        "description": "راقب مبيعاتك والتفاعل من خلال لوحة تحكم التاجر"
+        "title": "3. تتبع الأداء",
+        "description": "راقب مبيعاتك ومشاركاتك من خلال لوحة تحكم التاجر"
       }
     },
     "features": {
-      "title": "ما ستحصل عليه",
+      "title": "ما الذي ستحصل عليه",
       "analytics": "تحليلات ورؤى تفصيلية",
-      "customers": "الوصول لآلاف المتسوقين السعوديين",
-      "commission": "معدلات عمولة تنافسية",
+      "customers": "وصول لآلاف المتسوقين السعوديين",
+      "commission": "أسعار عمولة تنافسية",
       "support": "دعم للتجار على مدار الساعة"
     },
     "footer": {
-      "questions": "لديك أسئلة؟",
+      "questions": "هل لديك أسئلة؟",
       "contact": "اتصل بالدعم",
       "alreadyMerchant": "تاجر بالفعل؟",
-      "signIn": "سجل الدخول للوحة التحكم",
-      "goToDashboard": "انتقل للوحة التحكم"
+      "signIn": "تسجيل الدخول للوحة التحكم",
+      "goToDashboard": "الذهاب للوحة التحكم"
     }
   },
   "auth": {
@@ -370,62 +414,93 @@
       "strengthMedium": "قوة متوسطة",
       "strengthStrong": "كلمة مرور قوية",
       "nameMinLength": "6 أحرف على الأقل",
-      "nameLettersOnly": "حروف ومسافات فقط",
+      "nameLettersOnly": "أحرف ومسافات فقط",
       "nameFullName": "الاسم الأول والأخير مطلوب",
       "emailHasAt": "يحتوي على رمز @",
-      "emailHasDomain": "يحتوي على نطاق صحيح (.com، .net، إلخ)",
-      "emailValidFormat": "صيغة بريد إلكتروني صحيحة"
+      "emailHasDomain": "له نطاق صالح (.com، .net، إلخ)",
+      "emailValidFormat": "تنسيق بريد إلكتروني صالح"
     },
     "login": {
       "title": "تسجيل الدخول",
-      "subtitle": "سجّل الدخول إلى حسابك",
-      "registerPrompt": "ليس لديك حساب؟",
-      "registerCta": "أنشئ حساباً",
-      "emailLabel": "عنوان البريد الإلكتروني",
-      "emailPlaceholder": "you@example.com",
+      "subtitle": "سجّل الدخول لحسابك",
+      "emailLabel": "البريد الإلكتروني",
+      "emailPlaceholder": "أدخل بريدك الإلكتروني",
       "passwordLabel": "كلمة المرور",
       "passwordPlaceholder": "أدخل كلمة المرور",
       "submit": "تسجيل الدخول",
       "submitting": "جارٍ تسجيل الدخول...",
-      "success": "مرحباً بعودتك!",
-      "successDescription": "سعداء برؤيتك مجدداً، {name}",
-      "error": "حدث خطأ. يرجى المحاولة مرة أخرى.",
-      "errors": {
-        "emailRequired": "البريد الإلكتروني مطلوب",
-        "emailInvalid": "يرجى إدخال بريد إلكتروني صحيح",
-        "passwordRequired": "كلمة المرور مطلوبة",
-        "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
-        "tooManyAttempts": "محاولات دخول كثيرة جداً. يرجى المحاولة لاحقاً."
-      }
+      "registerPrompt": "ليس لديك حساب؟",
+      "registerCta": "سجّل الآن",
+      "success": "تم تسجيل الدخول بنجاح!",
+      "successDescription": "مرحباً بعودتك، {name}!",
+      "error": "فشل تسجيل الدخول",
+      "errorDescription": "يرجى التحقق من بيانات الدخول والمحاولة مرة أخرى"
     },
     "register": {
       "title": "إنشاء حساب",
-      "subtitle": "انضم إلى رَفّ لحفظ المنتجات وتتبع سلتك",
-      "loginPrompt": "هل لديك حساب بالفعل؟",
-      "loginCta": "تسجيل الدخول",
+      "subtitle": "أنشئ حسابك",
       "nameLabel": "الاسم الكامل",
-      "namePlaceholder": "اسمك",
-      "emailLabel": "عنوان البريد الإلكتروني",
-      "emailPlaceholder": "you@example.com",
+      "namePlaceholder": "أدخل اسمك الكامل",
+      "emailLabel": "البريد الإلكتروني",
+      "emailPlaceholder": "أدخل بريدك الإلكتروني",
       "passwordLabel": "كلمة المرور",
       "passwordPlaceholder": "أنشئ كلمة مرور",
       "confirmPasswordLabel": "تأكيد كلمة المرور",
-      "confirmPasswordPlaceholder": "أعد إدخال كلمة المرور",
+      "confirmPasswordPlaceholder": "أكد كلمة المرور",
       "submit": "إنشاء حساب",
       "submitting": "جارٍ إنشاء الحساب...",
-      "passwordMismatch": "كلمات المرور غير متطابقة",
-      "success": "تم إنشاء الحساب بنجاح!",
-      "successDescription": "يمكنك الآن تسجيل الدخول باستخدام بياناتك",
-      "error": "حدث خطأ. يرجى المحاولة مرة أخرى.",
+      "loginPrompt": "هل لديك حساب؟",
+      "loginCta": "تسجيل الدخول",
       "errors": {
         "nameRequired": "الاسم مطلوب",
-        "nameMinLength": "يجب أن يكون الاسم حرفين على الأقل",
         "emailRequired": "البريد الإلكتروني مطلوب",
-        "emailInvalid": "يرجى إدخال بريد إلكتروني صحيح",
-        "emailExists": "يوجد حساب بهذا البريد الإلكتروني بالفعل",
+        "emailInvalid": "بريد إلكتروني غير صالح",
         "passwordRequired": "كلمة المرور مطلوبة",
-        "confirmPasswordRequired": "يرجى تأكيد كلمة المرور"
-      }
+        "confirmPasswordRequired": "يرجى تأكيد كلمة المرور",
+        "emailExists": "هذا البريد الإلكتروني مسجل بالفعل"
+      },
+      "passwordMismatch": "كلمات المرور غير متطابقة",
+      "success": "تم إنشاء الحساب بنجاح!",
+      "successDescription": "جارٍ توجيهك لتسجيل الدخول...",
+      "error": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+    },
+    "errors": {
+      "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+      "emailTaken": "هذا البريد مسجل بالفعل",
+      "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+      "networkError": "خطأ في الاتصال. يرجى التحقق من اتصالك بالإنترنت.",
+      "serverError": "خطأ في الخادم. يرجى المحاولة لاحقاً."
+    }
+  },
+  "orders": {
+    "title": "سجل الطلبات",
+    "subtitle": "تتبع طلباتك ومشترياتك",
+    "noOrders": "لا توجد طلبات بعد",
+    "noOrdersDescription": "لم تقم بأي طلبات بعد. ابدأ التسوق لرؤية سجل طلباتك هنا!",
+    "startShopping": "ابدأ التسوق",
+    "orderNumber": "الطلب",
+    "quantity": "الكمية",
+    "merchant": "التاجر",
+    "unknownMerchant": "تاجر غير معروف",
+    "total": "الإجمالي",
+    "trackingNumber": "رقم التتبع",
+    "timeline": "مراحل الطلب",
+    "placed": "تم تقديم الطلب",
+    "confirmed": "تم التأكيد",
+    "shipped": "تم الشحن",
+    "delivered": "تم التوصيل",
+    "viewProduct": "عرض المنتج",
+    "visitStore": "زيارة المتجر",
+    "trackShipment": "تتبع الشحنة",
+    "pageInfo": "صفحة {page} من {totalPages}",
+    "status": {
+      "pending": "قيد الانتظار",
+      "confirmed": "مؤكد",
+      "processing": "قيد المعالجة",
+      "shipped": "تم الشحن",
+      "delivered": "تم التوصيل",
+      "cancelled": "ملغي",
+      "refunded": "مسترجع"
     }
   }
 }

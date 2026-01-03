@@ -5,8 +5,9 @@ import { useState, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/shared/components/ui";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Package } from "lucide-react";
 import { ArrowForward } from "@/core/i18n";
 import { toast } from "sonner";
 
@@ -87,7 +88,7 @@ export function UserMenu() {
         </div>
 
         {/* User Name - Always visible but truncated on mobile */}
-        <span className="truncate text-sm font-medium text-raff-neutral-700]">
+        <span className="truncate text-sm font-medium text-raff-neutral-700">
           {displayName}
         </span>
 
@@ -125,6 +126,18 @@ export function UserMenu() {
 
           {/* Menu Items */}
           <div className="p-2">
+            {/* Orders Link - Only for customers */}
+            {session.user.role === "CUSTOMER" && (
+              <Link
+                href="/orders"
+                onClick={() => setIsOpen(false)}
+                className="group flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-raff-neutral-700 transition-all hover:bg-raff-primary/10 hover:text-raff-primary"
+              >
+                <Package className="h-4 w-4" />
+                <span className="font-medium">{t("actions.orders")}</span>
+              </Link>
+            )}
+
             {/* Logout Button */}
             <button
               onClick={handleLogout}
