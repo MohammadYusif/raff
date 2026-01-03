@@ -3,13 +3,13 @@
 
 import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Container,
   Card,
   CardContent,
-  Button,
-  Badge,
 } from "@/shared/components/ui";
+import { ProductCard } from "@/shared/components/ProductCard";
 import { PageLayout } from "@/shared/components/layouts";
 import { SearchInput } from "@/shared/components/SearchInput";
 import {
@@ -21,7 +21,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { ArrowForward } from "@/core/i18n";
-import { formatPrice } from "@/lib/utils";
+import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
 // Serialized types (Decimal converted to number)
 interface SerializedProduct {
@@ -198,79 +198,41 @@ export function HomepageContent({
           </div>
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {featuredProducts.map((product) => {
-              const productTitle =
-                locale === "ar"
-                  ? product.titleAr || product.title
-                  : product.title;
-              const merchantName =
-                locale === "ar"
-                  ? product.merchant.nameAr || product.merchant.name
-                  : product.merchant.name;
-
-              return (
-                <Card
-                  key={product.id}
-                  className="group flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-lg"
-                >
-                  <CardContent className="flex h-full flex-col p-0">
-                    <Link href={`/products/${product.slug}`}>
-                      <div className="relative aspect-square overflow-hidden bg-raff-neutral-100 transition-transform duration-300 group-hover:scale-105">
-                        <div className="flex h-full items-center justify-center text-6xl opacity-40">
-                          📦
-                        </div>
-                        {product.trendingScore &&
-                          product.trendingScore > 70 && (
-                            <div className="absolute start-3 top-3">
-                              <Badge className="gap-1 bg-raff-accent text-white">
-                                <TrendingUp className="h-3 w-3" />
-                                {commonT("labels.trending")}
-                              </Badge>
-                            </div>
-                          )}
-                      </div>
-                    </Link>
-
-                    <div className="flex flex-1 flex-col p-4">
-                      <div className="flex-1">
-                        <p className="mb-1 text-xs text-raff-neutral-500">
-                          {merchantName}
-                        </p>
-                        <Link href={`/products/${product.slug}`}>
-                          <h3 className="mb-2 line-clamp-2 text-base font-semibold text-raff-primary transition-colors hover:text-raff-accent">
-                            {productTitle}
-                          </h3>
-                        </Link>
-                        <div className="mb-4">
-                          <span className="text-lg font-bold text-raff-primary">
-                            {formatPrice(product.price, locale)}
-                          </span>
-                        </div>
-                      </div>
-
-                      <Link href={`/products/${product.slug}`}>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full gap-2 transition-all hover:bg-raff-primary hover:text-white"
-                        >
-                          {commonT("actions.viewDetails")}
-                          <ArrowForward className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+            {featuredProducts.map((product, index) => (
+              <ProductCard
+                key={product.id}
+                product={{
+                  id: product.id,
+                  slug: product.slug,
+                  title: product.title,
+                  titleAr: product.titleAr,
+                  price: product.price,
+                  originalPrice: product.originalPrice,
+                  trendingScore: product.trendingScore ?? 0,
+                  merchant: {
+                    name: product.merchant.name,
+                    nameAr: product.merchant.nameAr,
+                  },
+                  category: product.category
+                    ? {
+                        name: product.category.name,
+                        nameAr: product.category.nameAr,
+                      }
+                    : null,
+                }}
+                index={index}
+                showCategory={true}
+                commonT={commonT}
+              />
+            ))}
           </div>
 
           <div className="mt-12 text-center">
             <Link href="/products">
-              <Button size="lg" className="gap-2">
+              <AnimatedButton size="lg" className="gap-2">
                 {t("featured.viewAll")}
                 <ArrowForward className="h-5 w-5" />
-              </Button>
+              </AnimatedButton>
             </Link>
           </div>
         </Container>
@@ -314,10 +276,10 @@ export function HomepageContent({
 
           <div className="mt-12 text-center">
             <Link href="/categories">
-              <Button variant="outline" size="lg" className="gap-2">
+              <AnimatedButton variant="outline" size="lg" className="gap-2">
                 {t("categories.viewAll")}
                 <ArrowForward className="h-5 w-5" />
-              </Button>
+              </AnimatedButton>
             </Link>
           </div>
         </Container>
@@ -393,9 +355,11 @@ export function HomepageContent({
                       <div className="mb-6 flex items-start gap-4">
                         <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl  from-raff-primary/10 to-raff-accent/10 transition-transform group-hover:scale-105">
                           {merchant.logo ? (
-                            <img
+                            <Image
                               src={merchant.logo}
                               alt={merchantName}
+                              width={64}
+                              height={64}
                               className="h-16 w-16 rounded-xl object-cover"
                             />
                           ) : (
@@ -461,10 +425,10 @@ export function HomepageContent({
 
                       {/* Visit Store Button */}
                       <Link href={`/merchants/${merchant.id}`}>
-                        <Button className="w-full gap-2 transition-all hover:gap-3">
+                        <AnimatedButton className="w-full gap-2 transition-all hover:gap-3">
                           {t("merchants.visitStore")}
                           <ArrowForward className="h-4 w-4" />
-                        </Button>
+                        </AnimatedButton>
                       </Link>
                     </CardContent>
                   </Card>
@@ -475,10 +439,10 @@ export function HomepageContent({
             {/* View All Merchants */}
             <div className="mt-12 text-center">
               <Link href="/merchants">
-                <Button variant="outline" size="lg" className="gap-2">
+                <AnimatedButton variant="outline" size="lg" className="gap-2">
                   {t("merchants.viewAll")}
                   <ArrowForward className="h-5 w-5" />
-                </Button>
+                </AnimatedButton>
               </Link>
             </div>
           </Container>
@@ -538,13 +502,13 @@ export function HomepageContent({
                   </li>
                 </ul>
                 <Link href="/products">
-                  <Button
+                  <AnimatedButton
                     size="lg"
                     className="w-full gap-2 transition-all hover:gap-3"
                   >
                     {t("cta.shoppers")}
                     <ArrowForward className="h-5 w-5" />
-                  </Button>
+                  </AnimatedButton>
                 </Link>
               </CardContent>
             </Card>
@@ -583,13 +547,13 @@ export function HomepageContent({
                   </li>
                 </ul>
                 <Link href="/merchant/join">
-                  <Button
+                  <AnimatedButton
                     size="lg"
                     className="w-full gap-2 bg-raff-accent hover:bg-raff-accent/90 transition-all hover:gap-3"
                   >
                     {t("cta.merchants")}
                     <ArrowForward className="h-5 w-5" />
-                  </Button>
+                  </AnimatedButton>
                 </Link>
               </CardContent>
             </Card>

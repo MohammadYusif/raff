@@ -1,19 +1,18 @@
 // src/app/trending/TrendingContent.tsx
 "use client";
 
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { PageLayout } from "@/shared/components/layouts";
 import {
   Container,
   Card,
   CardContent,
-  Button,
-  Badge,
 } from "@/shared/components/ui";
+import { ProductCard } from "@/shared/components/ProductCard";
 import { TrendingUp, Flame } from "lucide-react";
 import { ArrowForward, ArrowBackward } from "@/core/i18n";
-import { formatPrice } from "@/lib/utils";
+import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
 interface Product {
   id: string;
@@ -40,7 +39,6 @@ interface TrendingContentProps {
 export function TrendingContent({ products }: TrendingContentProps) {
   const t = useTranslations("trending");
   const commonT = useTranslations("common");
-  const locale = useLocale();
 
   return (
     <PageLayout>
@@ -50,10 +48,10 @@ export function TrendingContent({ products }: TrendingContentProps) {
           <Container className="py-8">
             <div className="mb-4">
               <Link href="/">
-                <Button variant="ghost" className="gap-2 -ms-2">
+                <AnimatedButton variant="ghost" className="gap-2 -ms-2">
                   <ArrowBackward className="h-4 w-4" />
                   {commonT("actions.backToHome")}
-                </Button>
+                </AnimatedButton>
               </Link>
             </div>
 
@@ -80,110 +78,15 @@ export function TrendingContent({ products }: TrendingContentProps) {
           {/* Products Grid */}
           {products.length > 0 ? (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {products.map((product, index) => {
-                const productTitle =
-                  locale === "ar"
-                    ? product.titleAr || product.title
-                    : product.title;
-                const categoryName = product.category
-                  ? locale === "ar"
-                    ? product.category.nameAr || product.category.name
-                    : product.category.name
-                  : null;
-                const merchantName =
-                  locale === "ar"
-                    ? product.merchant.nameAr || product.merchant.name
-                    : product.merchant.name;
-
-                return (
-                  <Card
-                    key={product.id}
-                    className="group relative flex h-full flex-col overflow-hidden border-raff-neutral-200"
-                  >
-                    {/* Trending Rank Badge */}
-                    <div className="absolute start-3 top-3 z-10">
-                      <Badge
-                        variant="default"
-                        className="gap-1 bg-raff-accent text-white shadow-lg"
-                      >
-                        <Flame className="h-3 w-3" />#{index + 1}
-                      </Badge>
-                    </div>
-
-                    {/* Product Image */}
-                    <Link href={`/products/${product.slug}`}>
-                      <div className="relative aspect-square overflow-hidden">
-                        <div className="flex h-full items-center justify-center from-raff-neutral-50 to-raff-neutral-100">
-                          <div className="text-center">
-                            <div className="mb-3 text-6xl opacity-40">📦</div>
-                            {/* Fixed height container for badge */}
-                            <div className="flex h-6 items-center justify-center">
-                              <Badge
-                                variant="default"
-                                className="gap-1 bg-raff-primary"
-                              >
-                                <TrendingUp className="h-3 w-3" />
-                                {commonT("labels.trending")}
-                              </Badge>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-
-                    {/* Product Info - Flex Container */}
-                    <CardContent className="flex flex-1 flex-col p-4">
-                      {/* Content Area - Grows to fill space */}
-                      <div className="flex-1">
-                        {/* Category */}
-                        {categoryName && (
-                          <div className="mb-2 text-xs font-medium uppercase tracking-wide text-raff-neutral-500">
-                            {categoryName}
-                          </div>
-                        )}
-
-                        {/* Merchant */}
-                        <div className="mb-2 text-xs text-raff-neutral-500">
-                          {merchantName}
-                        </div>
-
-                        {/* Title */}
-                        <Link href={`/products/${product.slug}`}>
-                          <h3 className="mb-3 line-clamp-2 text-base font-semibold text-raff-primary transition-colors hover:text-raff-accent">
-                            {productTitle}
-                          </h3>
-                        </Link>
-
-                        {/* Price */}
-                        <div className="mb-4">
-                          {product.originalPrice && (
-                            <span className="me-2 text-sm text-raff-neutral-500 line-through">
-                              {formatPrice(product.originalPrice, locale)}
-                            </span>
-                          )}
-                          <span className="text-xl font-bold text-raff-primary">
-                            {formatPrice(product.price, locale)}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* View Button - Always at Bottom */}
-                      <Link href={`/products/${product.slug}`}>
-                        <Button
-                          variant="outline"
-                          className="group/btn w-full gap-2 transition-all hover:border-raff-primary hover:bg-raff-primary hover:text-white"
-                          size="sm"
-                        >
-                          <span className="flex-1">
-                            {commonT("actions.viewDetails")}
-                          </span>
-                          <ArrowForward className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
-                        </Button>
-                      </Link>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+              {products.map((product, index) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  index={index}
+                  showCategory={true}
+                  commonT={commonT}
+                />
+              ))}
             </div>
           ) : (
             <Card>
@@ -202,10 +105,10 @@ export function TrendingContent({ products }: TrendingContentProps) {
           {/* View All Products Link */}
           <div className="mt-12 text-center">
             <Link href="/products">
-              <Button size="lg" variant="outline" className="gap-2">
+              <AnimatedButton size="lg" variant="outline" className="gap-2">
                 {t("viewAllProducts")}
                 <ArrowForward className="h-5 w-5" />
-              </Button>
+              </AnimatedButton>
             </Link>
           </div>
         </Container>

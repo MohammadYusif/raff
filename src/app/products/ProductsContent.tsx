@@ -10,22 +10,19 @@ import {
   Container,
   Card,
   CardContent,
-  Button,
   Badge,
   Input,
 } from "@/shared/components/ui";
+import { ProductCard } from "@/shared/components/ProductCard";
 import {
-  TrendingUp,
   Search,
   SlidersHorizontal,
   X,
-  ShoppingCart,
 } from "lucide-react";
 import { ArrowForward, ArrowBackward } from "@/core/i18n";
-import { formatPrice } from "@/lib/utils";
-import { useCart } from "@/lib/hooks/useCart";
-import { toast } from "sonner";
 import type { ProductWithCartFields } from "@/types";
+import { AnimatedButton } from "@/shared/components/AnimatedButton";
+import { StaggerContainer } from "@/shared/components/PageTransition";
 
 interface Category {
   id: string;
@@ -60,11 +57,9 @@ export function ProductsContent({
 }: ProductsContentProps) {
   const t = useTranslations("products");
   const commonT = useTranslations("common");
-  const productT = useTranslations("product");
   const locale = useLocale();
   const router = useRouter();
   const urlSearchParams = useSearchParams();
-  const { addItem } = useCart();
 
   const [searchQuery, setSearchQuery] = useState(
     urlSearchParams.get("search") || ""
@@ -160,10 +155,10 @@ export function ProductsContent({
           <Container className="py-8">
             <div className="mb-4">
               <Link href="/">
-                <Button variant="ghost" className="gap-2 -ms-2">
+                <AnimatedButton variant="ghost" className="gap-2 -ms-2">
                   <ArrowBackward className="h-4 w-4" />
                   {commonT("actions.backToHome")}
-                </Button>
+                </AnimatedButton>
               </Link>
             </div>
             <h1 className="mb-4 text-3xl font-bold text-raff-primary sm:text-4xl">
@@ -195,13 +190,14 @@ export function ProductsContent({
                           className="pe-10"
                         />
                         {searchQuery && (
-                          <button
+                          <AnimatedButton
                             type="button"
                             onClick={handleClearSearch}
+                            unstyled
                             className="absolute end-3 top-1/2 -translate-y-1/2 text-raff-neutral-400 hover:text-raff-neutral-600"
                           >
                             <X className="h-4 w-4" />
-                          </button>
+                          </AnimatedButton>
                         )}
                       </div>
                     </form>
@@ -214,7 +210,7 @@ export function ProductsContent({
                       {t("categories")}
                     </h3>
                     <div className="space-y-2">
-                      <Button
+                      <AnimatedButton
                         variant={
                           !urlSearchParams.get("category")
                             ? "default"
@@ -225,14 +221,14 @@ export function ProductsContent({
                         onClick={() => handleCategoryFilter(null)}
                       >
                         {t("allCategories")}
-                      </Button>
+                      </AnimatedButton>
                       {categories.map((category) => {
                         const categoryName =
                           locale === "ar"
                             ? category.nameAr || category.name
                             : category.name;
                         return (
-                          <Button
+                          <AnimatedButton
                             key={category.id}
                             variant={
                               urlSearchParams.get("category") === category.slug
@@ -250,7 +246,7 @@ export function ProductsContent({
                             >
                               {category._count.products}
                             </Badge>
-                          </Button>
+                          </AnimatedButton>
                         );
                       })}
                     </div>
@@ -272,7 +268,7 @@ export function ProductsContent({
                   })}
                 </p>
                 <div className="flex gap-2 overflow-x-auto pb-2">
-                  <Button
+                  <AnimatedButton
                     variant={
                       urlSearchParams.get("sortBy") === "trending"
                         ? "default"
@@ -283,8 +279,8 @@ export function ProductsContent({
                     onClick={() => handleSort("trending")}
                   >
                     {t("sortTrending")}
-                  </Button>
-                  <Button
+                  </AnimatedButton>
+                  <AnimatedButton
                     variant={
                       urlSearchParams.get("sortBy") === "price_low"
                         ? "default"
@@ -295,8 +291,8 @@ export function ProductsContent({
                     onClick={() => handleSort("price_low")}
                   >
                     {t("sortPriceLow")}
-                  </Button>
-                  <Button
+                  </AnimatedButton>
+                  <AnimatedButton
                     variant={
                       urlSearchParams.get("sortBy") === "price_high"
                         ? "default"
@@ -307,8 +303,8 @@ export function ProductsContent({
                     onClick={() => handleSort("price_high")}
                   >
                     {t("sortPriceHigh")}
-                  </Button>
-                  <Button
+                  </AnimatedButton>
+                  <AnimatedButton
                     variant={
                       urlSearchParams.get("sortBy") === "newest"
                         ? "default"
@@ -319,155 +315,29 @@ export function ProductsContent({
                     onClick={() => handleSort("newest")}
                   >
                     {t("sortNewest")}
-                  </Button>
+                  </AnimatedButton>
                 </div>
               </div>
 
               {/* Products Grid */}
               {initialProducts.length > 0 ? (
                 <>
-                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                    {initialProducts.map((product) => {
-                      const productTitle =
-                        locale === "ar"
-                          ? product.titleAr || product.title
-                          : product.title;
-                      const merchantName =
-                        locale === "ar"
-                          ? product.merchant.nameAr || product.merchant.name
-                          : product.merchant.name;
-                      const categoryName = product.category
-                        ? locale === "ar"
-                          ? product.category.nameAr || product.category.name
-                          : product.category.name
-                        : null;
-
-                      return (
-                        <Card
-                          key={product.id}
-                          className="group flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-lg"
-                        >
-                          <CardContent className="flex h-full flex-col p-0">
-                            {/* Product Image Placeholder */}
-                            <Link href={`/products/${product.slug}`}>
-                              <div className="relative aspect-square overflow-hidden bg-raff-neutral-100 transition-transform duration-300 group-hover:scale-105">
-                                <div className="flex h-full items-center justify-center text-6xl opacity-40">
-                                  📦
-                                </div>
-                                {product.trendingScore > 70 && (
-                                  <div className="absolute start-3 top-3">
-                                    <Badge className="gap-1 bg-raff-accent text-white">
-                                      <TrendingUp className="h-3 w-3" />
-                                      {commonT("labels.trending")}
-                                    </Badge>
-                                  </div>
-                                )}
-                              </div>
-                            </Link>
-
-                            {/* Product Info - Flex Container */}
-                            <div className="flex flex-1 flex-col p-4">
-                              {/* Content Area - Grows to fill space */}
-                              <div className="flex-1">
-                                {categoryName && (
-                                  <p className="mb-1 text-xs text-raff-neutral-500">
-                                    {categoryName}
-                                  </p>
-                                )}
-                                <Link href={`/products/${product.slug}`}>
-                                  <h3 className="mb-2 line-clamp-2 text-base font-semibold text-raff-primary transition-colors hover:text-raff-accent">
-                                    {productTitle}
-                                  </h3>
-                                </Link>
-                                <p className="mb-3 text-sm text-raff-neutral-600">
-                                  {merchantName}
-                                </p>
-
-                                {/* Price */}
-                                <div className="mb-4">
-                                  <span className="text-lg font-bold text-raff-primary">
-                                    {formatPrice(product.price, locale)}
-                                  </span>
-                                  {product.originalPrice &&
-                                    product.originalPrice > product.price && (
-                                      <span className="ms-2 text-sm text-raff-neutral-400 line-through">
-                                        {formatPrice(
-                                          product.originalPrice,
-                                          locale
-                                        )}
-                                      </span>
-                                    )}
-                                </div>
-                              </div>
-
-                              <div className="flex flex-col gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="w-full gap-2"
-                                  onClick={() => {
-                                    addItem(
-                                      {
-                                        id: product.id,
-                                        slug: product.slug,
-                                        name: product.title,
-                                        nameAr: product.titleAr,
-                                        image: product.imageUrl || null,
-                                        price: product.price,
-                                        currency: product.currency,
-                                        merchantName:
-                                          locale === "ar"
-                                            ? product.merchant.nameAr ||
-                                              product.merchant.name
-                                            : product.merchant.name,
-                                        merchantNameAr: product.merchant.nameAr,
-                                        categoryName: product.category
-                                          ? (locale === "ar"
-                                              ? product.category.nameAr ||
-                                                product.category.name
-                                              : product.category.name)
-                                          : null,
-                                        categoryNameAr: product.category?.nameAr,
-                                        externalUrl: product.externalUrl,
-                                        trendingScore: product.trendingScore,
-                                      },
-                                      1
-                                    );
-                                    toast.success(productT("addedToCart"));
-                                  }}
-                                >
-                                  {productT("addToCart")}
-                                  <ShoppingCart className="h-4 w-4" />
-                                </Button>
-
-                                {/* View Details Button - Always at Bottom */}
-                                <Link
-                                  href={`/products/${product.slug}`}
-                                  className="block"
-                                >
-                                  <Button
-                                    variant="outline"
-                                    className="group/btn w-full transition-all hover:bg-raff-primary hover:text-white hover:border-raff-primary"
-                                    size="sm"
-                                  >
-                                    <span className="flex-1">
-                                      {commonT("actions.viewDetails")}
-                                    </span>
-                                    <ArrowForward className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
-                                  </Button>
-                                </Link>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </div>
+                  <StaggerContainer className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {initialProducts.map((product, index) => (
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                        index={index}
+                        showCategory={true}
+                        commonT={commonT}
+                      />
+                    ))}
+                  </StaggerContainer>
 
                   {/* Pagination - unchanged */}
                   {pagination.totalPages > 1 && (
                     <div className="mt-8 flex items-center justify-center gap-2">
-                      <Button
+                      <AnimatedButton
                         variant="outline"
                         size="sm"
                         onClick={() => handlePageChange(pagination.page - 1)}
@@ -478,13 +348,13 @@ export function ProductsContent({
                       >
                         <ArrowBackward className="h-4 w-4" />
                         {t("previous")}
-                      </Button>
+                      </AnimatedButton>
 
                       <span className="text-sm text-raff-neutral-600">
                         {pagination.page} / {pagination.totalPages}
                       </span>
 
-                      <Button
+                      <AnimatedButton
                         variant="outline"
                         size="sm"
                         onClick={() => handlePageChange(pagination.page + 1)}
@@ -495,7 +365,7 @@ export function ProductsContent({
                       >
                         {t("next")}
                         <ArrowForward className="h-4 w-4" />
-                      </Button>
+                      </AnimatedButton>
                     </div>
                   )}
                 </>

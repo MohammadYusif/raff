@@ -10,16 +10,15 @@ import {
   Container,
   Card,
   CardContent,
-  Button,
   Badge,
   Input,
 } from "@/shared/components/ui";
+import { ProductCard } from "@/shared/components/ProductCard";
 import { Search, ExternalLink, Store, Package } from "lucide-react";
-import { ArrowForward, ArrowBackward } from "@/core/i18n";
-import { formatPrice } from "@/lib/utils";
-import { TrendingUp } from "lucide-react";
+import { ArrowBackward } from "@/core/i18n";
 import { getMerchantStoreUrlFromObject } from "@/lib/platform/store";
 import type { MerchantWithCount } from "@/types";
+import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
 interface Product {
   id: string;
@@ -115,10 +114,10 @@ export function MerchantDetailContent({
           <Container className="py-8">
             <div className="mb-4">
               <Link href="/merchants">
-                <Button variant="ghost" className="gap-2 -ms-2">
+                <AnimatedButton variant="ghost" className="gap-2 -ms-2">
                   <ArrowBackward className="h-4 w-4" />
                   {t("backToMerchants")}
-                </Button>
+                </AnimatedButton>
               </Link>
             </div>
 
@@ -156,16 +155,16 @@ export function MerchantDetailContent({
                 </Badge>
                 {storeUrl ? (
                   <a href={storeUrl} target="_blank" rel="noopener noreferrer">
-                    <Button className="w-full gap-2">
+                    <AnimatedButton className="w-full gap-2">
                       {t("visitStore")}
                       <ExternalLink className="h-4 w-4" />
-                    </Button>
+                    </AnimatedButton>
                   </a>
                 ) : (
-                  <Button className="w-full gap-2" disabled>
+                  <AnimatedButton className="w-full gap-2" disabled>
                     {t("visitStore")}
                     <ExternalLink className="h-4 w-4" />
-                  </Button>
+                  </AnimatedButton>
                 )}
               </div>
             </div>
@@ -188,9 +187,9 @@ export function MerchantDetailContent({
                     className="ps-10"
                   />
                 </div>
-                <Button type="submit" size="icon">
+                <AnimatedButton type="submit" size="icon">
                   <Search className="h-4 w-4" />
-                </Button>
+                </AnimatedButton>
               </div>
             </form>
 
@@ -202,7 +201,7 @@ export function MerchantDetailContent({
                 })}
               </p>
               <div className="flex gap-2 overflow-x-auto pb-2">
-                <Button
+                <AnimatedButton
                   variant={
                     urlSearchParams.get("sortBy") === "trending"
                       ? "default"
@@ -213,8 +212,8 @@ export function MerchantDetailContent({
                   onClick={() => handleSort("trending")}
                 >
                   {productsT("sortTrending")}
-                </Button>
-                <Button
+                </AnimatedButton>
+                <AnimatedButton
                   variant={
                     urlSearchParams.get("sortBy") === "price_low"
                       ? "default"
@@ -225,8 +224,8 @@ export function MerchantDetailContent({
                   onClick={() => handleSort("price_low")}
                 >
                   {productsT("sortPriceLow")}
-                </Button>
-                <Button
+                </AnimatedButton>
+                <AnimatedButton
                   variant={
                     urlSearchParams.get("sortBy") === "price_high"
                       ? "default"
@@ -237,8 +236,8 @@ export function MerchantDetailContent({
                   onClick={() => handleSort("price_high")}
                 >
                   {productsT("sortPriceHigh")}
-                </Button>
-                <Button
+                </AnimatedButton>
+                <AnimatedButton
                   variant={
                     urlSearchParams.get("sortBy") === "newest"
                       ? "default"
@@ -249,7 +248,7 @@ export function MerchantDetailContent({
                   onClick={() => handleSort("newest")}
                 >
                   {productsT("sortNewest")}
-                </Button>
+                </AnimatedButton>
               </div>
             </div>
           </div>
@@ -257,83 +256,33 @@ export function MerchantDetailContent({
           {/* Products Grid */}
           {initialProducts.length > 0 ? (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {initialProducts.map((product) => {
-                const productTitle =
-                  locale === "ar"
-                    ? product.titleAr || product.title
-                    : product.title;
-                const categoryName = product.category
-                  ? locale === "ar"
-                    ? product.category.nameAr || product.category.name
-                    : product.category.name
-                  : null;
-
-                return (
-                  <Card
-                    key={product.id}
-                    className="group overflow-hidden border-raff-neutral-200 hover-lift"
-                  >
-                    {/* Product Image */}
-                    <div className="relative aspect-square overflow-hidden">
-                      <div className="flex h-full items-center justify-center from-raff-neutral-50 to-raff-neutral-100">
-                        <div className="text-center">
-                          <div className="mb-3 text-6xl opacity-40">📦</div>
-                          {/* Fixed height container for badge */}
-                          <div className="flex h-6 items-center justify-center">
-                            {product.trendingScore > 70 && (
-                              <Badge
-                                variant="default"
-                                className="gap-1 bg-raff-primary"
-                              >
-                                <TrendingUp className="h-3 w-3" />
-                                {commonT("labels.trending")}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <CardContent className="p-4">
-                      {/* Category */}
-                      {categoryName && (
-                        <div className="mb-2 text-xs font-medium uppercase tracking-wide text-raff-neutral-500">
-                          {categoryName}
-                        </div>
-                      )}
-
-                      {/* Title */}
-                      <h3 className="mb-3 line-clamp-2 text-base font-semibold text-raff-primary">
-                        {productTitle}
-                      </h3>
-
-                      {/* Price */}
-                      <div className="mb-4">
-                        {product.originalPrice && (
-                          <span className="me-2 text-sm text-raff-neutral-500 line-through">
-                            {formatPrice(product.originalPrice, locale)}
-                          </span>
-                        )}
-                        <span className="text-xl font-bold text-raff-primary">
-                          {formatPrice(product.price, locale)}
-                        </span>
-                      </div>
-
-                      {/* View Button */}
-                      <Link href={`/products/${product.slug}`}>
-                        <Button
-                          variant="outline"
-                          className="w-full gap-2"
-                          size="sm"
-                        >
-                          {commonT("actions.viewDetails")}
-                          <ArrowForward className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+              {initialProducts.map((product, index) => (
+                <ProductCard
+                  key={product.id}
+                  product={{
+                    id: product.id,
+                    slug: product.slug,
+                    title: product.title,
+                    titleAr: product.titleAr,
+                    price: product.price,
+                    originalPrice: product.originalPrice,
+                    trendingScore: product.trendingScore,
+                    merchant: {
+                      name: merchant.name,
+                      nameAr: merchant.nameAr,
+                    },
+                    category: product.category
+                      ? {
+                          name: product.category.name,
+                          nameAr: product.category.nameAr,
+                        }
+                      : null,
+                  }}
+                  index={index}
+                  showCategory={true}
+                  commonT={commonT}
+                />
+              ))}
             </div>
           ) : (
             <Card>
@@ -352,13 +301,13 @@ export function MerchantDetailContent({
           {/* Pagination */}
           {pagination.totalPages > 1 && (
             <div className="mt-8 flex items-center justify-center gap-2">
-              <Button
+              <AnimatedButton
                 variant="outline"
                 onClick={() => handlePageChange(pagination.page - 1)}
                 disabled={!pagination.hasPreviousPage}
               >
                 {productsT("previous")}
-              </Button>
+              </AnimatedButton>
 
               {[...Array(pagination.totalPages)].map((_, i) => {
                 const page = i + 1;
@@ -368,13 +317,13 @@ export function MerchantDetailContent({
                   Math.abs(page - pagination.page) <= 1
                 ) {
                   return (
-                    <Button
+                    <AnimatedButton
                       key={page}
                       variant={page === pagination.page ? "default" : "outline"}
                       onClick={() => handlePageChange(page)}
                     >
                       {page}
-                    </Button>
+                    </AnimatedButton>
                   );
                 } else if (
                   page === pagination.page - 2 ||
@@ -385,13 +334,13 @@ export function MerchantDetailContent({
                 return null;
               })}
 
-              <Button
+              <AnimatedButton
                 variant="outline"
                 onClick={() => handlePageChange(pagination.page + 1)}
                 disabled={!pagination.hasNextPage}
               >
                 {productsT("next")}
-              </Button>
+              </AnimatedButton>
             </div>
           )}
         </Container>
