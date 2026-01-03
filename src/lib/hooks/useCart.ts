@@ -80,7 +80,7 @@ export function useCart() {
   const userId = session?.user?.id;
   const [items, setItems] = useState<CartItem[]>([]);
   const isAddingRef = useRef(false);
-  const prevUserIdRef = useRef<string | undefined>();
+  const prevUserIdRef = useRef<string | undefined>(undefined);
 
   // Migrate guest cart when user logs in
   useEffect(() => {
