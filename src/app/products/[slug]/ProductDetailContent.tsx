@@ -8,7 +8,6 @@ import {
   Container,
   Card,
   CardContent,
-  Button,
   Badge,
 } from "@/shared/components/ui";
 import {
@@ -25,6 +24,7 @@ import { useProductClick } from "@/lib/hooks/useProductClick"; // ✅ NEW
 import { useCart } from "@/lib/hooks/useCart";
 import { toast } from "sonner";
 import type { ProductWithCartFields } from "@/types";
+import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
 interface ProductDetailContentProps {
   product: ProductWithCartFields;
@@ -103,10 +103,10 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
           <Container className="py-8">
             <div className="mb-4">
               <Link href="/products">
-                <Button variant="ghost" className="gap-2 -ms-2">
+                <AnimatedButton variant="ghost" className="gap-2 -ms-2">
                   <ArrowBackward className="h-4 w-4" />
                   {t("backToProducts")}
-                </Button>
+                </AnimatedButton>
               </Link>
             </div>
           </Container>
@@ -203,7 +203,7 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
 
               {/* Buy Now Button - UPDATED */}
               <div className="flex flex-col gap-4">
-                <Button
+                <AnimatedButton
                   size="lg"
                   variant="outline"
                   className="w-full text-lg"
@@ -212,8 +212,8 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
                 >
                   {t("addToCart")}
                   <ShoppingCart className="ms-2 h-5 w-5" />
-                </Button>
-                <Button
+                </AnimatedButton>
+                <AnimatedButton
                   size="lg"
                   className="w-full text-lg"
                   onClick={handleBuyNow}
@@ -230,14 +230,14 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
                       <ExternalLink className="ms-2 h-5 w-5" />
                     </>
                   )}
-                </Button>
+                </AnimatedButton>
 
                 {storeUrl && (
                   <a href={storeUrl} target="_blank" rel="noopener noreferrer">
-                    <Button variant="outline" size="lg" className="w-full">
+                    <AnimatedButton variant="outline" size="lg" className="w-full">
                       {t("visitStore")}
                       <ExternalLink className="ms-2 h-5 w-5" />
-                    </Button>
+                    </AnimatedButton>
                   </a>
                 )}
 

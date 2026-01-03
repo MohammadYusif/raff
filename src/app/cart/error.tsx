@@ -3,8 +3,9 @@
 
 import Link from "next/link";
 import { PageLayout } from "@/shared/components/layouts";
-import { Container, Card, CardContent, Button } from "@/shared/components/ui";
+import { Container, Card, CardContent } from "@/shared/components/ui";
 import { AlertCircle, ShoppingCart } from "lucide-react";
+import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
 export default function CartError({
   error,
@@ -50,13 +51,13 @@ export default function CartError({
 
               {/* Action Buttons */}
               <div className="flex flex-col gap-3">
-                <Button onClick={reset} className="w-full">
+                <AnimatedButton onClick={reset} className="w-full">
                   Try Again
-                </Button>
+                </AnimatedButton>
                 <Link href="/products" className="w-full">
-                  <Button variant="outline" className="w-full">
+                  <AnimatedButton variant="outline" className="w-full">
                     Continue Shopping
-                  </Button>
+                  </AnimatedButton>
                 </Link>
               </div>
             </CardContent>

@@ -2,8 +2,9 @@
 "use client";
 
 import Link from "next/link";
-import { Container, Card, CardContent, Button } from "@/shared/components/ui";
+import { Container, Card, CardContent } from "@/shared/components/ui";
 import { AlertCircle } from "lucide-react";
+import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
 /**
  * Error boundary for register page
@@ -24,7 +25,7 @@ export default function RegisterError({
         {/* Back to Home Button */}
         <div className="mb-4">
           <Link href="/">
-            <Button variant="ghost">Back to Home</Button>
+            <AnimatedButton variant="ghost">Back to Home</AnimatedButton>
           </Link>
         </div>
 
@@ -46,13 +47,13 @@ export default function RegisterError({
 
             {/* Action Buttons */}
             <div className="flex flex-col gap-3">
-              <Button onClick={reset} className="w-full">
+              <AnimatedButton onClick={reset} className="w-full">
                 Try Again
-              </Button>
+              </AnimatedButton>
               <Link href="/" className="w-full">
-                <Button variant="outline" className="w-full">
+                <AnimatedButton variant="outline" className="w-full">
                   Return to Home
-                </Button>
+                </AnimatedButton>
               </Link>
             </div>
           </CardContent>

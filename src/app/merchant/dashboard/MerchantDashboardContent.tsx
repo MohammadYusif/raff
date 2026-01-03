@@ -13,7 +13,6 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
-  Button,
   Badge,
 } from "@/shared/components/ui";
 import {
@@ -37,6 +36,7 @@ import {
   useMerchantProfile,
   useMerchantSync,
 } from "@/lib/hooks/useMerchantApi";
+import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
 interface MerchantStats {
   totalProducts: number;
@@ -167,10 +167,10 @@ export function MerchantDashboardContent() {
               <p className="text-raff-neutral-600">{t("subtitle")}</p>
             </div>
             <Link href="/">
-              <Button variant="ghost" className="gap-2">
+              <AnimatedButton variant="ghost" className="gap-2">
                 <ExternalLink className="h-4 w-4" />
                 {t("viewStorefront")}
-              </Button>
+              </AnimatedButton>
             </Link>
           </div>
         </Container>
@@ -194,7 +194,7 @@ export function MerchantDashboardContent() {
                       {t("connectStore.description")}
                     </p>
                     <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-                      <Button
+                      <AnimatedButton
                         size="lg"
                         onClick={() => handleConnectStore("salla")}
                         disabled={!!connectingPlatform}
@@ -221,8 +221,8 @@ export function MerchantDashboardContent() {
                             <ArrowRight className="h-4 w-4" />
                           </>
                         )}
-                      </Button>
-                      <Button
+                      </AnimatedButton>
+                      <AnimatedButton
                         size="lg"
                         variant="outline"
                         onClick={() => handleConnectStore("zid")}
@@ -250,7 +250,7 @@ export function MerchantDashboardContent() {
                             <ArrowRight className="h-4 w-4" />
                           </>
                         )}
-                      </Button>
+                      </AnimatedButton>
                     </div>
                   </div>
                 </div>
@@ -276,10 +276,10 @@ export function MerchantDashboardContent() {
                       })}
                     </p>
                   </div>
-                  <Button variant="ghost" size="sm" className="gap-2">
+                  <AnimatedButton variant="ghost" size="sm" className="gap-2">
                     <Settings className="h-4 w-4" />
                     {t("storeConnected.manage")}
-                  </Button>
+                  </AnimatedButton>
                 </div>
               </CardContent>
             </Card>
@@ -487,7 +487,7 @@ export function MerchantDashboardContent() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                    <Button
+                    <AnimatedButton
                       variant="outline"
                       className="justify-start gap-2"
                       onClick={() => triggerSync()}
@@ -497,19 +497,19 @@ export function MerchantDashboardContent() {
                       {syncing
                         ? t("connectStore.connecting")
                         : t("quickActions.syncProducts")}
-                    </Button>
-                    <Button variant="outline" className="justify-start gap-2">
+                    </AnimatedButton>
+                    <AnimatedButton variant="outline" className="justify-start gap-2">
                       <BarChart3 className="h-4 w-4" />
                       {t("quickActions.viewAnalytics")}
-                    </Button>
-                    <Button variant="outline" className="justify-start gap-2">
+                    </AnimatedButton>
+                    <AnimatedButton variant="outline" className="justify-start gap-2">
                       <Settings className="h-4 w-4" />
                       {t("quickActions.settings")}
-                    </Button>
-                    <Button variant="outline" className="justify-start gap-2">
+                    </AnimatedButton>
+                    <AnimatedButton variant="outline" className="justify-start gap-2">
                       <ExternalLink className="h-4 w-4" />
                       {t("quickActions.viewStore")}
-                    </Button>
+                    </AnimatedButton>
                   </div>
                 </CardContent>
               </Card>

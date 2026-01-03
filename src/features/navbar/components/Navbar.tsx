@@ -7,7 +7,7 @@ import Image from "next/image";
 import { useTranslations, useLocale } from "next-intl";
 import { useLocale as useLocaleHook } from "@/core/i18n";
 import { useSession } from "next-auth/react";
-import { Button, Container } from "@/shared/components/ui";
+import { Container } from "@/shared/components/ui";
 import { SearchInput } from "@/shared/components/SearchInput";
 import { Menu, X, Globe, ShoppingCart, Search } from "lucide-react";
 import { useCart } from "@/lib/hooks/useCart";
@@ -18,6 +18,7 @@ import {
   isFeatureEnabled,
   type NavbarVariant,
 } from "../config/navbar.config";
+import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
 export interface NavbarProps {
   variant?: NavbarVariant;
@@ -108,7 +109,7 @@ export function Navbar({ variant = "main" }: NavbarProps) {
           <div className="flex shrink-0 items-center gap-3">
             {/* Mobile Search Icon - Show on tablet and mobile (below lg) */}
             {showSearch && (
-              <Button
+              <AnimatedButton
                 variant="ghost"
                 size="icon"
                 className="lg:hidden hover:bg-raff-neutral-100"
@@ -118,19 +119,19 @@ export function Navbar({ variant = "main" }: NavbarProps) {
                 }}
               >
                 <Search className="h-5 w-5" />
-              </Button>
+              </AnimatedButton>
             )}
 
             {/* Cart */}
             {showCart && (
               <Link href="/cart" className="relative">
-                <Button
+                <AnimatedButton
                   variant="ghost"
                   size="icon"
                   className="hover:bg-raff-neutral-100"
                 >
                   <ShoppingCart className="h-5 w-5" />
-                </Button>
+                </AnimatedButton>
                 {itemCount > 0 && (
                   <span className="absolute -end-1 -top-1 flex h-5 items-center justify-center rounded-full bg-raff-accent px-1 text-[10px] font-semibold text-white">
                     {itemCount > 99 ? "99+" : itemCount}
@@ -141,7 +142,7 @@ export function Navbar({ variant = "main" }: NavbarProps) {
 
             {/* Language Switcher */}
             {showLanguageSwitcher && (
-              <Button
+              <AnimatedButton
                 variant="ghost"
                 size="icon"
                 onClick={() =>
@@ -150,7 +151,7 @@ export function Navbar({ variant = "main" }: NavbarProps) {
                 className="hover:bg-raff-neutral-100"
               >
                 <Globe className="h-5 w-5" />
-              </Button>
+              </AnimatedButton>
             )}
 
             {/* Auth Section - Show either UserMenu or Login button */}
@@ -164,13 +165,13 @@ export function Navbar({ variant = "main" }: NavbarProps) {
                 ) : (
                   // Show Login button when not logged in
                   <Link href="/auth/login" className="hidden sm:inline-flex">
-                    <Button
+                    <AnimatedButton
                       variant="outline"
                       size="sm"
                       className="border-raff-primary text-raff-primary hover:bg-raff-primary hover:text-white"
                     >
                       {t("common.actions.login")}
-                    </Button>
+                    </AnimatedButton>
                   </Link>
                 )}
               </>
@@ -178,7 +179,7 @@ export function Navbar({ variant = "main" }: NavbarProps) {
 
             {/* Mobile Menu Toggle - Only show if not minimal AND has items */}
             {!isMinimal && navItems.length > 0 && (
-              <Button
+              <AnimatedButton
                 variant="ghost"
                 size="icon"
                 className="md:hidden"
@@ -192,7 +193,7 @@ export function Navbar({ variant = "main" }: NavbarProps) {
                 ) : (
                   <Menu className="h-5 w-5" />
                 )}
-              </Button>
+              </AnimatedButton>
             )}
           </div>
         </div>
@@ -227,13 +228,13 @@ export function Navbar({ variant = "main" }: NavbarProps) {
 
               {showCart && (
                 <Link href="/cart" onClick={() => setMobileMenuOpen(false)}>
-                  <Button
+                  <AnimatedButton
                     variant="outline"
                     size="sm"
                     className="w-full border-raff-primary text-raff-primary"
                   >
                     {t("nav.cart")}
-                  </Button>
+                  </AnimatedButton>
                 </Link>
               )}
 
@@ -250,13 +251,13 @@ export function Navbar({ variant = "main" }: NavbarProps) {
                       href="/auth/login"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      <Button
+                      <AnimatedButton
                         variant="outline"
                         size="sm"
                         className="w-full border-raff-primary text-raff-primary"
                       >
                         {t("common.actions.login")}
-                      </Button>
+                      </AnimatedButton>
                     </Link>
                   )}
                 </>

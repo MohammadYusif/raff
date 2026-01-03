@@ -4,11 +4,11 @@
 import { useTranslations, useLocale } from "next-intl";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Container,
   Card,
   CardContent,
-  Button,
   Badge,
 } from "@/shared/components/ui";
 import { ShoppingCart, Trash2, AlertCircle, ExternalLink } from "lucide-react";
@@ -16,6 +16,7 @@ import { ArrowForward, ArrowBackward } from "@/core/i18n";
 import { useCart } from "@/lib/hooks/useCart";
 import { formatPrice } from "@/lib/utils";
 import { TrendingUp } from "lucide-react";
+import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
 /**
  * CartContent Component
@@ -56,10 +57,10 @@ export function CartContent() {
           <Container className="py-8">
             <div className="mb-4">
               <Link href="/products">
-                <Button variant="ghost" className="gap-2 -ms-2">
+                <AnimatedButton variant="ghost" className="gap-2 -ms-2">
                   <ArrowBackward className="h-4 w-4" />
                   {commonT("actions.backToHome")}
-                </Button>
+                </AnimatedButton>
               </Link>
             </div>
             <h1 className="text-3xl font-bold text-raff-primary sm:text-4xl">
@@ -81,10 +82,10 @@ export function CartContent() {
                 {t("emptyDescription")}
               </p>
               <Link href="/products">
-                <Button size="lg">
+                <AnimatedButton size="lg">
                   {t("continueShopping")}
                   <ArrowForward className="ms-2 h-5 w-5" />
-                </Button>
+                </AnimatedButton>
               </Link>
             </CardContent>
           </Card>
@@ -100,10 +101,10 @@ export function CartContent() {
         <Container className="py-8">
           <div className="mb-4">
             <Link href="/products">
-              <Button variant="ghost" className="gap-2 -ms-2">
+              <AnimatedButton variant="ghost" className="gap-2 -ms-2">
                 <ArrowBackward className="h-4 w-4" />
                 {commonT("actions.continueShopping")}
-              </Button>
+              </AnimatedButton>
             </Link>
           </div>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -115,14 +116,14 @@ export function CartContent() {
                 {t("itemCount", { count: itemCount })}
               </p>
             </div>
-            <Button
+            <AnimatedButton
               variant="outline"
               onClick={clearCart}
               className="text-red-600 hover:bg-red-50 hover:text-red-700"
             >
               <Trash2 className="me-2 h-5 w-5" />
               {t("clearCart")}
-            </Button>
+            </AnimatedButton>
           </div>
         </Container>
       </div>
@@ -146,14 +147,14 @@ export function CartContent() {
                 </div>
                 <div className="flex flex-col gap-3 sm:flex-row">
                   <Link href="/auth/register">
-                    <Button className="w-full sm:w-auto">
+                    <AnimatedButton className="w-full sm:w-auto">
                       {t("registerCta")}
-                    </Button>
+                    </AnimatedButton>
                   </Link>
                   <Link href="/auth/login">
-                    <Button variant="outline" className="w-full sm:w-auto">
+                    <AnimatedButton variant="outline" className="w-full sm:w-auto">
                       {t("loginCta")}
-                    </Button>
+                    </AnimatedButton>
                   </Link>
                 </div>
               </div>
@@ -187,10 +188,12 @@ export function CartContent() {
                       <Link href={`/products/${item.slug}`}>
                         <div className="relative aspect-square overflow-hidden bg-raff-neutral-100 transition-transform duration-300 group-hover:scale-105">
                           {item.image ? (
-                            <img
+                            <Image
                               src={item.image}
                               alt={itemName}
-                              className="h-full w-full object-cover"
+                              fill
+                              sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw"
+                              className="object-cover"
                             />
                           ) : (
                             <div className="flex h-full items-center justify-center text-6xl opacity-40">
@@ -235,7 +238,7 @@ export function CartContent() {
                           </div>
                         </div>
 
-                        <Button
+                        <AnimatedButton
                           variant="outline"
                           size="sm"
                           className="w-full text-red-600 hover:bg-red-50 hover:text-red-700"
@@ -243,7 +246,7 @@ export function CartContent() {
                         >
                           <Trash2 className="me-2 h-4 w-4" />
                           {t("remove")}
-                        </Button>
+                        </AnimatedButton>
                       </div>
                     </CardContent>
                   </Card>
@@ -315,12 +318,12 @@ export function CartContent() {
                       rel="noopener noreferrer"
                       className="block"
                     >
-                      <Button variant="outline" size="sm" className="w-full">
+                      <AnimatedButton variant="outline" size="sm" className="w-full">
                         {locale === "ar" && item.merchantNameAr
                           ? item.merchantNameAr
                           : item.merchantName}
                         <ExternalLink className="ms-2 h-4 w-4" />
-                      </Button>
+                      </AnimatedButton>
                     </a>
                   ))}
                 </div>

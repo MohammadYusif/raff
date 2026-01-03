@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { Button, Input } from "@/shared/components/ui";
+import { Input } from "@/shared/components/ui";
 import { toast } from "sonner";
 import { Loader2, AlertCircle } from "lucide-react";
 import {
@@ -19,6 +19,7 @@ import {
   EmailValidationIndicator,
   validateEmail,
 } from "@/shared/components/EmailValidationIndicator";
+import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
 export function RegisterForm() {
   const t = useTranslations("auth.register");
@@ -278,7 +279,7 @@ export function RegisterForm() {
       </div>
 
       {/* Submit Button */}
-      <Button type="submit" className="w-full" disabled={loading}>
+      <AnimatedButton type="submit" className="w-full" disabled={loading}>
         {loading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -287,7 +288,7 @@ export function RegisterForm() {
         ) : (
           t("submit")
         )}
-      </Button>
+      </AnimatedButton>
     </form>
   );
 }

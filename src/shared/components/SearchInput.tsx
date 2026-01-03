@@ -8,6 +8,7 @@ import { Search, X, Loader2 } from "lucide-react";
 import { Input } from "@/shared/components/ui";
 import { cn, formatPrice, debounce } from "@/lib/utils";
 import Link from "next/link";
+import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
 interface SearchSuggestion {
   id: string;
@@ -189,13 +190,14 @@ export function SearchInput({
           {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin text-raff-neutral-400" />
           ) : query ? (
-            <button
+            <AnimatedButton
               type="button"
               onClick={handleClear}
+              unstyled
               className="text-raff-neutral-400 hover:text-raff-neutral-600"
             >
               <X className="h-4 w-4" />
-            </button>
+            </AnimatedButton>
           ) : null}
         </div>
       </form>
@@ -216,9 +218,10 @@ export function SearchInput({
                 : null;
 
               return (
-                <button
+                <AnimatedButton
                   key={suggestion.id}
                   onClick={() => handleSuggestionClick(suggestion.slug)}
+                  unstyled
                   className="flex w-full items-center gap-3 border-b border-raff-neutral-100 p-3 text-start transition-colors hover:bg-raff-neutral-50 last:border-b-0"
                 >
                   {/* Product Thumbnail */}
@@ -259,7 +262,7 @@ export function SearchInput({
                       />
                     </svg>
                   </div>
-                </button>
+                </AnimatedButton>
               );
             })}
           </div>

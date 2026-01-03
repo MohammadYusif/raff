@@ -8,13 +8,13 @@ import {
   Container,
   Card,
   CardContent,
-  Button,
   Badge,
 } from "@/shared/components/ui";
 import { ArrowForward, ArrowBackward } from "@/core/i18n";
 import { Store, ExternalLink } from "lucide-react";
 import { getMerchantStoreUrlFromObject } from "@/lib/platform/store";
 import type { MerchantWithCount } from "@/types";
+import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
 interface MerchantsContentProps {
   merchants: MerchantWithCount[];
@@ -33,10 +33,10 @@ export function MerchantsContent({ merchants }: MerchantsContentProps) {
           <Container className="py-8">
             <div className="mb-4">
               <Link href="/">
-                <Button variant="ghost" className="gap-2 -ms-2">
+                <AnimatedButton variant="ghost" className="gap-2 -ms-2">
                   <ArrowBackward className="h-4 w-4" />
                   {commonT("actions.backToHome")}
-                </Button>
+                </AnimatedButton>
               </Link>
             </div>
             <h1 className="mb-4 text-3xl font-bold text-raff-primary sm:text-4xl">
@@ -99,7 +99,7 @@ export function MerchantsContent({ merchants }: MerchantsContentProps) {
                       <div className="space-y-2">
                         {/* View Products Link */}
                         <Link href={`/merchants/${merchant.id}`}>
-                          <Button
+                          <AnimatedButton
                             variant="outline"
                             className="w-full gap-2"
                             size="sm"
@@ -112,7 +112,7 @@ export function MerchantsContent({ merchants }: MerchantsContentProps) {
                                   : "group-hover:translate-x-1"
                               }`}
                             />
-                          </Button>
+                          </AnimatedButton>
                         </Link>
 
                         {/* Visit Store Link */}
@@ -122,17 +122,17 @@ export function MerchantsContent({ merchants }: MerchantsContentProps) {
                             target="_blank"
                             rel="noopener noreferrer"
                           >
-                            <Button
+                            <AnimatedButton
                               variant="ghost"
                               className="w-full gap-2 text-raff-accent"
                               size="sm"
                             >
                               {t("visitStore")}
                               <ExternalLink className="h-4 w-4" />
-                            </Button>
+                            </AnimatedButton>
                           </a>
                         ) : (
-                          <Button
+                          <AnimatedButton
                             variant="ghost"
                             className="w-full gap-2 text-raff-accent"
                             size="sm"
@@ -140,7 +140,7 @@ export function MerchantsContent({ merchants }: MerchantsContentProps) {
                           >
                             {t("visitStore")}
                             <ExternalLink className="h-4 w-4" />
-                          </Button>
+                          </AnimatedButton>
                         )}
                       </div>
                     </CardContent>
@@ -165,10 +165,10 @@ export function MerchantsContent({ merchants }: MerchantsContentProps) {
           {/* View All Products Link */}
           <div className="mt-12 text-center">
             <Link href="/products">
-              <Button size="lg" variant="outline" className="gap-2">
+              <AnimatedButton size="lg" variant="outline" className="gap-2">
                 {t("viewAllProducts")}
                 <ArrowForward className="h-5 w-5" />
-              </Button>
+              </AnimatedButton>
             </Link>
           </div>
         </Container>

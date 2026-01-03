@@ -3,8 +3,9 @@
 
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { Container, Button, Card, CardContent } from "@/shared/components/ui";
+import { Container, Card, CardContent } from "@/shared/components/ui";
 import { Package, Home } from "lucide-react";
+import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
 export default function CategoryNotFound() {
   const t = useTranslations("category.notFound");
@@ -31,17 +32,17 @@ export default function CategoryNotFound() {
             {/* Actions */}
             <div className="space-y-3">
               <Link href="/categories">
-                <Button size="lg" className="w-full gap-2">
+                <AnimatedButton size="lg" className="w-full gap-2">
                   <Package className="h-5 w-5" />
                   {t("browseCategories")}
-                </Button>
+                </AnimatedButton>
               </Link>
 
               <Link href="/">
-                <Button size="lg" variant="outline" className="w-full gap-2">
+                <AnimatedButton size="lg" variant="outline" className="w-full gap-2">
                   <Home className="h-5 w-5" />
                   {commonT("actions.backToHome")}
-                </Button>
+                </AnimatedButton>
               </Link>
             </div>
           </CardContent>

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { useLocale as useLocaleHook } from "@/core/i18n";
-import { Button } from "@/shared/components/ui";
+
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import {
@@ -21,6 +21,7 @@ import {
   Home,
   ShoppingBag,
 } from "lucide-react";
+import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
 const menuItems = [
   {
@@ -61,7 +62,7 @@ export function MerchantSidebar() {
     <>
       {/* Mobile Menu Toggle */}
       <div className="fixed start-4 top-4 z-50 lg:hidden">
-        <Button
+        <AnimatedButton
           variant="outline"
           size="icon"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -72,7 +73,7 @@ export function MerchantSidebar() {
           ) : (
             <Menu className="h-5 w-5" />
           )}
-        </Button>
+        </AnimatedButton>
       </div>
 
       {/* Sidebar */}
@@ -129,18 +130,18 @@ export function MerchantSidebar() {
         <div className="space-y-2 border-t border-raff-neutral-200 p-4">
           {/* View Storefront */}
           <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
-            <Button
+            <AnimatedButton
               variant="outline"
               className="w-full justify-start gap-3"
               size="sm"
             >
               <Home className="h-4 w-4" />
               {t("viewStorefront")}
-            </Button>
+            </AnimatedButton>
           </Link>
 
           {/* Language Switcher */}
-          <Button
+          <AnimatedButton
             variant="ghost"
             className="w-full justify-start gap-3"
             size="sm"
@@ -148,17 +149,17 @@ export function MerchantSidebar() {
           >
             <Globe className="h-4 w-4" />
             {currentLocale === "ar" ? "English" : "العربية"}
-          </Button>
+          </AnimatedButton>
 
           {/* Logout */}
-          <Button
+          <AnimatedButton
             variant="ghost"
             className="w-full justify-start gap-3 text-raff-error hover:bg-raff-error/10 hover:text-raff-error"
             size="sm"
           >
             <LogOut className="h-4 w-4" />
             {t("logout")}
-          </Button>
+          </AnimatedButton>
         </div>
       </aside>
 

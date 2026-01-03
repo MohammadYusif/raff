@@ -5,9 +5,10 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { getSession, signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Button, Input } from "@/shared/components/ui";
+import { Input } from "@/shared/components/ui";
 import { toast } from "sonner";
 import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
 export function LoginForm() {
   const t = useTranslations("auth.login");
@@ -174,7 +175,7 @@ export function LoginForm() {
       </div>
 
       {/* Submit Button */}
-      <Button type="submit" className="w-full" disabled={loading}>
+      <AnimatedButton type="submit" className="w-full" disabled={loading}>
         {loading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -183,7 +184,7 @@ export function LoginForm() {
         ) : (
           t("submit")
         )}
-      </Button>
+      </AnimatedButton>
     </form>
   );
 }

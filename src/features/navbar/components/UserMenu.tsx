@@ -6,10 +6,10 @@ import { useTranslations } from "next-intl";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Button } from "@/shared/components/ui";
 import { ChevronDown, Package } from "lucide-react";
 import { ArrowForward } from "@/core/i18n";
 import { toast } from "sonner";
+import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
 /**
  * User Menu Component
@@ -78,8 +78,9 @@ export function UserMenu() {
   return (
     <div className="relative" ref={menuRef}>
       {/* User Button */}
-      <button
+      <AnimatedButton
         onClick={() => setIsOpen(!isOpen)}
+        unstyled
         className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-raff-neutral-100"
       >
         {/* User Avatar Circle */}
@@ -98,7 +99,7 @@ export function UserMenu() {
             isOpen ? "rotate-180" : ""
           }`}
         />
-      </button>
+      </AnimatedButton>
 
       {/* Dropdown Menu */}
       {isOpen && (
@@ -139,13 +140,14 @@ export function UserMenu() {
             )}
 
             {/* Logout Button */}
-            <button
+            <AnimatedButton
               onClick={handleLogout}
+              unstyled
               className="group flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-raff-neutral-700 transition-all hover:bg-red-50 hover:text-red-700"
             >
               <ArrowForward className="h-4 w-4 transition-transform ltr:group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
               <span className="font-medium">{t("actions.logout")}</span>
-            </button>
+            </AnimatedButton>
           </div>
         </div>
       )}

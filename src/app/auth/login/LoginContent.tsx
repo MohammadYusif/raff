@@ -5,7 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { LoginForm } from "./LoginForm";
-import { Container, Card, CardContent, Button } from "@/shared/components/ui";
+import { Container, Card, CardContent } from "@/shared/components/ui";
+import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
 /**
  * Login Content Component
@@ -28,7 +29,7 @@ export function LoginContent() {
       <Container maxWidth="sm">
         <div className="mb-4">
           <Link href="/">
-            <Button variant="ghost">{actionsT("backToHome")}</Button>
+            <AnimatedButton variant="ghost">{actionsT("backToHome")}</AnimatedButton>
           </Link>
         </div>
         <Card className="border-raff-neutral-200">

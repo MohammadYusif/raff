@@ -8,11 +8,11 @@ import {
   Container,
   Card,
   CardContent,
-  Button,
   Badge,
 } from "@/shared/components/ui";
 import { ArrowForward, ArrowBackward } from "@/core/i18n";
 import { Package } from "lucide-react";
+import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
 interface Category {
   id: string;
@@ -44,10 +44,10 @@ export function CategoriesContent({ categories }: CategoriesContentProps) {
           <Container className="py-8">
             <div className="mb-4">
               <Link href="/">
-                <Button variant="ghost" className="gap-2 -ms-2">
+                <AnimatedButton variant="ghost" className="gap-2 -ms-2">
                   <ArrowBackward className="h-4 w-4" />
                   {commonT("actions.backToHome")}
-                </Button>
+                </AnimatedButton>
               </Link>
             </div>
             <h1 className="mb-4 text-3xl font-bold text-raff-primary sm:text-4xl">
@@ -137,10 +137,10 @@ export function CategoriesContent({ categories }: CategoriesContentProps) {
           {/* View All Products Link */}
           <div className="mt-12 text-center">
             <Link href="/products">
-              <Button size="lg" variant="outline" className="gap-2">
+              <AnimatedButton size="lg" variant="outline" className="gap-2">
                 {t("viewAllProducts")}
                 <ArrowForward className="h-5 w-5" />
-              </Button>
+              </AnimatedButton>
             </Link>
           </div>
         </Container>

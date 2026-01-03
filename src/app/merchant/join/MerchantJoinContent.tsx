@@ -7,9 +7,10 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { PageLayout } from "@/shared/components/layouts";
-import { Container, Card, CardContent, Button } from "@/shared/components/ui";
+import { Container, Card, CardContent } from "@/shared/components/ui";
 import { ArrowForward } from "@/core/i18n";
 import { TrendingUp, Zap, Shield, BarChart3, CheckCircle } from "lucide-react";
+import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
 /**
  * Merchant Join Content Component
@@ -63,9 +64,10 @@ export function MerchantJoinContent() {
               {/* OAuth Buttons */}
               <div className="space-y-4">
                 {/* Salla Button - Green */}
-                <button
+                <AnimatedButton
                   onClick={() => handleConnectStore("salla")}
                   disabled={isConnecting}
+                  unstyled
                   className="group relative w-full overflow-hidden rounded-lg border-2 border-transparent bg-[#00C48C] p-6 text-white shadow-md transition-all hover:scale-[1.02] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <div className="flex items-center justify-between">
@@ -100,12 +102,13 @@ export function MerchantJoinContent() {
                       </div>
                     </div>
                   )}
-                </button>
+                </AnimatedButton>
 
                 {/* Zid Button - Purple */}
-                <button
+                <AnimatedButton
                   onClick={() => handleConnectStore("zid")}
                   disabled={isConnecting}
+                  unstyled
                   className="group relative w-full overflow-hidden rounded-lg border-2 border-transparent bg-[#8B5CF6] p-6 text-white shadow-md transition-all hover:scale-[1.02] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <div className="flex items-center justify-between">
@@ -140,7 +143,7 @@ export function MerchantJoinContent() {
                       </div>
                     </div>
                   )}
-                </button>
+                </AnimatedButton>
               </div>
             </CardContent>
           </Card>
@@ -311,12 +314,12 @@ export function MerchantJoinContent() {
             <p className="mb-4 text-raff-neutral-600">
               {t("footer.questions")}
             </p>
-            <Button
+            <AnimatedButton
               variant="outline"
               className="mb-6 border-raff-primary text-raff-primary"
             >
               {t("footer.contact")}
-            </Button>
+            </AnimatedButton>
 
             {/* Conditional Sign-in / Dashboard Link */}
             {isMerchant ? (
