@@ -39,10 +39,6 @@ export function EmailValidationIndicator({
     },
   ];
 
-  const passedRules = rules.filter((rule) => rule.test(email)).length;
-  const totalRules = rules.length;
-  const isValid = passedRules === totalRules;
-
   if (!email) return null;
 
   return (

@@ -39,10 +39,6 @@ export function NameValidationIndicator({
     },
   ];
 
-  const passedRules = rules.filter((rule) => rule.test(name)).length;
-  const totalRules = rules.length;
-  const isValid = passedRules === totalRules;
-
   if (!name) return null;
 
   return (
