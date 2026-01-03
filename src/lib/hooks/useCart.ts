@@ -76,23 +76,56 @@ function migrateGuestCart(userId: string) {
 }
 
 export function useCart() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const userId = session?.user?.id;
   const [items, setItems] = useState<CartItem[]>([]);
   const isAddingRef = useRef(false);
   const prevUserIdRef = useRef<string | undefined>(undefined);
+  const prevStatusRef = useRef<string | undefined>(undefined);
+  const initializedRef = useRef(false);
 
   // Migrate guest cart when user logs in
   useEffect(() => {
-    if (userId && userId !== prevUserIdRef.current) {
+    if (
+      userId &&
+      userId !== prevUserIdRef.current &&
+      status === "authenticated"
+    ) {
       migrateGuestCart(userId);
       prevUserIdRef.current = userId;
     }
-  }, [userId]);
+  }, [userId, status]);
 
+  // Only update items when session is stable (not loading)
+  // This prevents cart flickering during language switches
   useEffect(() => {
-    setItems(readCart(userId));
-  }, [userId]);
+    // Skip updates during session loading to prevent guest/user cart switching
+    if (status === "loading" && initializedRef.current) {
+      return;
+    }
+
+    // Initialize cart on first mount regardless of status
+    if (!initializedRef.current) {
+      setItems(readCart(userId));
+      initializedRef.current = true;
+      prevStatusRef.current = status;
+      prevUserIdRef.current = userId;
+      return;
+    }
+
+    // Only update if:
+    // 1. Status changed from loading to stable (language switch complete)
+    // 2. User ID actually changed (login/logout)
+    const statusChanged =
+      prevStatusRef.current === "loading" && status !== "loading";
+    const userIdChanged = userId !== prevUserIdRef.current;
+
+    if (statusChanged || userIdChanged) {
+      setItems(readCart(userId));
+      prevStatusRef.current = status;
+      prevUserIdRef.current = userId;
+    }
+  }, [userId, status]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;

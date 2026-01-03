@@ -199,7 +199,9 @@
     "authNoticeTitle": "Save your cart",
     "authNoticeDescription": "Sign in or create an account to keep these items and track purchases.",
     "registerCta": "Register",
-    "loginCta": "Login"
+    "loginCta": "Login",
+    "unitPrice": "Unit Price",
+    "subtotal": "Subtotal"
   },
   "categories": {
     "title": "Categories",

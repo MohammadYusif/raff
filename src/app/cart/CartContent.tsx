@@ -1,6 +1,7 @@
 // src/app/cart/CartContent.tsx
 "use client";
 
+import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -10,24 +11,36 @@ import {
   Card,
   CardContent,
   Badge,
+  Skeleton,
 } from "@/shared/components/ui";
-import { ShoppingCart, Trash2, AlertCircle, ExternalLink } from "lucide-react";
+import {
+  ShoppingCart,
+  Trash2,
+  AlertCircle,
+  ExternalLink,
+  Plus,
+  Minus,
+} from "lucide-react";
 import { ArrowForward, ArrowBackward } from "@/core/i18n";
 import { useCart } from "@/lib/hooks/useCart";
 import { formatPrice } from "@/lib/utils";
 import { TrendingUp } from "lucide-react";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
+import { toast } from "sonner";
 
 /**
  * CartContent Component
  *
- * Uses the unified useCart hook for cart management
+ * Enhanced with:
+ * - Quantity controls (increase/decrease)
+ * - Item subtotal display
+ * - Improved mobile UX
  */
 export function CartContent() {
   const t = useTranslations("cart");
   const commonT = useTranslations("common");
   const { data: session, status } = useSession();
-  const { items, itemCount, removeItem, clearCart } = useCart();
+  const { items, itemCount, removeItem, clearCart, updateQuantity } = useCart();
   const locale = useLocale();
 
   const showAuthNotice =
@@ -49,8 +62,94 @@ export function CartContent() {
 
   const hasMultipleCurrencies = Object.keys(totalsByCurrency).length > 1;
 
+  // Handle quantity changes
+  const handleQuantityChange = (
+    itemId: string,
+    currentQuantity: number,
+    change: number
+  ) => {
+    const newQuantity = currentQuantity + change;
+
+    if (newQuantity < 1) {
+      // If trying to go below 1, remove the item
+      removeItem(itemId);
+      toast.success(
+        locale === "ar" ? "تم الحذف من السلة" : "Removed from cart",
+        {
+          description:
+            locale === "ar"
+              ? "تم حذف المنتج من سلة التسوق"
+              : "Item removed from cart",
+        }
+      );
+    } else if (newQuantity > 99) {
+      // Maximum quantity limit
+      toast.error(
+        locale === "ar" ? "الحد الأقصى 99" : "Maximum quantity is 99",
+        {
+          description:
+            locale === "ar"
+              ? "لا يمكنك إضافة أكثر من 99 قطعة"
+              : "You cannot add more than 99 items",
+        }
+      );
+    } else {
+      updateQuantity(itemId, newQuantity);
+    }
+  };
+
+  // Show full loading skeleton during session transitions
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-raff-neutral-50">
+        <div className="border-b border-raff-neutral-200 bg-white">
+          <Container className="py-6 md:py-8">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-raff-primary/10 md:h-12 md:w-12">
+                <ShoppingCart className="h-5 w-5 text-raff-primary md:h-6 md:w-6" />
+              </div>
+              <div>
+                <Skeleton
+                  variant="shimmer"
+                  className="mb-2 h-7 w-32 md:h-8 md:w-40"
+                />
+                <Skeleton variant="shimmer" className="h-4 w-20" />
+              </div>
+            </div>
+          </Container>
+        </div>
+
+        <Container className="py-8 md:py-12">
+          <div className="mx-auto max-w-2xl">
+            <Card className="overflow-hidden">
+              <CardContent className="p-8 md:p-12">
+                <div className="flex flex-col items-center text-center">
+                  <div className="mb-6 rounded-full bg-raff-neutral-100 p-8">
+                    <Skeleton
+                      variant="shimmer"
+                      className="h-16 w-16 rounded-full md:h-20 md:w-20"
+                    />
+                  </div>
+                  <Skeleton
+                    variant="shimmer"
+                    className="mb-3 h-9 w-64 md:h-10 md:w-80"
+                  />
+                  <Skeleton
+                    variant="shimmer"
+                    className="mb-8 h-6 w-48 md:w-64"
+                  />
+                  <Skeleton variant="shimmer" className="h-11 w-48" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </Container>
+      </div>
+    );
+  }
+
   // Empty cart
-  if (items.length === 0) {
+  if (itemCount === 0) {
     return (
       <div className="min-h-screen bg-raff-neutral-50">
         <div className="border-b border-raff-neutral-200 bg-white">
@@ -70,6 +169,43 @@ export function CartContent() {
         </div>
 
         <Container className="py-8">
+          {/* Auth Notice - AT TOP */}
+          {showAuthNotice && (
+            <Card className="mb-8 border-2 border-raff-accent from-raff-accent/5 to-raff-accent/10">
+              <CardContent className="p-6 md:p-8">
+                <div className="flex flex-col gap-6 md:flex-row md:items-center md:gap-8">
+                  <div className="flex shrink-0 items-center justify-center rounded-full bg-raff-accent/20 p-4">
+                    <AlertCircle className="h-8 w-8 text-raff-accent" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="mb-2 text-xl font-bold text-raff-primary">
+                      {t("authNoticeTitle")}
+                    </h3>
+                    <p className="text-raff-neutral-700">
+                      {t("authNoticeDescription")}
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <Link href="/auth/register">
+                      <AnimatedButton className="w-full sm:w-auto">
+                        {t("registerCta")}
+                      </AnimatedButton>
+                    </Link>
+                    <Link href="/auth/login">
+                      <AnimatedButton
+                        variant="outline"
+                        className="w-full sm:w-auto"
+                      >
+                        {t("loginCta")}
+                      </AnimatedButton>
+                    </Link>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Empty Cart Section */}
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-16">
               <div className="mb-6 rounded-full bg-raff-neutral-100 p-8">
@@ -94,6 +230,7 @@ export function CartContent() {
     );
   }
 
+  // Cart with items
   return (
     <div className="min-h-screen bg-raff-neutral-50">
       {/* Header */}
@@ -116,14 +253,16 @@ export function CartContent() {
                 {t("itemCount", { count: itemCount })}
               </p>
             </div>
-            <AnimatedButton
-              variant="outline"
-              onClick={clearCart}
-              className="text-red-600 hover:bg-red-50 hover:text-red-700"
-            >
-              <Trash2 className="me-2 h-5 w-5" />
-              {t("clearCart")}
-            </AnimatedButton>
+            {itemCount > 0 && (
+              <AnimatedButton
+                variant="outline"
+                onClick={clearCart}
+                className="text-red-600 hover:bg-red-50 hover:text-red-700"
+              >
+                <Trash2 className="me-2 h-5 w-5" />
+                {t("clearCart")}
+              </AnimatedButton>
+            )}
           </div>
         </Container>
       </div>
@@ -152,7 +291,10 @@ export function CartContent() {
                     </AnimatedButton>
                   </Link>
                   <Link href="/auth/login">
-                    <AnimatedButton variant="outline" className="w-full sm:w-auto">
+                    <AnimatedButton
+                      variant="outline"
+                      className="w-full sm:w-auto"
+                    >
                       {t("loginCta")}
                     </AnimatedButton>
                   </Link>
@@ -178,6 +320,8 @@ export function CartContent() {
                     ? item.categoryNameAr
                     : item.categoryName;
 
+                const itemSubtotal = item.price * item.quantity;
+
                 return (
                   <Card
                     key={item.id}
@@ -192,52 +336,135 @@ export function CartContent() {
                               src={item.image}
                               alt={itemName}
                               fill
-                              sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw"
                               className="object-cover"
+                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                             />
                           ) : (
-                            <div className="flex h-full items-center justify-center text-6xl opacity-40">
-                              📦
+                            <div className="flex h-full w-full items-center justify-center from-raff-primary/10 to-raff-accent/10">
+                              <ShoppingCart className="h-16 w-16 text-raff-neutral-400" />
                             </div>
                           )}
-                          {item.trendingScore && item.trendingScore > 70 && (
-                            <div className="absolute start-3 top-3">
-                              <Badge className="gap-1 bg-raff-accent text-white">
-                                <TrendingUp className="h-3 w-3" />
-                                {commonT("labels.trending")}
-                              </Badge>
-                            </div>
+
+                          {/* Trending Badge */}
+                          {item.trendingScore && item.trendingScore > 0 && (
+                            <Badge
+                              className={`absolute top-3 gap-1 bg-raff-accent text-white shadow-lg ${
+                                locale === "ar" ? "left-3" : "right-3"
+                              }`}
+                            >
+                              <TrendingUp className="h-3 w-3" />
+                              {commonT("labels.trending")}
+                            </Badge>
                           )}
                         </div>
                       </Link>
 
                       {/* Product Info */}
-                      <div className="flex flex-1 flex-col p-4">
-                        <div className="flex-1">
-                          {categoryName && (
-                            <p className="mb-1 text-xs text-raff-neutral-500">
-                              {categoryName}
-                            </p>
-                          )}
-                          <Link href={`/products/${item.slug}`}>
-                            <h3 className="mb-2 line-clamp-2 text-base font-semibold text-raff-primary transition-colors hover:text-raff-accent">
-                              {itemName}
-                            </h3>
-                          </Link>
-                          <p className="mb-3 text-sm text-raff-neutral-600">
-                            {merchantName || t("merchantFallback")}
-                          </p>
+                      <div className="flex flex-1 flex-col gap-3 p-4">
+                        {/* Category */}
+                        {categoryName && (
+                          <Badge
+                            variant="secondary"
+                            className="w-fit text-xs font-medium"
+                          >
+                            {categoryName}
+                          </Badge>
+                        )}
 
-                          <div className="mb-4">
-                            <span className="text-lg font-bold text-raff-primary">
-                              {formatPrice(item.price, locale)}
+                        {/* Title */}
+                        <Link href={`/products/${item.slug}`}>
+                          <h3
+                            className="line-clamp-2 text-base font-semibold text-raff-primary transition-colors group-hover:text-raff-accent"
+                            dir={locale === "ar" ? "rtl" : "ltr"}
+                          >
+                            {itemName}
+                          </h3>
+                        </Link>
+
+                        {/* Merchant */}
+                        <p className="text-sm text-raff-neutral-600">
+                          {merchantName || t("merchantFallback")}
+                        </p>
+
+                        {/* Price & Quantity Controls */}
+                        <div className="mt-auto space-y-3">
+                          {/* Unit Price */}
+                          <div className="flex items-baseline justify-between">
+                            <span className="text-sm text-raff-neutral-600">
+                              {t("unitPrice")}
                             </span>
-                            <p className="mt-1 text-sm text-raff-neutral-500">
-                              {t("quantity", { count: item.quantity })}
-                            </p>
+                            <span className="font-semibold text-raff-primary">
+                              {formatPrice(
+                                item.price,
+                                locale,
+                                item.currency || "SAR"
+                              )}
+                            </span>
+                          </div>
+
+                          {/* Quantity Controls */}
+                          <div className="flex items-center justify-between rounded-lg border border-raff-neutral-200 bg-raff-neutral-50 p-2">
+                            <span className="text-sm font-medium text-raff-neutral-700">
+                              {t("quantity", { count: "" })}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() =>
+                                  handleQuantityChange(
+                                    item.id,
+                                    item.quantity,
+                                    -1
+                                  )
+                                }
+                                className="flex h-8 w-8 items-center justify-center rounded-md border border-raff-neutral-300 bg-white text-raff-primary transition-colors hover:bg-raff-primary hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                                aria-label={
+                                  locale === "ar"
+                                    ? "تقليل الكمية"
+                                    : "Decrease quantity"
+                                }
+                              >
+                                <Minus className="h-4 w-4" />
+                              </button>
+                              <span className="text-center font-bold text-raff-primary">
+                                {item.quantity}
+                              </span>
+                              <button
+                                onClick={() =>
+                                  handleQuantityChange(
+                                    item.id,
+                                    item.quantity,
+                                    1
+                                  )
+                                }
+                                className="flex h-8 w-8 items-center justify-center rounded-md border border-raff-neutral-300 bg-white text-raff-primary transition-colors hover:bg-raff-primary hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                                disabled={item.quantity >= 99}
+                                aria-label={
+                                  locale === "ar"
+                                    ? "زيادة الكمية"
+                                    : "Increase quantity"
+                                }
+                              >
+                                <Plus className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Item Subtotal */}
+                          <div className="flex items-baseline justify-between border-t border-raff-neutral-200 pt-2">
+                            <span className="text-sm font-medium text-raff-neutral-700">
+                              {t("subtotal")}
+                            </span>
+                            <span className="text-lg font-bold text-raff-accent">
+                              {formatPrice(
+                                itemSubtotal,
+                                locale,
+                                item.currency || "SAR"
+                              )}
+                            </span>
                           </div>
                         </div>
 
+                        {/* Remove Button */}
                         <AnimatedButton
                           variant="outline"
                           size="sm"
@@ -256,80 +483,86 @@ export function CartContent() {
           </div>
 
           {/* Summary */}
-          <div>
-            <Card className="sticky top-4">
-              <CardContent className="p-6">
-                <h2 className="mb-4 text-xl font-bold text-raff-primary">
-                  {t("summaryTitle")}
-                </h2>
+          {itemCount > 0 && (
+            <div>
+              <Card className="sticky top-4">
+                <CardContent className="p-6">
+                  <h2 className="mb-4 text-xl font-bold text-raff-primary">
+                    {t("summaryTitle")}
+                  </h2>
 
-                <div className="mb-4 space-y-2">
-                  <div className="flex justify-between text-raff-neutral-700">
-                    <span>{t("itemsLabel")}</span>
-                    <span>{itemCount}</span>
-                  </div>
+                  <div className="mb-4 space-y-2">
+                    <div className="flex justify-between text-raff-neutral-700">
+                      <span>{t("itemsLabel")}</span>
+                      <span>{itemCount}</span>
+                    </div>
 
-                  <div className="border-t border-raff-neutral-200 pt-2">
-                    <div className="flex justify-between font-bold text-raff-primary">
-                      <span>{t("total")}</span>
-                      <div className="text-end">
-                        {hasMultipleCurrencies ? (
-                          <>
-                            <div className="text-sm text-raff-neutral-500">
-                              {t("multiCurrency")}
-                            </div>
-                            {Object.entries(totalsByCurrency).map(
-                              ([currency, total]) => (
-                                <div key={currency}>
-                                  {formatPrice(total, locale, currency)}
-                                </div>
-                              )
-                            )}
-                          </>
-                        ) : (
-                          <span>
-                            {formatPrice(
-                              Object.values(totalsByCurrency)[0],
-                              locale,
-                              Object.keys(totalsByCurrency)[0]
-                            )}
-                          </span>
-                        )}
+                    <div className="border-t border-raff-neutral-200 pt-2">
+                      <div className="flex justify-between font-bold text-raff-primary">
+                        <span>{t("total")}</span>
+                        <div className="text-end">
+                          {hasMultipleCurrencies ? (
+                            <>
+                              <div className="text-sm text-raff-neutral-500">
+                                {t("multiCurrency")}
+                              </div>
+                              {Object.entries(totalsByCurrency).map(
+                                ([currency, total]) => (
+                                  <div key={currency}>
+                                    {formatPrice(total, locale, currency)}
+                                  </div>
+                                )
+                              )}
+                            </>
+                          ) : (
+                            <span>
+                              {formatPrice(
+                                Object.values(totalsByCurrency)[0] || 0,
+                                locale,
+                                Object.keys(totalsByCurrency)[0] || "SAR"
+                              )}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="rounded-lg bg-raff-neutral-50 p-4">
-                  <div className="flex items-start gap-2">
-                    <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-raff-accent" />
-                    <p className="text-sm text-raff-neutral-700">
-                      {t("checkoutNotice")}
-                    </p>
+                  <div className="rounded-lg bg-raff-neutral-50 p-4">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-raff-accent" />
+                      <p className="text-sm text-raff-neutral-700">
+                        {t("checkoutNotice")}
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                <div className="mt-6 space-y-3">
-                  {items.map((item) => (
-                    <a
-                      key={item.id}
-                      href={item.externalUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block"
-                    >
-                      <AnimatedButton variant="outline" size="sm" className="w-full">
-                        {locale === "ar" && item.merchantNameAr
-                          ? item.merchantNameAr
-                          : item.merchantName}
-                        <ExternalLink className="ms-2 h-4 w-4" />
-                      </AnimatedButton>
-                    </a>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                  <div className="mt-6 space-y-3">
+                    {items.map((item) => (
+                      <a
+                        key={item.id}
+                        href={item.externalUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block"
+                      >
+                        <AnimatedButton
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                        >
+                          {locale === "ar" && item.merchantNameAr
+                            ? item.merchantNameAr
+                            : item.merchantName}
+                          <ExternalLink className="ms-2 h-4 w-4" />
+                        </AnimatedButton>
+                      </a>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       </Container>
     </div>

@@ -199,7 +199,9 @@
     "authNoticeTitle": "احفظ سلتك",
     "authNoticeDescription": "سجّل الدخول أو أنشئ حساباً للاحتفاظ بهذه العناصر ومتابعة مشترياتك.",
     "registerCta": "إنشاء حساب",
-    "loginCta": "تسجيل الدخول"
+    "loginCta": "تسجيل الدخول",
+    "subtotal": "المجموع الفرعي",
+    "unitPrice": "سعر الوحدة"
   },
   "categories": {
     "title": "الفئات",
