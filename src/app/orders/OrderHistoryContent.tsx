@@ -1,7 +1,8 @@
 // src/app/orders/OrderHistoryContent.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { OrdersListSkeleton } from "@/shared/components/OrderCardSkeleton";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -12,8 +13,8 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  Button,
   Badge,
+  Skeleton,
 } from "@/shared/components/ui";
 import {
   Package,
@@ -22,11 +23,10 @@ import {
   XCircle,
   Truck,
   ShoppingBag,
-  ArrowRight,
-  Loader2,
 } from "lucide-react";
 import { formatPrice, formatDate } from "@/lib/utils";
 import { ArrowForward } from "@/core/i18n";
+import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
 interface OrderProduct {
   id: string;
@@ -133,25 +133,14 @@ export function OrderHistoryContent() {
   const commonT = useTranslations("common");
   const locale = useLocale();
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { status } = useSession();
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/auth/login");
-      return;
-    }
-
-    if (status === "authenticated") {
-      fetchOrders();
-    }
-  }, [status, page]);
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/orders?page=${page}&limit=10`);
@@ -168,7 +157,18 @@ export function OrderHistoryContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page]);
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/auth/login");
+      return;
+    }
+
+    if (status === "authenticated") {
+      fetchOrders();
+    }
+  }, [status, router, fetchOrders]);
 
   const getStatusConfig = (status: string) => {
     return (
@@ -180,8 +180,22 @@ export function OrderHistoryContent() {
   if (status === "loading" || loading) {
     return (
       <Container className="py-8 pt-20">
-        <div className="flex h-64 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-raff-primary" />
+        {/* Header Skeleton */}
+        <div className="mb-8">
+          <Skeleton variant="shimmer" className="mb-2 h-9 w-48" />
+          <Skeleton variant="shimmer" className="h-6 w-96" />
+        </div>
+
+        {/* Orders List Skeleton */}
+        <OrdersListSkeleton count={5} />
+
+        {/* Pagination Skeleton */}
+        <div className="mt-8 flex items-center justify-between">
+          <Skeleton variant="shimmer" className="h-5 w-32" />
+          <div className="flex gap-2">
+            <Skeleton variant="shimmer" className="h-10 w-24" />
+            <Skeleton variant="shimmer" className="h-10 w-24" />
+          </div>
         </div>
       </Container>
     );
@@ -211,10 +225,10 @@ export function OrderHistoryContent() {
               {t("noOrdersDescription")}
             </p>
             <Link href="/products">
-              <Button className="gap-2">
+              <AnimatedButton className="gap-2">
                 {t("startShopping")}
                 <ArrowForward className="h-4 w-4" />
-              </Button>
+              </AnimatedButton>
             </Link>
           </CardContent>
         </Card>
@@ -373,14 +387,14 @@ export function OrderHistoryContent() {
                     <div className="flex flex-col gap-3 sm:flex-row md:flex-col">
                       {order.product && (
                         <Link href={`/products/${order.product.slug}`}>
-                          <Button
+                          <AnimatedButton
                             variant="outline"
                             size="sm"
                             className="w-full gap-2"
                           >
                             {t("viewProduct")}
                             <ArrowForward className="h-4 w-4" />
-                          </Button>
+                          </AnimatedButton>
                         </Link>
                       )}
                       {merchantUrl && (
@@ -389,14 +403,14 @@ export function OrderHistoryContent() {
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          <Button
+                          <AnimatedButton
                             variant="outline"
                             size="sm"
                             className="w-full gap-2"
                           >
                             {t("visitStore")}
                             <ArrowForward className="h-4 w-4" />
-                          </Button>
+                          </AnimatedButton>
                         </a>
                       )}
                       {order.trackingUrl && (
@@ -405,10 +419,10 @@ export function OrderHistoryContent() {
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          <Button size="sm" className="w-full gap-2">
+                          <AnimatedButton size="sm" className="w-full gap-2">
                             {t("trackShipment")}
                             <Truck className="h-4 w-4" />
-                          </Button>
+                          </AnimatedButton>
                         </a>
                       )}
                     </div>
@@ -423,23 +437,23 @@ export function OrderHistoryContent() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="mt-8 flex items-center justify-center gap-2">
-          <Button
+          <AnimatedButton
             variant="outline"
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1 || loading}
           >
             {commonT("actions.previous")}
-          </Button>
+          </AnimatedButton>
           <span className="px-4 text-sm text-raff-neutral-600">
             {t("pageInfo", { page, totalPages })}
           </span>
-          <Button
+          <AnimatedButton
             variant="outline"
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages || loading}
           >
             {commonT("actions.next")}
-          </Button>
+          </AnimatedButton>
         </div>
       )}
     </Container>
