@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { fetchProductsServer } from "@/lib/server/products";
 import { MerchantDetailContent } from "./MerchantDetailContent";
+import { PageTransition } from "@/shared/components/PageTransition";
 
 const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 const NOT_FOUND_TITLES = {
@@ -160,10 +161,12 @@ export default async function MerchantPage({
   });
 
   return (
-    <MerchantDetailContent
-      merchant={merchant}
-      initialProducts={products}
-      pagination={pagination}
-    />
+    <PageTransition>
+      <MerchantDetailContent
+        merchant={merchant}
+        initialProducts={products}
+        pagination={pagination}
+      />
+    </PageTransition>
   );
 }

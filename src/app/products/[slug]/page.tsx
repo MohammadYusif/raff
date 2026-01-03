@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { ProductDetailContent } from "./ProductDetailContent";
 import { addCartFields } from "@/lib/products/cart";
+import { PageTransition } from "@/shared/components/PageTransition";
 
 const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 const NOT_FOUND_TITLES = {
@@ -119,5 +120,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
-  return <ProductDetailContent product={product} />;
+  return (
+    <PageTransition>
+      <ProductDetailContent product={product} />
+    </PageTransition>
+  );
 }

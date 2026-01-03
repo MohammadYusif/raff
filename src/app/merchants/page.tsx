@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { MerchantsContent } from "./MerchantsContent";
+import { PageTransition } from "@/shared/components/PageTransition";
 
 const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 const TITLES = {
@@ -57,5 +58,9 @@ export default async function MerchantsPage() {
     },
   });
 
-  return <MerchantsContent merchants={merchants} />;
+  return (
+    <PageTransition>
+      <MerchantsContent merchants={merchants} />
+    </PageTransition>
+  );
 }

@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { fetchProductsServer } from "@/lib/server/products";
 import { CategoryDetailContent } from "./CategoryDetailContent";
+import { PageTransition } from "@/shared/components/PageTransition";
 
 const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 const NOT_FOUND_TITLES = {
@@ -145,10 +146,12 @@ export default async function CategoryPage({
   });
 
   return (
-    <CategoryDetailContent
-      category={category}
-      initialProducts={products}
-      pagination={pagination}
-    />
+    <PageTransition>
+      <CategoryDetailContent
+        category={category}
+        initialProducts={products}
+        pagination={pagination}
+      />
+    </PageTransition>
   );
 }

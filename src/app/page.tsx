@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { HomepageContent } from "./HomepageContent";
 import arMessages from "@/../public/messages/ar.json";
 import enMessages from "@/../public/messages/en.json";
+import { PageTransition } from "@/shared/components/PageTransition";
 
 const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 const MESSAGES = {
@@ -217,11 +218,13 @@ export default async function HomePage() {
   }));
 
   return (
-    <HomepageContent
-      featuredProducts={serializedFeaturedProducts}
-      categories={categories}
-      featuredMerchants={serializedFeaturedMerchants}
-      stats={stats}
-    />
+    <PageTransition>
+      <HomepageContent
+        featuredProducts={serializedFeaturedProducts}
+        categories={categories}
+        featuredMerchants={serializedFeaturedMerchants}
+        stats={stats}
+      />
+    </PageTransition>
   );
 }

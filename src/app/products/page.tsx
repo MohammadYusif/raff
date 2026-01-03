@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { fetchProductsServer } from "@/lib/server/products";
 import { ProductsContent } from "./ProductsContent";
 import { addCartFields } from "@/lib/products/cart";
+import { PageTransition } from "@/shared/components/PageTransition";
 
 interface ProductsPageProps {
   searchParams: Promise<{
@@ -101,10 +102,12 @@ export default async function ProductsPage({
   const productsWithCartFields = products.map(addCartFields);
 
   return (
-    <ProductsContent
-      initialProducts={productsWithCartFields}
-      pagination={pagination}
-      categories={categories}
-    />
+    <PageTransition>
+      <ProductsContent
+        initialProducts={productsWithCartFields}
+        pagination={pagination}
+        categories={categories}
+      />
+    </PageTransition>
   );
 }

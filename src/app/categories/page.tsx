@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { CategoriesContent } from "./CategoriesContent";
+import { PageTransition } from "@/shared/components/PageTransition";
 
 const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 const TITLES = {
@@ -57,5 +58,9 @@ export default async function CategoriesPage() {
     },
   });
 
-  return <CategoriesContent categories={categories} />;
+  return (
+    <PageTransition>
+      <CategoriesContent categories={categories} />
+    </PageTransition>
+  );
 }

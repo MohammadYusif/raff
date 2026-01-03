@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { PageLayout } from "@/shared/components/layouts";
 import { CartContent } from "./CartContent";
+import { PageTransition } from "@/shared/components/PageTransition";
 
 const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 const TITLES = {
@@ -34,7 +35,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function CartPage() {
   return (
     <PageLayout>
-      <CartContent />
+      <PageTransition>
+        <CartContent />
+      </PageTransition>
     </PageLayout>
   );
 }

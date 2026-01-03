@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { MerchantJoinContent } from "./MerchantJoinContent";
+import { PageTransition } from "@/shared/components/PageTransition";
 
 const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 const TITLES = {
@@ -25,5 +26,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function MerchantJoinPage() {
-  return <MerchantJoinContent />;
+  return (
+    <PageTransition>
+      <MerchantJoinContent />
+    </PageTransition>
+  );
 }

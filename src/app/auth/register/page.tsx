@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { RegisterContent } from "./RegisterContent";
+import { PageTransition } from "@/shared/components/PageTransition";
 
 /**
  * Register Page
@@ -33,5 +34,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function RegisterPage() {
-  return <RegisterContent />;
+  return (
+    <PageTransition>
+      <RegisterContent />
+    </PageTransition>
+  );
 }

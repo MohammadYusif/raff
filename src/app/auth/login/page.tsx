@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { LoginContent } from "./LoginContent";
+import { PageTransition } from "@/shared/components/PageTransition";
 
 /**
  * Login Page
@@ -33,5 +34,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function LoginPage() {
-  return <LoginContent />;
+  return (
+    <PageTransition>
+      <LoginContent />
+    </PageTransition>
+  );
 }
