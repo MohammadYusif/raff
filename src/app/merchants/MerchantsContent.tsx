@@ -15,6 +15,7 @@ import { Store, ExternalLink } from "lucide-react";
 import { getMerchantStoreUrlFromObject } from "@/lib/platform/store";
 import type { MerchantWithCount } from "@/types";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
+import { getLocalizedText } from "@/lib/utils";
 
 interface MerchantsContentProps {
   merchants: MerchantWithCount[];
@@ -51,14 +52,16 @@ export function MerchantsContent({ merchants }: MerchantsContentProps) {
           {merchants.length > 0 ? (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {merchants.map((merchant) => {
-                const merchantName =
-                  locale === "ar"
-                    ? merchant.nameAr || merchant.name
-                    : merchant.name;
-                const merchantDescription =
-                  locale === "ar"
-                    ? merchant.descriptionAr || merchant.description
-                    : merchant.description;
+                const merchantName = getLocalizedText(
+                  locale,
+                  merchant.nameAr,
+                  merchant.name
+                );
+                const merchantDescription = getLocalizedText(
+                  locale,
+                  merchant.descriptionAr,
+                  merchant.description
+                );
                 const storeUrl = getMerchantStoreUrlFromObject(merchant);
 
                 return (

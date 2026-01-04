@@ -13,6 +13,7 @@ import {
 import { ArrowForward, ArrowBackward } from "@/core/i18n";
 import { Package } from "lucide-react";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
+import { getLocalizedText } from "@/lib/utils";
 
 interface Category {
   id: string;
@@ -62,14 +63,16 @@ export function CategoriesContent({ categories }: CategoriesContentProps) {
           {categories.length > 0 ? (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {categories.map((category) => {
-                const categoryName =
-                  locale === "ar"
-                    ? category.nameAr || category.name
-                    : category.name;
-                const categoryDescription =
-                  locale === "ar"
-                    ? category.descriptionAr || category.description
-                    : category.description;
+                const categoryName = getLocalizedText(
+                  locale,
+                  category.nameAr,
+                  category.name
+                );
+                const categoryDescription = getLocalizedText(
+                  locale,
+                  category.descriptionAr,
+                  category.description
+                );
 
                 return (
                   <Link key={category.id} href={`/categories/${category.slug}`}>

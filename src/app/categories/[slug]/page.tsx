@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { fetchProductsServer } from "@/lib/server/products";
 import { CategoryDetailContent } from "./CategoryDetailContent";
 import { PageTransition } from "@/shared/components/PageTransition";
+import { getLocalizedText } from "@/lib/utils";
 
 const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 const NOT_FOUND_TITLES = {
@@ -58,12 +59,12 @@ export async function generateMetadata({
       };
     }
 
-    const title =
-      locale === "ar" ? category.nameAr || category.name : category.name;
-    const description =
-      locale === "ar"
-        ? category.descriptionAr || category.description
-        : category.description;
+    const title = getLocalizedText(locale, category.nameAr, category.name);
+    const description = getLocalizedText(
+      locale,
+      category.descriptionAr,
+      category.description
+    );
 
     return {
       title: `${title} - ${brandName}`,

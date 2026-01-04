@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Search, X, Loader2 } from "lucide-react";
 import { Input } from "@/shared/components/ui";
-import { cn, formatPrice, debounce } from "@/lib/utils";
+import { cn, formatPrice, debounce, getLocalizedText } from "@/lib/utils";
 import Link from "next/link";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
@@ -55,6 +55,28 @@ export function SearchInput({
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const requestIdRef = useRef(0);
+  const latestQueryRef = useRef(query);
+  const showSuggestionsRef = useRef(showSuggestions);
+
+  useEffect(() => {
+    latestQueryRef.current = query;
+  }, [query]);
+
+  useEffect(() => {
+    showSuggestionsRef.current = showSuggestions;
+  }, [showSuggestions]);
+
+  useEffect(() => {
+    return () => {
+      if (abortRef.current) {
+        abortRef.current.abort();
+        abortRef.current = null;
+      }
+      requestIdRef.current += 1;
+    };
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -75,41 +97,92 @@ export function SearchInput({
   const fetchSuggestions = useMemo(
     () =>
       debounce(async (searchQuery: string) => {
-        if (!searchQuery.trim() || !showSuggestions) {
+        const trimmedQuery = searchQuery.trim();
+        if (!trimmedQuery || !showSuggestionsRef.current) {
           setSuggestions([]);
           setIsLoading(false);
           return;
         }
 
+        if (trimmedQuery !== latestQueryRef.current.trim()) {
+          return;
+        }
+
+        if (abortRef.current) {
+          abortRef.current.abort();
+        }
+        requestIdRef.current += 1;
+        const requestId = requestIdRef.current;
+        const controller = new AbortController();
+        abortRef.current = controller;
+
         setIsLoading(true);
 
         try {
           const response = await fetch(
-            `/api/search?q=${encodeURIComponent(searchQuery)}&mode=suggestions&limit=5`
+            `/api/search?q=${encodeURIComponent(searchQuery)}&mode=suggestions&limit=5`,
+            { signal: controller.signal }
           );
-          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(`Failed to fetch suggestions: ${response.status}`);
+          }
 
-          setSuggestions(data.suggestions || []);
+          const data = await response.json();
+          if (
+            controller.signal.aborted ||
+            requestId !== requestIdRef.current
+          ) {
+            return;
+          }
+          const nextSuggestions = Array.isArray(data.suggestions)
+            ? data.suggestions
+            : [];
+          setSuggestions(nextSuggestions);
           setIsOpen(true);
         } catch (error) {
+          if ((error as Error).name === "AbortError") {
+            return;
+          }
           console.error("Failed to fetch suggestions:", error);
           setSuggestions([]);
         } finally {
-          setIsLoading(false);
+          if (
+            !controller.signal.aborted &&
+            requestId === requestIdRef.current
+          ) {
+            setIsLoading(false);
+          }
         }
       }, 300),
-    [showSuggestions]
+    []
   );
 
   useEffect(() => {
+    if (!showSuggestions) {
+      if (abortRef.current) {
+        abortRef.current.abort();
+        abortRef.current = null;
+      }
+      requestIdRef.current += 1;
+      setSuggestions([]);
+      setIsOpen(false);
+      setIsLoading(false);
+      return;
+    }
+
     if (query.trim().length > 0) {
       fetchSuggestions(query);
     } else {
+      if (abortRef.current) {
+        abortRef.current.abort();
+        abortRef.current = null;
+      }
+      requestIdRef.current += 1;
       setSuggestions([]);
       setIsOpen(false);
       setIsLoading(false);
     }
-  }, [query, fetchSuggestions]);
+  }, [query, showSuggestions, fetchSuggestions]);
 
   // Auto-submit after user stops typing (for search page)
   useEffect(() => {
@@ -207,14 +280,17 @@ export function SearchInput({
         <div className="absolute top-full z-50 mt-2 w-full overflow-hidden rounded-lg border border-raff-neutral-200 bg-white shadow-lg">
           <div className="max-h-96 overflow-y-auto">
             {suggestions.map((suggestion) => {
-              const productTitle =
-                locale === "ar"
-                  ? suggestion.titleAr || suggestion.title
-                  : suggestion.title;
+              const productTitle = getLocalizedText(
+                locale,
+                suggestion.titleAr,
+                suggestion.title
+              );
               const categoryName = suggestion.category
-                ? locale === "ar"
-                  ? suggestion.category.nameAr || suggestion.category.name
-                  : suggestion.category.name
+                ? getLocalizedText(
+                    locale,
+                    suggestion.category.nameAr,
+                    suggestion.category.name
+                  )
                 : null;
 
               return (

@@ -18,7 +18,7 @@ import {
   ShoppingCart,
 } from "lucide-react";
 import { ArrowBackward } from "@/core/i18n";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, getLocalizedText } from "@/lib/utils";
 import { getMerchantStoreUrl } from "@/lib/platform/store";
 import { useProductClick } from "@/lib/hooks/useProductClick"; // ✅ NEW
 import { useCart } from "@/lib/hooks/useCart";
@@ -39,21 +39,28 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
   const { trackAndRedirect, isTracking } = useProductClick();
   const { addItem } = useCart();
 
-  const productTitle =
-    locale === "ar" ? product.titleAr || product.title : product.title;
-  const merchantName =
-    locale === "ar"
-      ? product.merchant.nameAr || product.merchant.name
-      : product.merchant.name;
+  const productTitle = getLocalizedText(
+    locale,
+    product.titleAr,
+    product.title
+  );
+  const merchantName = getLocalizedText(
+    locale,
+    product.merchant.nameAr,
+    product.merchant.name
+  );
   const categoryName = product.category
-    ? locale === "ar"
-      ? product.category.nameAr || product.category.name
-      : product.category.name
+    ? getLocalizedText(
+        locale,
+        product.category.nameAr,
+        product.category.name
+      )
     : null;
-  const description =
-    locale === "ar"
-      ? product.descriptionAr || product.description
-      : product.description;
+  const description = getLocalizedText(
+    locale,
+    product.descriptionAr,
+    product.description
+  );
 
   const storeUrl = getMerchantStoreUrl(
     product.merchant.sallaStoreUrl,
@@ -76,16 +83,9 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
         image: product.imageUrl || null,
         price: product.price,
         currency: product.currency,
-        merchantName:
-          locale === "ar"
-            ? product.merchant.nameAr || product.merchant.name
-            : product.merchant.name,
+        merchantName,
         merchantNameAr: product.merchant.nameAr,
-        categoryName: product.category
-          ? (locale === "ar"
-              ? product.category.nameAr || product.category.name
-              : product.category.name)
-          : null,
+        categoryName,
         categoryNameAr: product.category?.nameAr,
         externalUrl: product.externalUrl,
         trendingScore: product.trendingScore,

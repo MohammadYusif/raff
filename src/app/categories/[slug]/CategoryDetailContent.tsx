@@ -17,6 +17,7 @@ import { ProductCard } from "@/shared/components/ProductCard";
 import { Search, Package } from "lucide-react";
 import { ArrowBackward } from "@/core/i18n";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
+import { getLocalizedText } from "@/lib/utils";
 
 interface Product {
   id: string;
@@ -75,12 +76,16 @@ export function CategoryDetailContent({
     urlSearchParams.get("search") || ""
   );
 
-  const categoryName =
-    locale === "ar" ? category.nameAr || category.name : category.name;
-  const categoryDescription =
-    locale === "ar"
-      ? category.descriptionAr || category.description
-      : category.description;
+  const categoryName = getLocalizedText(
+    locale,
+    category.nameAr,
+    category.name
+  );
+  const categoryDescription = getLocalizedText(
+    locale,
+    category.descriptionAr,
+    category.description
+  );
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

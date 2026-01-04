@@ -23,6 +23,7 @@ import { ArrowForward, ArrowBackward } from "@/core/i18n";
 import type { ProductWithCartFields } from "@/types";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
 import { StaggerContainer } from "@/shared/components/PageTransition";
+import { getLocalizedText } from "@/lib/utils";
 
 interface Category {
   id: string;
@@ -223,10 +224,11 @@ export function ProductsContent({
                         {t("allCategories")}
                       </AnimatedButton>
                       {categories.map((category) => {
-                        const categoryName =
-                          locale === "ar"
-                            ? category.nameAr || category.name
-                            : category.name;
+                        const categoryName = getLocalizedText(
+                          locale,
+                          category.nameAr,
+                          category.name
+                        );
                         return (
                           <AnimatedButton
                             key={category.id}

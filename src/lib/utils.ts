@@ -9,6 +9,51 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+const priceFormatterCache = new Map<string, Intl.NumberFormat>();
+
+function getPriceFormatter(
+  locale: string,
+  currency: string,
+  minimumFractionDigits?: number,
+  maximumFractionDigits?: number
+): Intl.NumberFormat {
+  const localeKey = locale === "ar" ? "ar-SA" : "en-SA";
+  const key = `${localeKey}|${currency}|${minimumFractionDigits ?? "def"}|${
+    maximumFractionDigits ?? "def"
+  }`;
+
+  const cached = priceFormatterCache.get(key);
+  if (cached) return cached;
+
+  const options: Intl.NumberFormatOptions = {
+    style: "currency",
+    currency,
+  };
+
+  if (minimumFractionDigits !== undefined) {
+    options.minimumFractionDigits = minimumFractionDigits;
+  }
+  if (maximumFractionDigits !== undefined) {
+    options.maximumFractionDigits = maximumFractionDigits;
+  }
+
+  const formatter = new Intl.NumberFormat(localeKey, options);
+  priceFormatterCache.set(key, formatter);
+  return formatter;
+}
+
+export function getLocalizedText(
+  locale: string,
+  arValue?: string | null,
+  fallback?: string | null
+): string {
+  const fallbackValue = fallback ?? arValue ?? "";
+  if (locale === "ar") {
+    return arValue ?? fallbackValue;
+  }
+  return fallbackValue;
+}
+
 /**
  * Smooth scroll utility function
  * @param targetId - CSS selector (e.g., "#products", "#trending")
@@ -32,13 +77,20 @@ export const smoothScroll = (targetId: string) => {
 export function formatPrice(
   price: number,
   locale: string = "ar",
-  currency: string = "SAR"
+  currency: string = "SAR",
+  options?: {
+    minimumFractionDigits?: number;
+    maximumFractionDigits?: number;
+  }
 ): string {
-  return new Intl.NumberFormat(locale === "ar" ? "ar-SA" : "en-SA", {
-    style: "currency",
-    currency: currency,
-    minimumFractionDigits: 2,
-  }).format(price);
+  const minimumFractionDigits = options?.minimumFractionDigits ?? 2;
+  const maximumFractionDigits = options?.maximumFractionDigits;
+  return getPriceFormatter(
+    locale,
+    currency,
+    minimumFractionDigits,
+    maximumFractionDigits
+  ).format(price);
 }
 
 /**

@@ -9,6 +9,7 @@ import { Card, CardContent, Badge } from "@/shared/components/ui";
 import { easeOut } from "framer-motion";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
 import { useCart } from "@/lib/hooks/useCart";
+import { formatPrice, getLocalizedText } from "@/lib/utils";
 import { toast } from "sonner";
 
 interface ProductCardProps {
@@ -57,28 +58,21 @@ export function ProductCard({
   const commonT = useTranslations("common");
   const { addItem } = useCart();
 
-  const productTitle =
-    locale === "ar" ? product.titleAr || product.title : product.title;
+  const productTitle = getLocalizedText(
+    locale,
+    product.titleAr,
+    product.title
+  );
 
-  const merchantName =
-    locale === "ar"
-      ? product.merchant.nameAr || product.merchant.name
-      : product.merchant.name;
+  const merchantName = getLocalizedText(
+    locale,
+    product.merchant.nameAr,
+    product.merchant.name
+  );
 
   const categoryName = product.category
-    ? locale === "ar"
-      ? product.category.nameAr || product.category.name
-      : product.category.name
+    ? getLocalizedText(locale, product.category.nameAr, product.category.name)
     : null;
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat(locale === "ar" ? "ar-SA" : "en-US", {
-      style: "currency",
-      currency: "SAR",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
-    }).format(price);
-  };
 
   const hasDiscount =
     product.originalPrice && product.originalPrice > product.price;
@@ -244,11 +238,22 @@ export function ProductCard({
             <div className="mt-auto">
               <div className="flex items-baseline gap-2">
                 <span className="text-xl font-bold text-raff-primary">
-                  {formatPrice(product.price)}
+                  {formatPrice(product.price, locale, product.currency || "SAR", {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 2,
+                  })}
                 </span>
                 {hasDiscount && (
                   <span className="text-sm text-raff-neutral-500 line-through">
-                    {formatPrice(product.originalPrice!)}
+                    {formatPrice(
+                      product.originalPrice!,
+                      locale,
+                      product.currency || "SAR",
+                      {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 2,
+                      }
+                    )}
                   </span>
                 )}
               </div>

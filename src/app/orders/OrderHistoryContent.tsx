@@ -24,7 +24,7 @@ import {
   Truck,
   ShoppingBag,
 } from "lucide-react";
-import { formatPrice, formatDate } from "@/lib/utils";
+import { formatPrice, formatDate, getLocalizedText } from "@/lib/utils";
 import { ArrowForward } from "@/core/i18n";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
@@ -239,15 +239,19 @@ export function OrderHistoryContent() {
             const StatusIcon = statusConfig.icon;
 
             const productTitle = order.product
-              ? locale === "ar"
-                ? order.product.titleAr || order.product.title
-                : order.product.title
+              ? getLocalizedText(
+                  locale,
+                  order.product.titleAr,
+                  order.product.title
+                )
               : null;
 
             const merchantName = order.merchant
-              ? locale === "ar"
-                ? order.merchant.nameAr || order.merchant.name
-                : order.merchant.name
+              ? getLocalizedText(
+                  locale,
+                  order.merchant.nameAr,
+                  order.merchant.name
+                )
               : t("unknownMerchant");
 
             const merchantUrl =

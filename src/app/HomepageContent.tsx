@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { ArrowForward } from "@/core/i18n";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
+import { getLocalizedText } from "@/lib/utils";
 
 // Serialized types (Decimal converted to number)
 interface SerializedProduct {
@@ -250,10 +251,11 @@ export function HomepageContent({
 
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:gap-6">
             {categories.map((category) => {
-              const categoryName =
-                locale === "ar"
-                  ? category.nameAr || category.name
-                  : category.name;
+              const categoryName = getLocalizedText(
+                locale,
+                category.nameAr,
+                category.name
+              );
 
               return (
                 <Link key={category.id} href={`/categories/${category.slug}`}>
@@ -334,14 +336,16 @@ export function HomepageContent({
 
             <div className="grid gap-8 lg:grid-cols-2">
               {featuredMerchants.map((merchant) => {
-                const merchantName =
-                  locale === "ar"
-                    ? merchant.nameAr || merchant.name
-                    : merchant.name;
-                const merchantDescription =
-                  locale === "ar"
-                    ? merchant.descriptionAr || merchant.description
-                    : merchant.description;
+                const merchantName = getLocalizedText(
+                  locale,
+                  merchant.nameAr,
+                  merchant.name
+                );
+                const merchantDescription = getLocalizedText(
+                  locale,
+                  merchant.descriptionAr,
+                  merchant.description
+                );
 
                 return (
                   <Card
@@ -392,10 +396,11 @@ export function HomepageContent({
                         </p>
                         <div className="grid grid-cols-3 gap-3">
                           {merchant.products.map((product) => {
-                            const productTitle =
-                              locale === "ar"
-                                ? product.titleAr || product.title
-                                : product.title;
+                            const productTitle = getLocalizedText(
+                              locale,
+                              product.titleAr,
+                              product.title
+                            );
 
                             return (
                               <Link

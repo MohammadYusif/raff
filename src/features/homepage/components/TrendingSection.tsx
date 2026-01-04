@@ -13,7 +13,7 @@ import {
 import { TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { ArrowForward } from "@/core/i18n";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, getLocalizedText } from "@/lib/utils";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
 interface Product {
@@ -107,14 +107,16 @@ export function TrendingSection() {
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {products.map((product) => {
             // ← Add locale-aware display
-            const productTitle =
-              locale === "ar"
-                ? product.titleAr || product.title
-                : product.title;
-            const merchantName =
-              locale === "ar"
-                ? product.merchant.nameAr || product.merchant.name
-                : product.merchant.name;
+            const productTitle = getLocalizedText(
+              locale,
+              product.titleAr,
+              product.title
+            );
+            const merchantName = getLocalizedText(
+              locale,
+              product.merchant.nameAr,
+              product.merchant.name
+            );
 
             return (
               <Card

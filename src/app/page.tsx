@@ -33,131 +33,135 @@ const STATS_THRESHOLDS = {
 };
 
 export default async function HomePage() {
-  // Fetch featured products (top 8 by trending score)
-  const featuredProducts = await prisma.product.findMany({
-    where: {
-      isActive: true,
-      inStock: true,
-    },
-    orderBy: [{ trendingScore: "desc" }, { viewCount: "desc" }],
-    take: 8,
-    select: {
-      id: true,
-      title: true,
-      titleAr: true,
-      slug: true,
-      price: true,
-      originalPrice: true,
-      trendingScore: true,
-      viewCount: true,
-      merchant: {
-        select: {
-          id: true,
-          name: true,
-          nameAr: true,
-          logo: true,
+  const [
+    featuredProducts,
+    categories,
+    featuredMerchants,
+    productsCount,
+    merchantsCount,
+  ] = await Promise.all([
+    prisma.product.findMany({
+      where: {
+        isActive: true,
+        inStock: true,
+      },
+      orderBy: [{ trendingScore: "desc" }, { viewCount: "desc" }],
+      take: 8,
+      select: {
+        id: true,
+        title: true,
+        titleAr: true,
+        slug: true,
+        price: true,
+        originalPrice: true,
+        trendingScore: true,
+        viewCount: true,
+        merchant: {
+          select: {
+            id: true,
+            name: true,
+            nameAr: true,
+            logo: true,
+          },
+        },
+        category: {
+          select: {
+            id: true,
+            name: true,
+            nameAr: true,
+            slug: true,
+          },
         },
       },
-      category: {
-        select: {
-          id: true,
-          name: true,
-          nameAr: true,
-          slug: true,
+    }),
+    prisma.category.findMany({
+      where: {
+        products: {
+          some: {
+            isActive: true,
+          },
         },
       },
-    },
-  });
-
-  // Fetch categories with product counts
-  const categories = await prisma.category.findMany({
-    where: {
-      products: {
-        some: {
-          isActive: true,
-        },
-      },
-    },
-    include: {
-      _count: {
-        select: {
-          products: {
-            where: {
-              isActive: true,
+      select: {
+        id: true,
+        name: true,
+        nameAr: true,
+        slug: true,
+        icon: true,
+        _count: {
+          select: {
+            products: {
+              where: {
+                isActive: true,
+              },
             },
           },
         },
       },
-    },
-    orderBy: {
-      products: {
-        _count: "desc",
-      },
-    },
-    take: 8,
-  });
-
-  // Fetch featured merchants (top 2 by product count)
-  const featuredMerchants = await prisma.merchant.findMany({
-    where: {
-      isActive: true,
-      products: {
-        some: {
-          isActive: true,
+      orderBy: {
+        products: {
+          _count: "desc",
         },
       },
-    },
-    select: {
-      id: true,
-      name: true,
-      nameAr: true,
-      logo: true,
-      description: true,
-      descriptionAr: true,
-      _count: {
-        select: {
-          products: {
-            where: {
-              isActive: true,
+      take: 8,
+    }),
+    prisma.merchant.findMany({
+      where: {
+        isActive: true,
+        products: {
+          some: {
+            isActive: true,
+          },
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        nameAr: true,
+        logo: true,
+        description: true,
+        descriptionAr: true,
+        _count: {
+          select: {
+            products: {
+              where: {
+                isActive: true,
+              },
+            },
+          },
+        },
+        products: {
+          where: {
+            isActive: true,
+            inStock: true,
+          },
+          orderBy: {
+            trendingScore: "desc",
+          },
+          take: 3,
+          select: {
+            id: true,
+            title: true,
+            titleAr: true,
+            slug: true,
+            price: true,
+            originalPrice: true,
+            category: {
+              select: {
+                name: true,
+                nameAr: true,
+              },
             },
           },
         },
       },
-      products: {
-        where: {
-          isActive: true,
-          inStock: true,
-        },
-        orderBy: {
-          trendingScore: "desc",
-        },
-        take: 3,
-        select: {
-          id: true,
-          title: true,
-          titleAr: true,
-          slug: true,
-          price: true,
-          originalPrice: true,
-          category: {
-            select: {
-              name: true,
-              nameAr: true,
-            },
-          },
+      orderBy: {
+        products: {
+          _count: "desc",
         },
       },
-    },
-    orderBy: {
-      products: {
-        _count: "desc",
-      },
-    },
-    take: 2,
-  });
-
-  // Get stats counts
-  const [productsCount, merchantsCount] = await Promise.all([
+      take: 2,
+    }),
     prisma.product.count({
       where: {
         isActive: true,

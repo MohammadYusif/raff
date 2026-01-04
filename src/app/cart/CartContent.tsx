@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { ArrowForward, ArrowBackward } from "@/core/i18n";
 import { useCart } from "@/lib/hooks/useCart";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, getLocalizedText } from "@/lib/utils";
 import { TrendingUp } from "lucide-react";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
 import { toast } from "sonner";
@@ -309,16 +309,23 @@ export function CartContent() {
           <div>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
               {items.map((item) => {
-                const itemName =
-                  locale === "ar" && item.nameAr ? item.nameAr : item.name;
-                const merchantName =
-                  locale === "ar" && item.merchantNameAr
-                    ? item.merchantNameAr
-                    : item.merchantName;
-                const categoryName =
-                  locale === "ar" && item.categoryNameAr
-                    ? item.categoryNameAr
-                    : item.categoryName;
+                const itemName = getLocalizedText(
+                  locale,
+                  item.nameAr,
+                  item.name
+                );
+                const merchantName = getLocalizedText(
+                  locale,
+                  item.merchantNameAr,
+                  item.merchantName
+                );
+                const categoryName = item.categoryName
+                  ? getLocalizedText(
+                      locale,
+                      item.categoryNameAr,
+                      item.categoryName
+                    )
+                  : null;
 
                 const itemSubtotal = item.price * item.quantity;
 

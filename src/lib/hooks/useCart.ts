@@ -420,10 +420,9 @@ function useCartState(): CartContextValue {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const handleUpdate = (event?: Event) => {
+    const handleUpdate = () => {
       if (userId && status === "authenticated") {
-        const force = event?.type === "storage";
-        fetchUserCart(force).then((next) => {
+        fetchUserCart().then((next) => {
           setItems((prev) => (areCartItemsEqual(prev, next) ? prev : next));
         });
       } else {
@@ -432,11 +431,9 @@ function useCartState(): CartContextValue {
       }
     };
 
-    window.addEventListener("storage", handleUpdate);
     window.addEventListener(CART_EVENT, handleUpdate);
 
     return () => {
-      window.removeEventListener("storage", handleUpdate);
       window.removeEventListener(CART_EVENT, handleUpdate);
     };
   }, [userId, status, fetchUserCart]);

@@ -19,6 +19,7 @@ import { ArrowBackward } from "@/core/i18n";
 import { getMerchantStoreUrlFromObject } from "@/lib/platform/store";
 import type { MerchantWithCount } from "@/types";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
+import { getLocalizedText } from "@/lib/utils";
 
 interface Product {
   id: string;
@@ -64,12 +65,16 @@ export function MerchantDetailContent({
     urlSearchParams.get("search") || ""
   );
 
-  const merchantName =
-    locale === "ar" ? merchant.nameAr || merchant.name : merchant.name;
-  const merchantDescription =
-    locale === "ar"
-      ? merchant.descriptionAr || merchant.description
-      : merchant.description;
+  const merchantName = getLocalizedText(
+    locale,
+    merchant.nameAr,
+    merchant.name
+  );
+  const merchantDescription = getLocalizedText(
+    locale,
+    merchant.descriptionAr,
+    merchant.description
+  );
   const storeUrl = getMerchantStoreUrlFromObject(merchant);
 
   const handleSearch = (e: React.FormEvent) => {
