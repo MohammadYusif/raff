@@ -84,7 +84,6 @@ export function TrendingContent({ products }: TrendingContentProps) {
                   product={product}
                   index={index}
                   showCategory={true}
-                  commonT={commonT}
                 />
               ))}
             </div>

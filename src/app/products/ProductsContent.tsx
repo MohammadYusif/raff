@@ -329,7 +329,6 @@ export function ProductsContent({
                         product={product}
                         index={index}
                         showCategory={true}
-                        commonT={commonT}
                       />
                     ))}
                   </StaggerContainer>

@@ -56,7 +56,6 @@ export function MerchantDetailContent({
 }: MerchantDetailContentProps) {
   const t = useTranslations("merchant");
   const productsT = useTranslations("products");
-  const commonT = useTranslations("common");
   const locale = useLocale();
   const router = useRouter();
   const urlSearchParams = useSearchParams();
@@ -280,7 +279,6 @@ export function MerchantDetailContent({
                   }}
                   index={index}
                   showCategory={true}
-                  commonT={commonT}
                 />
               ))}
             </div>

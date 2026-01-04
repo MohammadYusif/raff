@@ -61,7 +61,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} overflow-x-hidden antialiased`}
       >
         <SessionProvider>
-          <LocaleProvider>
+          <LocaleProvider locale={locale}>
             <ScrollToTop />
             <ToastProvider>{children}</ToastProvider>
             <Toaster />

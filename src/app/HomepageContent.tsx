@@ -99,7 +99,6 @@ export function HomepageContent({
   stats,
 }: HomepageContentProps) {
   const t = useTranslations("homepage");
-  const commonT = useTranslations("common");
   const locale = useLocale();
 
   return (
@@ -222,7 +221,6 @@ export function HomepageContent({
                 }}
                 index={index}
                 showCategory={true}
-                commonT={commonT}
               />
             ))}
           </div>

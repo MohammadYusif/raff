@@ -3,7 +3,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { TrendingUp, ArrowRight, ShoppingCart } from "lucide-react";
 import { Card, CardContent, Badge } from "@/shared/components/ui";
 import { easeOut } from "framer-motion";
@@ -34,7 +34,6 @@ interface ProductCardProps {
   };
   index?: number;
   showCategory?: boolean;
-  commonT: (key: string) => string;
 }
 
 /**
@@ -53,9 +52,9 @@ export function ProductCard({
   product,
   index = 0,
   showCategory = true,
-  commonT,
 }: ProductCardProps) {
   const locale = useLocale();
+  const commonT = useTranslations("common");
   const { addItem } = useCart();
 
   const productTitle =

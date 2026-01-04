@@ -67,7 +67,6 @@ export function CategoryDetailContent({
 }: CategoryDetailContentProps) {
   const t = useTranslations("category");
   const productsT = useTranslations("products");
-  const commonT = useTranslations("common");
   const locale = useLocale();
   const router = useRouter();
   const urlSearchParams = useSearchParams();
@@ -252,7 +251,6 @@ export function CategoryDetailContent({
                   product={product}
                   index={index}
                   showCategory={true}
-                  commonT={commonT}
                 />
               ))}
             </div>
