@@ -7,22 +7,28 @@ import { ReactNode, Children } from "react";
 interface PageTransitionProps {
   children: ReactNode;
   className?: string;
+  variant?: "default" | "fade-only"; // Add variant prop
 }
 
 /**
  * Page Transition Component
  *
- * Wraps page content with smooth fade + slide animations
+ * Wraps page content with smooth animations
  * Works with Next.js App Router
  *
+ * Variants:
+ * - default: Fade + slide animation (good for content pages)
+ * - fade-only: Only fade animation (good for auth pages to prevent layout shift)
+ *
  * @example
- * <PageTransition>
+ * <PageTransition variant="fade-only">
  *   <YourPageContent />
  * </PageTransition>
  */
 export function PageTransition({
   children,
   className = "",
+  variant = "default",
 }: PageTransitionProps) {
   const shouldReduceMotion = useReducedMotion();
 
@@ -30,11 +36,27 @@ export function PageTransition({
     return <div className={className}>{children}</div>;
   }
 
+  // Default variant: fade + slide
+  const defaultVariant = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -20 },
+  };
+
+  // Fade-only variant: no layout shift
+  const fadeOnlyVariant = {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 },
+  };
+
+  const variants = variant === "fade-only" ? fadeOnlyVariant : defaultVariant;
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
+      initial={variants.initial}
+      animate={variants.animate}
+      exit={variants.exit}
       transition={{
         duration: 0.3,
         ease: [0, 0, 0.2, 1],

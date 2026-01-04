@@ -22,7 +22,11 @@ interface LocaleProviderProps {
 
 export function LocaleProvider({ children, locale }: LocaleProviderProps) {
   return (
-    <IntlProvider locale={locale} messages={MESSAGES[locale]}>
+    <IntlProvider
+      locale={locale}
+      timeZone="Asia/Riyadh"
+      messages={MESSAGES[locale]}
+    >
       {children}
     </IntlProvider>
   );

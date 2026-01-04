@@ -122,6 +122,8 @@ model Product {
   savedByUsers   User[]          @relation("SavedProducts")
   clickTrackings ClickTracking[]
   outboundClickEvents OutboundClickEvent[]
+  cartItems CartItem[]
+
 
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -264,6 +266,8 @@ model User {
   accounts        Account[]
   sessions        Session[]
   merchantProfile Merchant?
+  cartItems CartItem[]
+
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -534,6 +538,22 @@ model TrendingLog {
 
   @@index([productId, createdAt])
   @@index([eventType])
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
 }
 
 // ============================================

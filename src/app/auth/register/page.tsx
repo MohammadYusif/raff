@@ -10,6 +10,9 @@ import { PageTransition } from "@/shared/components/PageTransition";
  * Auth pages intentionally don't use PageLayout to provide
  * a focused, distraction-free authentication experience without
  * navigation and footer elements that might distract from the registration flow.
+ *
+ * Using fade-only PageTransition variant to keep smooth animation
+ * without layout shift from y-offset.
  */
 
 const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
@@ -35,7 +38,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function RegisterPage() {
   return (
-    <PageTransition>
+    <PageTransition variant="fade-only">
       <RegisterContent />
     </PageTransition>
   );

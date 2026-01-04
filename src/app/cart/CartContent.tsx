@@ -39,7 +39,8 @@ export function CartContent() {
   const t = useTranslations("cart");
   const commonT = useTranslations("common");
   const { data: session, status } = useSession();
-  const { items, itemCount, removeItem, clearCart, updateQuantity } = useCart();
+  const { items, itemCount, removeItem, clearCart, updateQuantity, isLoading } =
+    useCart();
   const locale = useLocale();
 
   const showAuthNotice =
@@ -98,7 +99,7 @@ export function CartContent() {
   };
 
   // Show full loading skeleton during session transitions
-  if (status === "loading") {
+  if (itemCount === 0 && (status === "loading" || isLoading)) {
     return (
       <div className="min-h-screen bg-raff-neutral-50">
         <div className="border-b border-raff-neutral-200 bg-white">
