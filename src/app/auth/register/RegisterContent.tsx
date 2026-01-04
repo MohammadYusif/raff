@@ -41,6 +41,9 @@ export function RegisterContent() {
                   alt="Raff Logo"
                   width={160}
                   height={40}
+                  sizes="160px"
+                  priority
+                  fetchPriority="high"
                   className="mx-auto h-auto w-40 object-contain"
                 />
               </Link>

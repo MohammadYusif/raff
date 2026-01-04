@@ -79,6 +79,9 @@ export function Navbar({ variant = "main" }: NavbarProps) {
               alt={navbarConfig.logo.alt}
               width={navbarConfig.logo.width}
               height={navbarConfig.logo.height}
+              sizes="(max-width: 640px) 112px, (max-width: 768px) 128px, 144px"
+              priority
+              fetchPriority="high"
               className="h-auto w-28 object-contain sm:w-32 md:w-36"
             />
           </Link>

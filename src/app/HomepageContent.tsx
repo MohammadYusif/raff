@@ -182,7 +182,7 @@ export function HomepageContent({
       </section>
 
       {/* Featured Products */}
-      <section className="border-y border-raff-neutral-200 bg-white py-16 sm:py-24">
+      <section className="border-y border-raff-neutral-200 bg-white py-16 sm:py-24 content-visibility-auto">
         <Container>
           <div className="mb-12 text-center">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-raff-accent/10 px-4 py-2 text-sm font-medium text-raff-accent">
@@ -238,7 +238,7 @@ export function HomepageContent({
       </section>
 
       {/* Categories Grid */}
-      <section className="bg-raff-neutral-50 py-16 sm:py-24">
+      <section className="bg-raff-neutral-50 py-16 sm:py-24 content-visibility-auto">
         <Container>
           <div className="mb-12 text-center">
             <h2 className="mb-4 text-3xl font-bold text-raff-primary sm:text-4xl">
@@ -286,7 +286,7 @@ export function HomepageContent({
       </section>
 
       {/* How It Works */}
-      <section className="border-y border-raff-neutral-200 bg-white py-16 sm:py-24">
+      <section className="border-y border-raff-neutral-200 bg-white py-16 sm:py-24 content-visibility-auto">
         <Container>
           <div className="mb-12 text-center">
             <h2 className="mb-4 text-3xl font-bold text-raff-primary sm:text-4xl">
@@ -319,7 +319,7 @@ export function HomepageContent({
 
       {/* Featured Merchants */}
       {featuredMerchants.length > 0 && (
-        <section className=" from-white to-raff-neutral-50 py-16 sm:py-24">
+        <section className=" from-white to-raff-neutral-50 py-16 sm:py-24 content-visibility-auto">
           <Container>
             <div className="mb-12 text-center">
               <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-raff-primary/10 px-4 py-2 text-sm font-medium text-raff-primary">
@@ -453,7 +453,7 @@ export function HomepageContent({
       )}
 
       {/* Call to Action - Dual Card Design */}
-      <section className="relative overflow-hidden from-raff-neutral-50 to-white py-16 sm:py-24">
+      <section className="relative overflow-hidden from-raff-neutral-50 to-white py-16 sm:py-24 content-visibility-auto">
         {/* Background decoration */}
         <div className="absolute inset-0 -z-10">
           <div className="absolute start-1/4 top-0 h-96 w-96 rounded-full bg-raff-primary/5 blur-3xl" />
