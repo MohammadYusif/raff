@@ -50,7 +50,7 @@ export function Navbar({ variant = "main" }: NavbarProps) {
   const { data: session, status } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
-  const { itemCount } = useCart();
+  const { itemCount, isLoading: isCartLoading } = useCart();
 
   const navItems = getNavItemsForVariant(variant);
   const showSearch = isFeatureEnabled("search", variant);
@@ -61,8 +61,12 @@ export function Navbar({ variant = "main" }: NavbarProps) {
   // Determine if this is a minimal variant
   const isMinimal = variant === "minimal" || variant === "auth";
 
+  const isAuthReady = status !== "loading";
+  const isCartReady = !isCartLoading;
+
   // Check if user is logged in
-  const isAuthenticated = status === "authenticated" && session?.user;
+  const isAuthenticated =
+    isAuthReady && status === "authenticated" && session?.user;
 
   return (
     <nav className="fixed top-0 z-50 w-full border-b border-raff-neutral-200 bg-white/95 backdrop-blur">
@@ -132,7 +136,7 @@ export function Navbar({ variant = "main" }: NavbarProps) {
                 >
                   <ShoppingCart className="h-5 w-5" />
                 </AnimatedButton>
-                {itemCount > 0 && (
+                {isCartReady && itemCount > 0 && (
                   <span className="absolute -end-1 -top-1 flex h-5 items-center justify-center rounded-full bg-raff-accent px-1 text-[10px] font-semibold text-white">
                     {itemCount > 99 ? "99+" : itemCount}
                   </span>
@@ -155,10 +159,10 @@ export function Navbar({ variant = "main" }: NavbarProps) {
             )}
 
             {/* Auth Section - Show either UserMenu or Login button */}
-            {showAuth && (
+            {showAuth && isAuthReady && (
               <>
                 {isAuthenticated ? (
-                  // Show User Menu when logged in
+                  // Show User Menu when logged in - ONLY on desktop (hidden on mobile to prevent duplication)
                   <div className="hidden sm:block">
                     <UserMenu />
                   </div>
@@ -238,12 +242,12 @@ export function Navbar({ variant = "main" }: NavbarProps) {
                 </Link>
               )}
 
-              {showAuth && (
+              {showAuth && isAuthReady && (
                 <>
                   {isAuthenticated ? (
-                    // Show User Menu in mobile
-                    <div className="border-t border-raff-neutral-200 pt-4">
-                      <UserMenu />
+                    // Show User Menu in mobile - ONLY on mobile (hidden on desktop to prevent duplication)
+                    <div className="border-t border-raff-neutral-200 pt-4 sm:hidden">
+                      <UserMenu isMobile={true} />
                     </div>
                   ) : (
                     // Show Login button when not logged in

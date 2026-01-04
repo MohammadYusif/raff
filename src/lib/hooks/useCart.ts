@@ -13,23 +13,9 @@ import {
   type ReactNode,
 } from "react";
 import { useSession } from "next-auth/react";
+import type { CartItem } from "@/lib/cart/types";
 
-export type CartItem = {
-  id: string;
-  slug: string;
-  name: string;
-  nameAr?: string | null;
-  image?: string | null;
-  price: number;
-  currency: string;
-  quantity: number;
-  merchantName: string;
-  merchantNameAr?: string | null;
-  categoryName?: string | null;
-  categoryNameAr?: string | null;
-  externalUrl: string;
-  trendingScore?: number | null;
-};
+export type { CartItem } from "@/lib/cart/types";
 
 const CART_EVENT = "raff-cart-updated";
 const GUEST_CART_STORAGE_KEY = "raff_guest_cart";
@@ -47,6 +33,11 @@ type CartContextValue = {
   removeItem: (id: string) => Promise<void>;
   updateQuantity: (id: string, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;
+};
+
+type CartStateOptions = {
+  initialItems?: CartItem[];
+  initialUserId?: string;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -252,11 +243,16 @@ async function mergeGuestCartToUser(userId: string): Promise<boolean> {
   }
 }
 
-function useCartState(): CartContextValue {
+function useCartState(options: CartStateOptions = {}): CartContextValue {
   const { data: session, status } = useSession();
   const userId = session?.user?.id;
-  const [items, setItems] = useState<CartItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const hasInitialSnapshot = Boolean(options.initialUserId);
+  const initialItemsRef = useRef<CartItem[]>(
+    hasInitialSnapshot ? options.initialItems ?? [] : []
+  );
+  const initialUserIdRef = useRef<string | undefined>(options.initialUserId);
+  const [items, setItems] = useState<CartItem[]>(() => initialItemsRef.current);
+  const [isLoading, setIsLoading] = useState(!hasInitialSnapshot);
   const isAddingRef = useRef(false);
   const prevUserIdRef = useRef<string | undefined>(undefined);
   const prevStatusRef = useRef<
@@ -364,6 +360,7 @@ function useCartState(): CartContextValue {
   // Prefill from sessionStorage immediately so guests don't see empty cart
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (initialUserIdRef.current) return;
     const guestCart = readGuestCart();
     if (guestCart.length > 0) {
       setItems((prev) => (areCartItemsEqual(prev, guestCart) ? prev : guestCart));
@@ -392,25 +389,40 @@ function useCartState(): CartContextValue {
   useEffect(() => {
     if (status === "loading") return;
 
-    const initializeCart = async () => {
-      setIsLoading(true);
+    const hasInitialSnapshotForUser =
+      status === "authenticated" &&
+      initialUserIdRef.current &&
+      initialUserIdRef.current === userId;
 
+    const initializeCart = async () => {
       if (userId && status === "authenticated") {
-        const guestCart = readGuestCart();
-        if (guestCart.length > 0) {
-          setItems(guestCart);
+        if (hasInitialSnapshotForUser) {
+          fetchUserCart(true).then((next) => {
+            setItems((prev) => (areCartItemsEqual(prev, next) ? prev : next));
+          });
         } else {
-          // Load from database for logged-in users
-          const userCart = await fetchUserCart(true);
-          setItems((prev) => (areCartItemsEqual(prev, userCart) ? prev : userCart));
+          setIsLoading(true);
+          const guestCart = readGuestCart();
+          if (guestCart.length > 0) {
+            setItems((prev) => (areCartItemsEqual(prev, guestCart) ? prev : guestCart));
+          } else {
+            // Load from database for logged-in users
+            const userCart = await fetchUserCart(true);
+            setItems((prev) =>
+              areCartItemsEqual(prev, userCart) ? prev : userCart
+            );
+          }
         }
       } else {
+        setIsLoading(true);
         // Load from session storage for guests
         const guestCart = readGuestCart();
         setItems((prev) => (areCartItemsEqual(prev, guestCart) ? prev : guestCart));
       }
 
-      setIsLoading(false);
+      if (!hasInitialSnapshotForUser) {
+        setIsLoading(false);
+      }
     };
 
     initializeCart();
@@ -578,8 +590,18 @@ function useCartState(): CartContextValue {
   };
 }
 
-export function CartProvider({ children }: { children: ReactNode }) {
-  const value = useCartState();
+type CartProviderProps = {
+  children: ReactNode;
+  initialItems?: CartItem[];
+  initialUserId?: string;
+};
+
+export function CartProvider({
+  children,
+  initialItems,
+  initialUserId,
+}: CartProviderProps) {
+  const value = useCartState({ initialItems, initialUserId });
   return createElement(CartContext.Provider, { value }, children);
 }
 

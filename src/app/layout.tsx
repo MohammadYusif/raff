@@ -3,6 +3,9 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { getUserCartItems } from "@/lib/cart/server";
 import { LocaleProvider } from "@/core/i18n/components/LocaleProvider";
 import { SessionProvider } from "@/components/SessionProvider"; // ← ADD THIS
 import { Toaster } from "@/shared/components/ui/toaster";
@@ -54,13 +57,20 @@ export default async function RootLayout({
   const storedLocale = cookieStore.get(LOCALE_COOKIE_NAME)?.value;
   const locale = storedLocale === "en" ? "en" : "ar";
   const dir = locale === "ar" ? "rtl" : "ltr";
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  const initialCartItems = userId ? await getUserCartItems(userId) : undefined;
 
   return (
     <html lang={locale} dir={dir} suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} overflow-x-hidden antialiased`}
       >
-        <SessionProvider>
+        <SessionProvider
+          session={session}
+          initialCartItems={initialCartItems}
+          initialCartUserId={userId}
+        >
           <LocaleProvider locale={locale}>
             <ScrollToTop />
             <ToastProvider>{children}</ToastProvider>

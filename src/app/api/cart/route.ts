@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { addCartFields } from "@/lib/products/cart";
+import { getUserCartItems } from "@/lib/cart/server";
 
 /**
  * GET /api/cart
@@ -19,66 +19,7 @@ export async function GET() {
 
     const userId = session.user.id;
 
-    // Get cart items from database
-    const cartItems = await prisma.cartItem.findMany({
-      where: { userId },
-      select: {
-        quantity: true,
-        product: {
-          select: {
-            id: true,
-            slug: true,
-            title: true,
-            titleAr: true,
-            price: true,
-            currency: true,
-            thumbnail: true,
-            images: true,
-            externalProductUrl: true,
-            sallaUrl: true,
-            zidProductId: true,
-            sallaProductId: true,
-            trendingScore: true,
-            merchant: {
-              select: {
-                name: true,
-                nameAr: true,
-                zidStoreUrl: true,
-                sallaStoreUrl: true,
-              },
-            },
-            category: {
-              select: {
-                name: true,
-                nameAr: true,
-              },
-            },
-          },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    });
-
-    // Transform to match CartItem type
-    const items = cartItems.map((item) => {
-      const product = addCartFields(item.product);
-      return {
-        id: product.id,
-        slug: product.slug,
-        name: product.title,
-        nameAr: product.titleAr,
-        image: product.imageUrl,
-        price: product.price,
-        currency: product.currency,
-        quantity: item.quantity,
-        merchantName: product.merchant.name,
-        merchantNameAr: product.merchant.nameAr,
-        categoryName: product.category?.name ?? null,
-        categoryNameAr: product.category?.nameAr ?? null,
-        externalUrl: product.externalUrl,
-        trendingScore: product.trendingScore,
-      };
-    });
+    const items = await getUserCartItems(userId);
 
     return NextResponse.json({ items });
   } catch (error) {
