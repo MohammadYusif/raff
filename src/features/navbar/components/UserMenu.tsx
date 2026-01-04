@@ -11,6 +11,14 @@ import { ArrowForward } from "@/core/i18n";
 import { toast } from "sonner";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
+export interface UserMenuProps {
+  /**
+   * Whether the menu is being rendered in mobile context
+   * This affects dropdown positioning
+   */
+  isMobile?: boolean;
+}
+
 /**
  * User Menu Component
  *
@@ -18,7 +26,7 @@ import { AnimatedButton } from "@/shared/components/AnimatedButton";
  * Works properly on both mobile and desktop
  * No duplication issues
  */
-export function UserMenu() {
+export function UserMenu({ isMobile = false }: UserMenuProps) {
   const t = useTranslations("common");
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -103,7 +111,13 @@ export function UserMenu() {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute end-0 top-full z-50 mt-2 w-56 rounded-lg border border-raff-neutral-200 bg-white shadow-lg">
+        <div
+          className={`absolute top-full z-50 mt-2 w-56 rounded-lg border border-raff-neutral-200 bg-white shadow-lg ${
+            isMobile
+              ? "start-0" // In mobile menu, align to start (left in LTR, right in RTL)
+              : "end-0" // In desktop navbar, align to end (right in LTR, left in RTL)
+          }`}
+        >
           {/* User Info */}
           <div className="border-b border-raff-neutral-200 p-4">
             <p className="truncate text-sm font-medium text-raff-neutral-900">

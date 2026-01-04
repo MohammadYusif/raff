@@ -196,6 +196,7 @@ function ToastItem({ toast, onClose }: ToastItemProps) {
           onClick={() => onClose(toast.id)}
           className={`rounded-md p-1 transition-colors hover:bg-black/5 ${color.icon}`}
           aria-label="Close notification"
+          suppressHydrationWarning
         >
           <X className="h-4 w-4" />
         </motion.button>

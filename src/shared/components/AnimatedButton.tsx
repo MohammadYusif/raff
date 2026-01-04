@@ -15,7 +15,8 @@ interface Ripple {
 }
 
 interface AnimatedButtonProps
-  extends Omit<HTMLMotionProps<"button">, "ref">,
+  extends
+    Omit<HTMLMotionProps<"button">, "ref">,
     VariantProps<typeof buttonVariants> {
   enableRipple?: boolean;
   unstyled?: boolean;
@@ -95,6 +96,7 @@ export function AnimatedButton({
       transition={{ duration: 0.1 }}
       onClick={handleClick}
       disabled={disabled}
+      suppressHydrationWarning
       {...props}
     >
       {/* Ripple effects */}
@@ -125,8 +127,10 @@ export function AnimatedButton({
  *
  * Circular button for icon-only actions
  */
-interface AnimatedIconButtonProps
-  extends Omit<HTMLMotionProps<"button">, "ref"> {
+interface AnimatedIconButtonProps extends Omit<
+  HTMLMotionProps<"button">,
+  "ref"
+> {
   icon: React.ReactNode;
   ariaLabel: string;
   size?: "sm" | "md" | "lg";
@@ -164,6 +168,7 @@ export function AnimatedIconButton({
       onClick={onClick}
       disabled={disabled}
       aria-label={ariaLabel}
+      suppressHydrationWarning
       {...props}
     >
       {icon}
@@ -176,8 +181,10 @@ export function AnimatedIconButton({
  *
  * Animated FAB with hover and tap effects
  */
-interface FloatingActionButtonProps
-  extends Omit<HTMLMotionProps<"button">, "ref"> {
+interface FloatingActionButtonProps extends Omit<
+  HTMLMotionProps<"button">,
+  "ref"
+> {
   icon: React.ReactNode;
   label?: string;
   position?: "bottom-right" | "bottom-left";
@@ -218,6 +225,7 @@ export function FloatingActionButton({
         damping: 20,
       }}
       onClick={onClick}
+      suppressHydrationWarning
       {...props}
     >
       {icon}

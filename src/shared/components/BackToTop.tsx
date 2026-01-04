@@ -1,7 +1,7 @@
 // src/shared/components/BackToTop.tsx
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
 
@@ -61,7 +61,9 @@ export function BackToTop({ showAfter = 300, className = "" }: BackToTopProps) {
           }
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={
-            shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.8, y: 20 }
+            shouldReduceMotion
+              ? { opacity: 0 }
+              : { opacity: 0, scale: 0.8, y: 20 }
           }
           whileHover={
             shouldReduceMotion
@@ -83,6 +85,7 @@ export function BackToTop({ showAfter = 300, className = "" }: BackToTopProps) {
           onClick={scrollToTop}
           className={`fixed bottom-6 end-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-raff-primary text-white shadow-lg transition-all hover:bg-raff-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-raff-primary focus-visible:ring-offset-2 ${className}`}
           aria-label="Scroll to top"
+          suppressHydrationWarning
         >
           <ArrowUp className="h-5 w-5" />
         </motion.button>
@@ -154,68 +157,25 @@ export function ScrollReveal({
   delay = 0,
   className = "",
 }: ScrollRevealProps) {
-  const [isVisible, setIsVisible] = useState(false);
   const shouldReduceMotion = useReducedMotion();
-  const elementRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (shouldReduceMotion) {
-      setIsVisible(true);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.unobserve(entry.target);
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    const element = elementRef.current;
-    if (element) {
-      observer.observe(element);
-    }
-
-    return () => {
-      if (element) {
-        observer.unobserve(element);
-      }
-    };
-  }, [delay, shouldReduceMotion]);
-
-  if (shouldReduceMotion) {
-    return <div className={className}>{children}</div>;
-  }
-
-  const directions = {
-    up: { y: 40 },
-    down: { y: -40 },
-    left: { x: 40 },
-    right: { x: -40 },
+  const directionVariants = {
+    up: { y: 40, opacity: 0 },
+    down: { y: -40, opacity: 0 },
+    left: { x: 40, opacity: 0 },
+    right: { x: -40, opacity: 0 },
   };
 
   return (
     <motion.div
-      ref={elementRef}
-      initial={{
-        opacity: 0,
-        ...directions[direction],
-      }}
-      animate={
-        isVisible
-          ? {
-              opacity: 1,
-              x: 0,
-              y: 0,
-            }
-          : {}
+      initial={
+        shouldReduceMotion ? { opacity: 0 } : directionVariants[direction]
       }
+      whileInView={{ y: 0, x: 0, opacity: 1 }}
+      viewport={{ once: true, margin: "-100px" }}
       transition={{
+        duration: shouldReduceMotion ? 0 : 0.5,
         delay,
-        duration: 0.6,
         ease: [0, 0, 0.2, 1],
       }}
       className={className}
