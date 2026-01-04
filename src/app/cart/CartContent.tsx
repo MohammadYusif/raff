@@ -1,7 +1,6 @@
 // src/app/cart/CartContent.tsx
 "use client";
 
-import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
