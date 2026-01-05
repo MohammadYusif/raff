@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { slugify } from "@/lib/utils";
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,6 +21,7 @@ export async function GET(request: NextRequest) {
     }
 
     const searchTerm = query.trim();
+    const searchSlug = slugify(searchTerm);
 
     // Build search conditions
     const searchConditions = {
@@ -35,7 +37,17 @@ export async function GET(request: NextRequest) {
             mode: "insensitive" as const,
           },
         },
-        { tags: { has: searchTerm.toLowerCase() } },
+        ...(searchSlug
+          ? [
+              {
+                productTags: {
+                  some: {
+                    tag: { slug: searchSlug },
+                  },
+                },
+              },
+            ]
+          : []),
       ],
     };
 

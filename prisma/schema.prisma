@@ -56,12 +56,12 @@ model Merchant {
   commissionRate Decimal @default(5.00) @db.Decimal(5, 2)
 
   // Relations
-  products       Product[]
-  clickTrackings ClickTracking[]
+  products            Product[]
+  clickTrackings      ClickTracking[]
   outboundClickEvents OutboundClickEvent[]
-  commissions    Commission[]
-  orders         Order[]
-  fraudSignals   FraudSignal[]
+  commissions         Commission[]
+  orders              Order[]
+  fraudSignals        FraudSignal[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -84,16 +84,16 @@ model Product {
   description   String? @db.Text
   descriptionAr String? @db.Text
 
-  price         Float
-  currency      String @default("SAR")
-  originalPrice Float?
+  price         Decimal  @db.Decimal(10, 2)
+  currency      String   @default("SAR")
+  originalPrice Decimal? @db.Decimal(10, 2)
 
   images    String[]
   thumbnail String?
 
-  categoryId String?
-  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  tags       String[]
+  categoryId  String?
+  category    Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  productTags ProductTag[]
 
   // Platform Integration
   sallaProductId     String?
@@ -118,12 +118,11 @@ model Product {
   metaTitle       String?
   metaDescription String?
 
-  orders         Order[]
-  savedByUsers   User[]          @relation("SavedProducts")
-  clickTrackings ClickTracking[]
+  orders              Order[]
+  savedByUsers        User[]               @relation("SavedProducts")
+  clickTrackings      ClickTracking[]
   outboundClickEvents OutboundClickEvent[]
-  cartItems CartItem[]
-
+  cartItems           CartItem[]
 
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -196,9 +195,9 @@ model Order {
   productId String?
   product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
 
-  quantity   Int    @default(1)
-  totalPrice Float
-  currency   String @default("SAR")
+  quantity   Int     @default(1)
+  totalPrice Decimal @db.Decimal(10, 2)
+  currency   String  @default("SAR")
 
   // Zid Integration
   zidOrderId String? @unique
@@ -266,8 +265,7 @@ model User {
   accounts        Account[]
   sessions        Session[]
   merchantProfile Merchant?
-  cartItems CartItem[]
-
+  cartItems       CartItem[]
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -348,8 +346,8 @@ model ClickTracking {
   sessionId String? @unique
 
   // Keeps "first conversion happened" info (optional but useful)
-  converted Boolean @default(false)
-  convertedCount Int @default(0)
+  converted      Boolean @default(false)
+  convertedCount Int     @default(0)
 
   // conversionId might collide across platforms, so DON'T make it globally unique.
   conversionId    String?
@@ -361,11 +359,11 @@ model ClickTracking {
   orders      Order[]
   commissions Commission[] // IMPORTANT CHANGE: one click can produce many commissions
 
-  clickedAt   DateTime      @default(now())
-  convertedAt DateTime?
+  clickedAt       DateTime      @default(now())
+  convertedAt     DateTime?
   lastConvertedAt DateTime?
-  expiresAt   DateTime
-  FraudSignal FraudSignal[]
+  expiresAt       DateTime
+  FraudSignal     FraudSignal[]
 
   @@unique([platform, conversionId])
   @@index([trackingId])
@@ -502,8 +500,8 @@ model WebhookLog {
   id             String @id @default(cuid())
   idempotencyKey String @unique
 
-  event   String
-  orderId String
+  event    String
+  orderId  String
   orderKey String?
 
   platform Platform?
@@ -512,7 +510,7 @@ model WebhookLog {
   merchantId  String?
   processed   Boolean  @default(false)
   error       String?  @db.Text
-  payloadJson String?  @db.Text
+  payload     Json?
   processedAt DateTime @default(now())
 
   @@index([idempotencyKey])
@@ -553,6 +551,44 @@ model CartItem {
 
   @@unique([userId, productId])
   @@index([userId])
+  @@index([productId])
+}
+
+// ============================================
+// TAG MODEL
+// ============================================
+
+model Tag {
+  id       String  @id @default(cuid())
+  name     String
+  nameAr   String?
+  slug     String  @unique
+  isActive Boolean @default(true)
+
+  products ProductTag[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([isActive])
+}
+
+// ============================================
+// PRODUCT TAG MODEL
+// ============================================
+
+model ProductTag {
+  productId String
+  tagId     String
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@id([productId, tagId])
+  @@index([tagId])
   @@index([productId])
 }
 

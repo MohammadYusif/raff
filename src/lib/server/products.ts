@@ -1,6 +1,7 @@
 // src/lib/server/products.ts
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { slugify } from "@/lib/utils";
 import type { PaginationMeta, ProductFilters } from "@/types";
 
 const PRODUCT_RELATIONS_INCLUDE = {
@@ -50,12 +51,23 @@ export async function fetchProductsServer(filters: ProductFilters = {}) {
   }
 
   if (search) {
+    const searchSlug = slugify(search);
     where.OR = [
       { title: { contains: search, mode: "insensitive" } },
       { titleAr: { contains: search, mode: "insensitive" } },
       { description: { contains: search, mode: "insensitive" } },
       { descriptionAr: { contains: search, mode: "insensitive" } },
-      { tags: { has: search.toLowerCase() } },
+      ...(searchSlug
+        ? [
+            {
+              productTags: {
+                some: {
+                  tag: { slug: searchSlug },
+                },
+              },
+            },
+          ]
+        : []),
     ];
   }
 

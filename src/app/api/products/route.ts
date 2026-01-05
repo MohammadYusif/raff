@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { slugify } from "@/lib/utils";
 
 export async function GET(request: NextRequest) {
   try {
@@ -41,12 +42,23 @@ export async function GET(request: NextRequest) {
     }
 
     if (search) {
+      const searchSlug = slugify(search);
       where.OR = [
         { title: { contains: search, mode: "insensitive" } },
         { titleAr: { contains: search, mode: "insensitive" } },
         { description: { contains: search, mode: "insensitive" } },
         { descriptionAr: { contains: search, mode: "insensitive" } },
-        { tags: { has: search.toLowerCase() } },
+        ...(searchSlug
+          ? [
+              {
+                productTags: {
+                  some: {
+                    tag: { slug: searchSlug },
+                  },
+                },
+              },
+            ]
+          : []),
       ];
     }
 

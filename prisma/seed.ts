@@ -4,6 +4,55 @@ import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
+type NormalizedTag = { name: string; slug: string };
+
+function slugifyTag(text: string): string {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\u0600-\u06FF-]+/g, '')
+    .replace(/--+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
+}
+
+function normalizeTags(tags: string[]): NormalizedTag[] {
+  const seen = new Map<string, string>();
+
+  for (const tag of tags) {
+    const trimmed = tag.trim();
+    if (!trimmed) continue;
+    const slug = slugifyTag(trimmed);
+    if (!slug || seen.has(slug)) continue;
+    seen.set(slug, trimmed);
+  }
+
+  return Array.from(seen, ([slug, name]) => ({ slug, name }));
+}
+
+function buildProductTags(tags: string[]) {
+  const normalized = normalizeTags(tags);
+  if (normalized.length === 0) return undefined;
+
+  return {
+    create: normalized.map((tag) => ({
+      tag: {
+        connectOrCreate: {
+          where: { slug: tag.slug },
+          create: {
+            name: tag.name,
+            nameAr: null,
+            slug: tag.slug,
+            isActive: true,
+          },
+        },
+      },
+    })),
+  };
+}
+
 async function main() {
   console.log('🌱 Starting database seed...');
   const defaultPasswordHash = await bcrypt.hash('password123', 10);
@@ -12,6 +61,8 @@ async function main() {
   console.log('🧹 Cleaning existing data...');
   await prisma.trendingLog.deleteMany();
   await prisma.order.deleteMany();
+  await prisma.productTag.deleteMany();
+  await prisma.tag.deleteMany();
   await prisma.product.deleteMany();
   await prisma.category.deleteMany();
   await prisma.account.deleteMany();
@@ -224,7 +275,7 @@ async function main() {
         clickCount: 340,
         orderCount: 89,
         slug: 'wireless-noise-cancelling-headphones',
-        tags: ['wireless', 'headphones', 'audio', 'premium'],
+        productTags: buildProductTags(['wireless', 'headphones', 'audio', 'premium']),
         metaTitle: 'Premium Wireless Headphones | Raff',
         metaDescription: 'Get the best wireless headphones with noise cancellation',
       },
@@ -252,7 +303,7 @@ async function main() {
         clickCount: 265,
         orderCount: 67,
         slug: 'smart-watch-series-8',
-        tags: ['smartwatch', 'fitness', 'health', 'tech'],
+        productTags: buildProductTags(['smartwatch', 'fitness', 'health', 'tech']),
       },
     }),
     prisma.product.create({
@@ -277,7 +328,7 @@ async function main() {
         clickCount: 180,
         orderCount: 45,
         slug: 'portable-bluetooth-speaker',
-        tags: ['speaker', 'bluetooth', 'portable', 'audio'],
+        productTags: buildProductTags(['speaker', 'bluetooth', 'portable', 'audio']),
       },
     }),
 
@@ -305,7 +356,7 @@ async function main() {
         clickCount: 310,
         orderCount: 78,
         slug: 'premium-leather-handbag',
-        tags: ['handbag', 'leather', 'fashion', 'luxury'],
+        productTags: buildProductTags(['handbag', 'leather', 'fashion', 'luxury']),
       },
     }),
     prisma.product.create({
@@ -330,7 +381,7 @@ async function main() {
         clickCount: 145,
         orderCount: 38,
         slug: 'designer-sunglasses-collection',
-        tags: ['sunglasses', 'fashion', 'accessories', 'designer'],
+        productTags: buildProductTags(['sunglasses', 'fashion', 'accessories', 'designer']),
       },
     }),
 
@@ -358,7 +409,7 @@ async function main() {
         clickCount: 220,
         orderCount: 56,
         slug: 'smart-coffee-maker',
-        tags: ['coffee', 'kitchen', 'smart', 'appliance'],
+        productTags: buildProductTags(['coffee', 'kitchen', 'smart', 'appliance']),
       },
     }),
     prisma.product.create({
@@ -383,7 +434,7 @@ async function main() {
         clickCount: 165,
         orderCount: 41,
         slug: 'non-stick-cookware-set',
-        tags: ['cookware', 'kitchen', 'cooking', 'non-stick'],
+        productTags: buildProductTags(['cookware', 'kitchen', 'cooking', 'non-stick']),
       },
     }),
 
@@ -411,7 +462,7 @@ async function main() {
         clickCount: 295,
         orderCount: 74,
         slug: 'vitamin-c-serum-set',
-        tags: ['skincare', 'beauty', 'vitamin-c', 'serum'],
+        productTags: buildProductTags(['skincare', 'beauty', 'vitamin-c', 'serum']),
       },
     }),
     prisma.product.create({
@@ -436,7 +487,7 @@ async function main() {
         clickCount: 240,
         orderCount: 62,
         slug: 'luxury-perfume-collection',
-        tags: ['perfume', 'fragrance', 'luxury', 'beauty'],
+        productTags: buildProductTags(['perfume', 'fragrance', 'luxury', 'beauty']),
       },
     }),
 
@@ -463,7 +514,7 @@ async function main() {
         clickCount: 135,
         orderCount: 34,
         slug: 'yoga-mat-premium',
-        tags: ['yoga', 'fitness', 'exercise', 'wellness'],
+        productTags: buildProductTags(['yoga', 'fitness', 'exercise', 'wellness']),
       },
     }),
     prisma.product.create({
@@ -489,7 +540,7 @@ async function main() {
         clickCount: 195,
         orderCount: 49,
         slug: 'adjustable-dumbbells-set',
-        tags: ['dumbbells', 'fitness', 'strength', 'gym'],
+        productTags: buildProductTags(['dumbbells', 'fitness', 'strength', 'gym']),
       },
     }),
 
@@ -516,7 +567,7 @@ async function main() {
         clickCount: 115,
         orderCount: 28,
         slug: 'wireless-keyboard-mouse-combo',
-        tags: ['keyboard', 'mouse', 'wireless', 'computer'],
+        productTags: buildProductTags(['keyboard', 'mouse', 'wireless', 'computer']),
       },
     }),
     prisma.product.create({
@@ -541,7 +592,7 @@ async function main() {
         clickCount: 98,
         orderCount: 24,
         slug: 'stainless-steel-water-bottle',
-        tags: ['bottle', 'hydration', 'sports', 'eco-friendly'],
+        productTags: buildProductTags(['bottle', 'hydration', 'sports', 'eco-friendly']),
       },
     }),
     prisma.product.create({
@@ -566,7 +617,7 @@ async function main() {
         clickCount: 82,
         orderCount: 19,
         slug: 'minimalist-desk-organizer',
-        tags: ['organizer', 'desk', 'office', 'bamboo'],
+        productTags: buildProductTags(['organizer', 'desk', 'office', 'bamboo']),
       },
     }),
     prisma.product.create({
@@ -591,7 +642,7 @@ async function main() {
         clickCount: 125,
         orderCount: 31,
         slug: 'scented-candle-gift-set',
-        tags: ['candles', 'home', 'fragrance', 'gift'],
+        productTags: buildProductTags(['candles', 'home', 'fragrance', 'gift']),
       },
     }),
     prisma.product.create({
@@ -617,7 +668,7 @@ async function main() {
         clickCount: 65,
         orderCount: 12,
         slug: '4k-uhd-monitor-27-inch',
-        tags: ['monitor', 'display', '4k', 'electronics'],
+        productTags: buildProductTags(['monitor', 'display', '4k', 'electronics']),
       },
     }),
     prisma.product.create({
@@ -642,7 +693,7 @@ async function main() {
         clickCount: 52,
         orderCount: 9,
         slug: 'usb-c-docking-station',
-        tags: ['usb-c', 'dock', 'laptop', 'accessories'],
+        productTags: buildProductTags(['usb-c', 'dock', 'laptop', 'accessories']),
       },
     }),
     prisma.product.create({
@@ -668,7 +719,7 @@ async function main() {
         clickCount: 42,
         orderCount: 11,
         slug: 'linen-summer-dress',
-        tags: ['dress', 'linen', 'summer', 'fashion'],
+        productTags: buildProductTags(['dress', 'linen', 'summer', 'fashion']),
       },
     }),
     prisma.product.create({
@@ -694,7 +745,7 @@ async function main() {
         clickCount: 70,
         orderCount: 16,
         slug: 'air-fryer-xl',
-        tags: ['air-fryer', 'kitchen', 'appliance', 'home'],
+        productTags: buildProductTags(['air-fryer', 'kitchen', 'appliance', 'home']),
       },
     }),
     prisma.product.create({
@@ -719,7 +770,7 @@ async function main() {
         clickCount: 40,
         orderCount: 8,
         slug: 'hydrating-face-mask-pack',
-        tags: ['skincare', 'mask', 'hydration', 'beauty'],
+        productTags: buildProductTags(['skincare', 'mask', 'hydration', 'beauty']),
       },
     }),
     prisma.product.create({
@@ -745,7 +796,7 @@ async function main() {
         clickCount: 50,
         orderCount: 10,
         slug: 'trail-running-shoes',
-        tags: ['shoes', 'running', 'outdoors', 'sports'],
+        productTags: buildProductTags(['shoes', 'running', 'outdoors', 'sports']),
       },
     }),
     prisma.product.create({
@@ -770,7 +821,7 @@ async function main() {
         clickCount: 30,
         orderCount: 6,
         slug: 'productivity-planner-2025',
-        tags: ['planner', 'stationery', 'productivity', 'books'],
+        productTags: buildProductTags(['planner', 'stationery', 'productivity', 'books']),
       },
     }),
     prisma.product.create({
@@ -795,7 +846,7 @@ async function main() {
         clickCount: 28,
         orderCount: 5,
         slug: 'premium-notebook-set',
-        tags: ['notebook', 'stationery', 'office', 'paper'],
+        productTags: buildProductTags(['notebook', 'stationery', 'office', 'paper']),
       },
     }),
   ]);
@@ -986,3 +1037,4 @@ main()
     await prisma.$disconnect();
     process.exit(1);
   });
+

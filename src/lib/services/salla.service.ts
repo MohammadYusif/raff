@@ -209,6 +209,44 @@ function resolveSallaProductUrl(product: SallaProduct): string | null {
   return product.url || product.urls?.product || null;
 }
 
+type NormalizedTag = { name: string; slug: string };
+
+function normalizeTags(tags: Array<string | null | undefined>): NormalizedTag[] {
+  const seen = new Map<string, string>();
+
+  for (const tag of tags) {
+    if (!tag) continue;
+    const trimmed = tag.trim();
+    if (!trimmed) continue;
+    const slug = slugify(trimmed);
+    if (!slug || seen.has(slug)) continue;
+    seen.set(slug, trimmed);
+  }
+
+  return Array.from(seen, ([slug, name]) => ({ slug, name }));
+}
+
+function buildProductTagsInput(tags: Array<string | null | undefined>) {
+  const normalized = normalizeTags(tags);
+  if (normalized.length === 0) return undefined;
+
+  return {
+    create: normalized.map((tag) => ({
+      tag: {
+        connectOrCreate: {
+          where: { slug: tag.slug },
+          create: {
+            name: tag.name,
+            nameAr: null,
+            slug: tag.slug,
+            isActive: true,
+          },
+        },
+      },
+    })),
+  };
+}
+
 async function upsertCategory(
   category: SallaCategory,
   counters: { created: number; updated: number }
@@ -377,6 +415,8 @@ export async function syncSallaProducts(merchant: SallaMerchantAuth): Promise<{
         typeof sallaProduct.sale_price === "number"
           ? sallaProduct.price ?? null
           : null;
+      const tagNames = sallaProduct.sku ? [sallaProduct.sku] : [];
+      const productTags = buildProductTagsInput(tagNames);
 
       const productData = {
         title: sallaProduct.name || sallaProduct.slug || sallaProduct.id,
@@ -389,7 +429,6 @@ export async function syncSallaProducts(merchant: SallaMerchantAuth): Promise<{
         images,
         thumbnail: images[0] || null,
         categoryId,
-        tags: sallaProduct.sku ? [sallaProduct.sku] : [],
         sallaProductId: sallaProduct.id,
         sallaUrl,
         externalProductUrl: externalProductUrl || undefined,
@@ -403,12 +442,21 @@ export async function syncSallaProducts(merchant: SallaMerchantAuth): Promise<{
       if (existing) {
         await prisma.product.update({
           where: { id: existing.id },
-          data: productData,
+          data: {
+            ...productData,
+            productTags: {
+              deleteMany: {},
+              ...(productTags ? { create: productTags.create } : {}),
+            },
+          },
         });
         productsUpdated += 1;
       } else {
         await prisma.product.create({
-          data: productData,
+          data: {
+            ...productData,
+            ...(productTags ? { productTags } : {}),
+          },
         });
         productsCreated += 1;
       }
@@ -491,6 +539,8 @@ export async function syncSallaProductById(
     typeof sallaProduct.sale_price === "number"
       ? sallaProduct.price ?? null
       : null;
+  const tagNames = sallaProduct.sku ? [sallaProduct.sku] : [];
+  const productTags = buildProductTagsInput(tagNames);
 
   const productData = {
     title: sallaProduct.name || sallaProduct.slug || sallaProduct.id,
@@ -502,7 +552,6 @@ export async function syncSallaProductById(
     currency: "SAR",
     images,
     thumbnail: images[0] || null,
-    tags: sallaProduct.sku ? [sallaProduct.sku] : [],
     sallaProductId: sallaProduct.id,
     sallaUrl,
     externalProductUrl: externalProductUrl || undefined,
@@ -516,13 +565,22 @@ export async function syncSallaProductById(
   if (existing) {
     await prisma.product.update({
       where: { id: existing.id },
-      data: productData,
+      data: {
+        ...productData,
+        productTags: {
+          deleteMany: {},
+          ...(productTags ? { create: productTags.create } : {}),
+        },
+      },
     });
     return { created: false, updated: true };
   }
 
   await prisma.product.create({
-    data: productData,
+    data: {
+      ...productData,
+      ...(productTags ? { productTags } : {}),
+    },
   });
   return { created: true, updated: false };
 }
