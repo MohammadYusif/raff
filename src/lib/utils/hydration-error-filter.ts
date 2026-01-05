@@ -47,8 +47,16 @@ export function filterHydrationErrors() {
     );
   };
 
-  console.error = (...args: any[]) => {
-    const message = args[0]?.toString() || "";
+  const getMessageFromArgs = (args: readonly unknown[]): string => {
+    if (args.length === 0) return "";
+    const first = args[0];
+    if (typeof first === "string") return first;
+    if (first instanceof Error) return first.message;
+    return String(first ?? "");
+  };
+
+  console.error = (...args: unknown[]) => {
+    const message = getMessageFromArgs(args);
 
     // Only filter hydration errors caused by extensions
     if (isHydrationMessage(message) && isExtensionRelatedError(message)) {
@@ -60,8 +68,8 @@ export function filterHydrationErrors() {
     originalError.apply(console, args);
   };
 
-  console.warn = (...args: any[]) => {
-    const message = args[0]?.toString() || "";
+  console.warn = (...args: unknown[]) => {
+    const message = getMessageFromArgs(args);
 
     // Only filter hydration warnings caused by extensions
     if (isHydrationMessage(message) && isExtensionRelatedError(message)) {
@@ -104,8 +112,15 @@ export function filterHydrationErrorsWithLogging() {
 
   const suppressedErrors: string[] = [];
 
-  console.error = (...args: any[]) => {
-    const message = args[0]?.toString() || "";
+  console.error = (...args: unknown[]) => {
+    const message =
+      args.length > 0
+        ? typeof args[0] === "string"
+          ? args[0]
+          : args[0] instanceof Error
+            ? args[0].message
+            : String(args[0] ?? "")
+        : "";
 
     const isHydration =
       message.includes("Hydration") || message.includes("did not match");
@@ -131,6 +146,12 @@ export function filterHydrationErrorsWithLogging() {
 
   // Expose count for debugging
   if (process.env.NODE_ENV === "development") {
-    (window as any).__raffSuppressedHydrationErrors = suppressedErrors;
+    window.__raffSuppressedHydrationErrors = suppressedErrors;
+  }
+}
+
+declare global {
+  interface Window {
+    __raffSuppressedHydrationErrors?: string[];
   }
 }
