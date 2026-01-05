@@ -9,7 +9,7 @@ import { Card, CardContent, Badge } from "@/shared/components/ui";
 import { easeOut } from "framer-motion";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
 import { useCart } from "@/lib/hooks/useCart";
-import { formatPrice, getLocalizedText } from "@/lib/utils";
+import { formatPrice, getLocalizedText, toNumber, type NumberLike } from "@/lib/utils";
 import { toast } from "sonner";
 
 interface ProductCardProps {
@@ -18,8 +18,8 @@ interface ProductCardProps {
     slug: string;
     title: string;
     titleAr?: string | null;
-    price: number;
-    originalPrice?: number | null;
+    price: NumberLike;
+    originalPrice?: NumberLike | null;
     trendingScore: number;
     merchant: {
       name: string;
@@ -70,16 +70,20 @@ export function ProductCard({
     product.merchant.name
   );
 
+  const price = toNumber(product.price);
+  const originalPrice =
+    product.originalPrice !== undefined && product.originalPrice !== null
+      ? toNumber(product.originalPrice)
+      : null;
+
   const categoryName = product.category
     ? getLocalizedText(locale, product.category.nameAr, product.category.name)
     : null;
 
-  const hasDiscount =
-    product.originalPrice && product.originalPrice > product.price;
+  const hasDiscount = originalPrice !== null && originalPrice > price;
   const discountPercentage = hasDiscount
     ? Math.round(
-        ((product.originalPrice! - product.price) / product.originalPrice!) *
-          100
+        ((originalPrice - price) / originalPrice) * 100
       )
     : 0;
 
@@ -93,7 +97,7 @@ export function ProductCard({
       name: product.title,
       nameAr: product.titleAr,
       image: product.imageUrl || null,
-      price: product.price,
+      price,
       currency: product.currency || "SAR",
       merchantName: product.merchant.name,
       merchantNameAr: product.merchant.nameAr,
@@ -238,15 +242,15 @@ export function ProductCard({
             <div className="mt-auto">
               <div className="flex items-baseline gap-2">
                 <span className="text-xl font-bold text-raff-primary">
-                  {formatPrice(product.price, locale, product.currency || "SAR", {
+                  {formatPrice(price, locale, product.currency || "SAR", {
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 2,
                   })}
                 </span>
-                {hasDiscount && (
+                {hasDiscount && originalPrice !== null && (
                   <span className="text-sm text-raff-neutral-500 line-through">
                     {formatPrice(
-                      product.originalPrice!,
+                      originalPrice,
                       locale,
                       product.currency || "SAR",
                       {

@@ -19,15 +19,15 @@ import { ArrowBackward } from "@/core/i18n";
 import { getMerchantStoreUrlFromObject } from "@/lib/platform/store";
 import type { MerchantWithCount } from "@/types";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
-import { getLocalizedText } from "@/lib/utils";
+import { getLocalizedText, type NumberLike } from "@/lib/utils";
 
 interface Product {
   id: string;
   title: string;
   titleAr: string | null;
   slug: string;
-  price: number;
-  originalPrice: number | null;
+  price: NumberLike;
+  originalPrice: NumberLike | null;
   trendingScore: number;
   category: {
     name: string;

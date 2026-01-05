@@ -54,6 +54,35 @@ export function getLocalizedText(
   return fallbackValue;
 }
 
+export type NumberLike = number | string | { toNumber: () => number };
+
+function hasToNumber(value: unknown): value is { toNumber: () => number } {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "toNumber" in value &&
+    typeof (value as { toNumber?: unknown }).toNumber === "function"
+  );
+}
+
+export function toNumber(
+  value: NumberLike | null | undefined,
+  fallback: number = 0
+): number {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : fallback;
+  }
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
+  if (hasToNumber(value)) {
+    const parsed = value.toNumber();
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
+  return fallback;
+}
+
 /**
  * Smooth scroll utility function
  * @param targetId - CSS selector (e.g., "#products", "#trending")
@@ -75,7 +104,7 @@ export const smoothScroll = (targetId: string) => {
  * @param currency - Currency code (default: SAR)
  */
 export function formatPrice(
-  price: number,
+  price: NumberLike,
   locale: string = "ar",
   currency: string = "SAR",
   options?: {
@@ -85,12 +114,13 @@ export function formatPrice(
 ): string {
   const minimumFractionDigits = options?.minimumFractionDigits ?? 2;
   const maximumFractionDigits = options?.maximumFractionDigits;
+  const normalizedPrice = toNumber(price);
   return getPriceFormatter(
     locale,
     currency,
     minimumFractionDigits,
     maximumFractionDigits
-  ).format(price);
+  ).format(normalizedPrice);
 }
 
 /**

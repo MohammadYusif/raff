@@ -17,15 +17,15 @@ import { ProductCard } from "@/shared/components/ProductCard";
 import { Search, Package } from "lucide-react";
 import { ArrowBackward } from "@/core/i18n";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
-import { getLocalizedText } from "@/lib/utils";
+import { getLocalizedText, type NumberLike } from "@/lib/utils";
 
 interface Product {
   id: string;
   title: string;
   titleAr: string | null;
   slug: string;
-  price: number;
-  originalPrice: number | null;
+  price: NumberLike;
+  originalPrice: NumberLike | null;
   trendingScore: number;
   merchant: {
     name: string;
