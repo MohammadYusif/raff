@@ -52,7 +52,7 @@ export async function getUserCartItems(userId: string): Promise<CartItem[]> {
       name: product.title,
       nameAr: product.titleAr,
       image: product.imageUrl,
-      price: product.price,
+      price: Number(product.price),
       currency: product.currency,
       quantity: item.quantity,
       merchantName: product.merchant.name,

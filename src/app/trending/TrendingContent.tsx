@@ -14,13 +14,15 @@ import { TrendingUp, Flame } from "lucide-react";
 import { ArrowForward, ArrowBackward } from "@/core/i18n";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
+import { Decimal } from "@prisma/client/runtime/library";
+
 interface Product {
   id: string;
   title: string;
   titleAr: string | null;
   slug: string;
-  price: number;
-  originalPrice: number | null;
+  price: number | Decimal;
+  originalPrice: number | Decimal | null;
   trendingScore: number;
   merchant: {
     name: string;

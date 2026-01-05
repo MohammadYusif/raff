@@ -578,7 +578,7 @@ export async function logProcessedWebhook(
       merchantId: data.merchantId,
       processed: data.processed,
       error: data.error ?? null,
-      payloadJson: sanitizedPayload,
+      payload: sanitizedPayload ? JSON.parse(sanitizedPayload) : undefined,
       processedAt: new Date(),
     },
     update: {

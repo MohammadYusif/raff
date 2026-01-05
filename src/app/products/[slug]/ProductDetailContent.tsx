@@ -81,7 +81,7 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
         name: product.title,
         nameAr: product.titleAr,
         image: product.imageUrl || null,
-        price: product.price,
+        price: Number(product.price),
         currency: product.currency,
         merchantName,
         merchantNameAr: product.merchant.nameAr,

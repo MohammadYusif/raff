@@ -126,8 +126,8 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const totalRevenue = revenueData._sum.totalPrice || 0;
-    const recentRevenue = recentRevenueData._sum.totalPrice || 0;
+    const totalRevenue = Number(revenueData._sum.totalPrice || 0);
+    const recentRevenue = Number(recentRevenueData._sum.totalPrice || 0);
 
     const totalViews = productStats._sum.viewCount || 0;
     const totalClicks = productStats._sum.clickCount || 0;
@@ -172,11 +172,11 @@ export async function GET(request: NextRequest) {
         ? (((recentOrders - previousOrders) / previousOrders) * 100).toFixed(1)
         : "0.0";
 
+    const previousRevenueValue = Number(previousRevenue._sum.totalPrice || 0);
     const revenueGrowth =
-      (previousRevenue._sum.totalPrice || 0) > 0
+      previousRevenueValue > 0
         ? (
-            ((recentRevenue - (previousRevenue._sum.totalPrice || 0)) /
-              (previousRevenue._sum.totalPrice || 0)) *
+            ((recentRevenue - previousRevenueValue) / previousRevenueValue) *
             100
           ).toFixed(1)
         : "0.0";
@@ -206,7 +206,7 @@ export async function GET(request: NextRequest) {
           clicks: product.clickCount,
           orders: product.orderCount,
           trendingScore: product.trendingScore,
-          price: product.price,
+          price: Number(product.price),
           thumbnail: product.thumbnail,
         })),
       },
