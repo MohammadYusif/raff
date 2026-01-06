@@ -1,6 +1,7 @@
 // src/lib/sync/sallaProducts.ts
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { notifyProductOutOfStock } from "@/lib/services/notification.service";
 import { slugify } from "@/lib/utils";
 import {
   moneyAmount,
@@ -138,7 +139,7 @@ export async function syncSallaProductsForMerchant(
 }> {
   const merchant = await prisma.merchant.findUnique({
     where: { id: merchantId },
-    select: { id: true, sallaAccessToken: true },
+    select: { id: true, userId: true, sallaAccessToken: true },
   });
 
   if (!merchant?.sallaAccessToken) {
@@ -193,18 +194,19 @@ export async function syncSallaProductsForMerchant(
       // Quantity: prefer product.quantity, fallback to sum of sku.stock_quantity.
       const quantity = normalizeQuantity(product);
       const inStock = quantity === null ? true : quantity > 0;
-      const isActive =
+      const baseIsActive =
         typeof product.is_available === "boolean"
           ? product.is_available
           : typeof product.status === "string"
           ? product.status.trim().toLowerCase() !== "hidden"
           : true;
+      const isActive = baseIsActive && (quantity === null || quantity > 0);
 
       const existing = await prisma.product.findUnique({
         where: {
           sallaProductId_merchantId: { sallaProductId, merchantId },
         },
-        select: { id: true, slug: true },
+        select: { id: true, slug: true, inStock: true },
       });
 
       const slug = await resolveProductSlug(
@@ -235,12 +237,13 @@ export async function syncSallaProductsForMerchant(
         slug,
       };
 
-      await prisma.product.upsert({
+      const savedProduct = await prisma.product.upsert({
         where: {
           sallaProductId_merchantId: { sallaProductId, merchantId },
         },
         create: data,
         update: data,
+        select: { id: true },
       });
 
       if (existing?.id) {
@@ -249,6 +252,19 @@ export async function syncSallaProductsForMerchant(
         createdCount += 1;
       }
       syncedCount += 1;
+
+      if (
+        quantity === 0 &&
+        merchant.userId &&
+        existing?.id &&
+        existing.inStock !== false
+      ) {
+        await notifyProductOutOfStock(
+          merchant.userId,
+          savedProduct.id,
+          title || "Product"
+        );
+      }
     }
 
     const currentPage = pagination.currentPage ?? page;
