@@ -13,10 +13,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { MerchantStatus, UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getSallaConfig } from "@/lib/platform/config";
-import { normalizeStoreUrl } from "@/lib/platform/store";
 import { registerSallaWebhooks } from "@/lib/platform/webhook-register";
 import { verifyOAuthState } from "@/lib/platform/oauth";
 import { createRegistrationToken } from "@/lib/registrationToken";
+import { fetchSallaStoreInfo } from "@/lib/integrations/salla/store";
+import { syncSallaStoreInfo } from "@/lib/sync/sallaStore";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
@@ -89,11 +90,6 @@ async function handleJoinFlow(
   const tokenExpiry = expiresIn
     ? new Date(Date.now() + expiresIn * 1000)
     : null;
-  let sallaStoreId =
-    tokenData.store_id || tokenData.storeId || tokenData.store?.id || null;
-  let sallaStoreUrl =
-    tokenData.store_url || tokenData.storeUrl || tokenData.store?.url || null;
-
   if (!accessToken) {
     return NextResponse.json(
       { error: "Salla access token missing" },
@@ -101,39 +97,20 @@ async function handleJoinFlow(
     );
   }
 
-  // Fetch store information from Salla API
-  let storeName = "Salla Store";
-  let storeEmail = null;
-
+  let storeInfo;
   try {
-    const profileResponse = await fetch(`${config.apiBaseUrl}/store/info`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        Accept: "application/json",
-      },
-    });
-
-    if (profileResponse.ok) {
-      const profileData = await profileResponse.json();
-      const profile = profileData.data || profileData;
-      storeName = profile?.name || storeName;
-      storeEmail = profile?.email || null;
-      if (!sallaStoreId && profile?.id) {
-        sallaStoreId = String(profile.id);
-      }
-      const profileStoreUrl =
-        profile?.domain ||
-        profile?.store_url ||
-        profile?.storeUrl ||
-        profile?.url ||
-        null;
-      if (!sallaStoreUrl && profileStoreUrl) {
-        sallaStoreUrl = profileStoreUrl;
-      }
-    }
+    storeInfo = await fetchSallaStoreInfo(accessToken);
   } catch (error) {
-    console.error("Failed to fetch Salla store info:", error);
+    const message =
+      error instanceof Error ? error.message : "Failed to fetch Salla store info";
+    const status = message === "Salla token invalid or expired" ? 401 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
+
+  const sallaStoreId = String(storeInfo.id);
+  const sallaStoreUrl = storeInfo.domain ?? null;
+  const storeName = storeInfo.name || "Salla Store";
+  const storeEmail = storeInfo.email || null;
 
   // Generate email if not provided
   const email =
@@ -154,12 +131,24 @@ async function handleJoinFlow(
     await prisma.merchant.update({
       where: { id: existingMerchant.id },
       data: {
+        sallaStoreId,
+        sallaStoreUrl: sallaStoreUrl || undefined,
         sallaAccessToken: accessToken,
         sallaRefreshToken: refreshToken || null,
         sallaTokenExpiry: tokenExpiry,
-        sallaStoreUrl: normalizeStoreUrl(sallaStoreUrl) || undefined,
       },
     });
+
+    try {
+      await syncSallaStoreInfo(existingMerchant.id);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to sync Salla store info";
+      const status = message === "Salla token invalid or expired" ? 401 : 500;
+      return NextResponse.json({ error: message }, { status });
+    }
 
     // Try to register webhooks
     try {
@@ -203,17 +192,30 @@ async function handleJoinFlow(
         nameAr: storeName,
         email,
         status: MerchantStatus.APPROVED, // Auto-approved since Salla verified them
-        isActive: true,
-        sallaStoreId: sallaStoreId || undefined,
-        sallaStoreUrl: normalizeStoreUrl(sallaStoreUrl) || undefined,
+        isActive: storeInfo.status === "active",
+        sallaStoreId,
+        sallaStoreUrl: sallaStoreUrl || undefined,
         sallaAccessToken: accessToken,
         sallaRefreshToken: refreshToken || null,
         sallaTokenExpiry: tokenExpiry,
+        logo: storeInfo.avatar || null,
+        descriptionAr: storeInfo.description || null,
       },
     });
 
     return { user, merchant };
   });
+
+  try {
+    await syncSallaStoreInfo(merchant.id);
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to sync Salla store info";
+    const status = message === "Salla token invalid or expired" ? 401 : 500;
+    return NextResponse.json({ error: message }, { status });
+  }
 
   // Try to register webhooks
   try {
@@ -289,46 +291,11 @@ async function handleRegularFlow(
   const tokenExpiry = expiresIn
     ? new Date(Date.now() + expiresIn * 1000)
     : null;
-  let sallaStoreId =
-    tokenData.store_id || tokenData.storeId || tokenData.store?.id || null;
-  const sallaStoreUrl =
-    tokenData.store_url || tokenData.storeUrl || tokenData.store?.url || null;
-
   if (!accessToken) {
     return NextResponse.json(
       { error: "Salla access token missing" },
       { status: 400 }
     );
-  }
-
-  let normalizedStoreUrl = normalizeStoreUrl(sallaStoreUrl);
-
-  try {
-    const profileResponse = await fetch(`${config.apiBaseUrl}/store/info`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        Accept: "application/json",
-      },
-    });
-
-    if (profileResponse.ok) {
-      const profileData = await profileResponse.json();
-      const profile = profileData.data || profileData;
-      if (!sallaStoreId && profile?.id) {
-        sallaStoreId = String(profile.id);
-      }
-      const profileStoreUrl =
-        profile?.domain ||
-        profile?.store_url ||
-        profile?.storeUrl ||
-        profile?.url ||
-        null;
-      if (!normalizedStoreUrl && profileStoreUrl) {
-        normalizedStoreUrl = normalizeStoreUrl(profileStoreUrl);
-      }
-    }
-  } catch (error) {
-    console.error("Failed to fetch Salla store info:", error);
   }
 
   const merchant = await prisma.merchant.findUnique({
@@ -353,13 +320,22 @@ async function handleRegularFlow(
   await prisma.merchant.update({
     where: { id: payload.merchantId },
     data: {
-      sallaStoreId: sallaStoreId || undefined,
-      sallaStoreUrl: normalizedStoreUrl || undefined,
       sallaAccessToken: accessToken,
       sallaRefreshToken: refreshToken || null,
       sallaTokenExpiry: tokenExpiry,
     },
   });
+
+  try {
+    await syncSallaStoreInfo(payload.merchantId);
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to sync Salla store info";
+    const status = message === "Salla token invalid or expired" ? 401 : 500;
+    return NextResponse.json({ error: message }, { status });
+  }
 
   try {
     await registerSallaWebhooks({ accessToken });

@@ -3,7 +3,7 @@ import { CommissionStatus, type Merchant } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getSallaWebhookConfig } from "@/lib/platform/config";
 import { syncSallaProductById } from "@/lib/services/salla.service";
-import { syncSallaProductsForMerchant } from "@/lib/sync/sallaProducts";
+import { syncSallaStoreInfo } from "@/lib/sync/sallaStore";
 import {
   normalizeSallaOrderWebhook,
   logProcessedWebhook,
@@ -371,10 +371,11 @@ export async function POST(request: NextRequest) {
       if (storeIdString) {
         const merchant = await prisma.merchant.findUnique({
           where: { sallaStoreId: storeIdString },
+          select: { id: true, sallaAccessToken: true },
         });
 
         if (merchant?.sallaAccessToken) {
-          await syncSallaProductsForMerchant(merchant.id);
+          await syncSallaStoreInfo(merchant.id);
         } else {
           console.warn("Salla app.installed: missing access token for store", {
             storeId: storeIdString,

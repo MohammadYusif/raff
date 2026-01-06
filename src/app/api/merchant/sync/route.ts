@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { syncZidProducts } from "@/lib/services/zid.service";
 import { syncSallaProductsForMerchant } from "@/lib/sync/sallaProducts";
+import { syncSallaStoreInfo } from "@/lib/sync/sallaStore";
 import { requireMerchant } from "@/lib/auth/guards";
 
 const shouldDebugSync = process.env.RAFF_SYNC_DEBUG === "true";
@@ -218,6 +219,7 @@ export async function POST(request: NextRequest) {
           zidStoreUrl: merchant.zidStoreUrl,
         });
       } else {
+        await syncSallaStoreInfo(merchant.id);
         const sallaResult = await syncSallaProductsForMerchant(merchant.id);
         syncSummary = {
           productsCreated: sallaResult.createdCount,
