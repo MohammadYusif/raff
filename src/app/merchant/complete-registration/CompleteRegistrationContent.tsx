@@ -6,6 +6,8 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useTranslations } from "next-intl";
+import { PageLayout } from "@/shared/components/layouts";
 import {
   Container,
   Card,
@@ -19,10 +21,10 @@ import {
   Mail,
   Lock,
   User,
-  ArrowRight,
   AlertCircle,
   Store,
 } from "lucide-react";
+import { ArrowForward } from "@/core/i18n";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
 import { toast } from "sonner";
 
@@ -44,6 +46,7 @@ const completeRegistrationSchema = z.object({
 type CompleteRegistrationForm = z.infer<typeof completeRegistrationSchema>;
 
 export function CompleteRegistrationContent() {
+  const t = useTranslations("completeRegistration");
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -116,36 +119,39 @@ export function CompleteRegistrationContent() {
 
   if (!tokenValid) {
     return (
-      <div className="min-h-screen bg-raff-neutral-50 flex items-center justify-center">
-        <Container className="py-12">
-          <Card className="mx-auto max-w-md border-raff-danger/20 bg-raff-danger/5">
-            <CardContent className="p-8 text-center">
-              <div className="mb-4 flex justify-center">
-                <div className="rounded-full bg-raff-danger/10 p-3">
-                  <AlertCircle className="h-8 w-8 text-raff-danger" />
+      <PageLayout navbarVariant="minimal">
+        <div className="min-h-screen bg-raff-neutral-50 flex items-center justify-center">
+          <Container className="py-12">
+            <Card className="mx-auto max-w-md border-raff-danger/20 bg-raff-danger/5">
+              <CardContent className="p-8 text-center">
+                <div className="mb-4 flex justify-center">
+                  <div className="rounded-full bg-raff-danger/10 p-3">
+                    <AlertCircle className="h-8 w-8 text-raff-danger" />
+                  </div>
                 </div>
-              </div>
-              <h2 className="mb-2 text-xl font-semibold text-raff-primary">
-                Invalid Registration Link
-              </h2>
-              <p className="mb-6 text-raff-neutral-600">
-                This registration link is invalid or has expired.
-              </p>
-              <AnimatedButton
-                onClick={() => router.push("/merchant/join")}
-                className="w-full"
-              >
-                Start Over
-              </AnimatedButton>
-            </CardContent>
-          </Card>
-        </Container>
-      </div>
+                <h2 className="mb-2 text-xl font-semibold text-raff-primary">
+                  Invalid Registration Link
+                </h2>
+                <p className="mb-6 text-raff-neutral-600">
+                  This registration link is invalid or has expired.
+                </p>
+                <AnimatedButton
+                  onClick={() => router.push("/merchant/join")}
+                  className="w-full"
+                >
+                  Start Over
+                </AnimatedButton>
+              </CardContent>
+            </Card>
+          </Container>
+        </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-raff-neutral-50">
+    <PageLayout navbarVariant="minimal">
+      <div className="min-h-screen bg-raff-neutral-50">
       {/* Header */}
       <div className="border-b border-raff-neutral-200 bg-white">
         <Container className="py-6">
@@ -331,7 +337,7 @@ export function CompleteRegistrationContent() {
                   ) : (
                     <>
                       Complete Registration
-                      <ArrowRight className="h-5 w-5" />
+                      <ArrowForward className="h-5 w-5" />
                     </>
                   )}
                 </AnimatedButton>
@@ -359,6 +365,7 @@ export function CompleteRegistrationContent() {
           </Card>
         </div>
       </Container>
-    </div>
+      </div>
+    </PageLayout>
   );
 }

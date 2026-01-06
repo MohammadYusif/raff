@@ -189,7 +189,7 @@ async function handleJoinFlow(
         name: storeName,
         nameAr: storeName,
         email,
-        status: MerchantStatus.PENDING, // Requires admin approval
+        status: MerchantStatus.APPROVED, // Auto-approved since Salla verified them
         isActive: true,
         sallaStoreId: sallaStoreId || undefined,
         sallaStoreUrl: normalizeStoreUrl(sallaStoreUrl) || undefined,
