@@ -95,9 +95,9 @@ async function handleJoinFlow(
     tokenData.managerToken ||
     tokenData.x_manager_token ||
     null;
-  const zidStoreId =
+  let zidStoreId =
     tokenData.store_id || tokenData.storeId || tokenData.store?.id || null;
-  const zidStoreUrl =
+  let zidStoreUrl =
     tokenData.store_url || tokenData.storeUrl || tokenData.store?.url || null;
 
   if (!accessToken) {
@@ -122,8 +122,12 @@ async function handleJoinFlow(
     if (profile) {
       storeName = profile.name || storeName;
       storeEmail = profile.email || null;
-      if (profile.domain) {
-        storeUrl = normalizeStoreUrl(profile.domain);
+      if (!zidStoreId && profile.id) {
+        zidStoreId = String(profile.id);
+      }
+      const profileStoreUrl = profile.domain || null;
+      if (profileStoreUrl) {
+        storeUrl = normalizeStoreUrl(profileStoreUrl);
       }
     }
   } catch (error) {
@@ -291,9 +295,9 @@ async function handleRegularFlow(
     tokenData.managerToken ||
     tokenData.x_manager_token ||
     null;
-  const zidStoreId =
+  let zidStoreId =
     tokenData.store_id || tokenData.storeId || tokenData.store?.id || null;
-  const zidStoreUrl =
+  let zidStoreUrl =
     tokenData.store_url || tokenData.storeUrl || tokenData.store?.url || null;
 
   if (!accessToken) {
@@ -331,8 +335,13 @@ async function handleRegularFlow(
       managerToken,
     });
     const profile = await service.fetchStoreProfile();
-    if (profile?.domain) {
-      storeUrl = normalizeStoreUrl(profile.domain);
+    if (profile) {
+      if (!zidStoreId && profile.id) {
+        zidStoreId = String(profile.id);
+      }
+      if (profile.domain) {
+        storeUrl = normalizeStoreUrl(profile.domain);
+      }
     }
   } catch (error) {
     console.error("Failed to fetch Zid profile:", error);

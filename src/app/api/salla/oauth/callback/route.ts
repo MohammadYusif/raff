@@ -89,9 +89,9 @@ async function handleJoinFlow(
   const tokenExpiry = expiresIn
     ? new Date(Date.now() + expiresIn * 1000)
     : null;
-  const sallaStoreId =
+  let sallaStoreId =
     tokenData.store_id || tokenData.storeId || tokenData.store?.id || null;
-  const sallaStoreUrl =
+  let sallaStoreUrl =
     tokenData.store_url || tokenData.storeUrl || tokenData.store?.url || null;
 
   if (!accessToken) {
@@ -115,8 +115,21 @@ async function handleJoinFlow(
 
     if (profileResponse.ok) {
       const profileData = await profileResponse.json();
-      storeName = profileData.data?.name || profileData.name || storeName;
-      storeEmail = profileData.data?.email || profileData.email || null;
+      const profile = profileData.data || profileData;
+      storeName = profile?.name || storeName;
+      storeEmail = profile?.email || null;
+      if (!sallaStoreId && profile?.id) {
+        sallaStoreId = String(profile.id);
+      }
+      const profileStoreUrl =
+        profile?.domain ||
+        profile?.store_url ||
+        profile?.storeUrl ||
+        profile?.url ||
+        null;
+      if (!sallaStoreUrl && profileStoreUrl) {
+        sallaStoreUrl = profileStoreUrl;
+      }
     }
   } catch (error) {
     console.error("Failed to fetch Salla store info:", error);
@@ -276,9 +289,9 @@ async function handleRegularFlow(
   const tokenExpiry = expiresIn
     ? new Date(Date.now() + expiresIn * 1000)
     : null;
-  const sallaStoreId =
+  let sallaStoreId =
     tokenData.store_id || tokenData.storeId || tokenData.store?.id || null;
-  const sallaStoreUrl =
+  let sallaStoreUrl =
     tokenData.store_url || tokenData.storeUrl || tokenData.store?.url || null;
 
   if (!accessToken) {
@@ -286,6 +299,36 @@ async function handleRegularFlow(
       { error: "Salla access token missing" },
       { status: 400 }
     );
+  }
+
+  let normalizedStoreUrl = normalizeStoreUrl(sallaStoreUrl);
+
+  try {
+    const profileResponse = await fetch(`${config.apiBaseUrl}/store/info`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+      },
+    });
+
+    if (profileResponse.ok) {
+      const profileData = await profileResponse.json();
+      const profile = profileData.data || profileData;
+      if (!sallaStoreId && profile?.id) {
+        sallaStoreId = String(profile.id);
+      }
+      const profileStoreUrl =
+        profile?.domain ||
+        profile?.store_url ||
+        profile?.storeUrl ||
+        profile?.url ||
+        null;
+      if (!normalizedStoreUrl && profileStoreUrl) {
+        normalizedStoreUrl = normalizeStoreUrl(profileStoreUrl);
+      }
+    }
+  } catch (error) {
+    console.error("Failed to fetch Salla store info:", error);
   }
 
   const merchant = await prisma.merchant.findUnique({
@@ -311,7 +354,7 @@ async function handleRegularFlow(
     where: { id: payload.merchantId },
     data: {
       sallaStoreId: sallaStoreId || undefined,
-      sallaStoreUrl: normalizeStoreUrl(sallaStoreUrl) || undefined,
+      sallaStoreUrl: normalizedStoreUrl || undefined,
       sallaAccessToken: accessToken,
       sallaRefreshToken: refreshToken || null,
       sallaTokenExpiry: tokenExpiry,

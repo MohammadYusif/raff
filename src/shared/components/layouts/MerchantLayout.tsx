@@ -1,86 +1,67 @@
 // src/shared/components/layouts/MerchantLayout.tsx
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { useLocale as useLocaleHook, ChevronForward } from "@/core/i18n";
 import { useMerchantProfile } from "@/lib/hooks/useMerchantApi";
 import {
   LayoutDashboard,
   Package,
   BarChart3,
-  Link2,
-  Target,
-  Users,
-  Bell,
   Settings,
   Plug,
+  ShoppingBag,
   Menu,
   X,
+  Globe,
 } from "lucide-react";
-import { ChevronForward } from "@/core/i18n";
 import { Badge } from "@/shared/components/ui";
-import { useState } from "react";
+import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
 interface MerchantLayoutProps {
   children: ReactNode;
 }
 
 interface NavItem {
-  icon: ReactNode;
+  icon: typeof LayoutDashboard;
   label: string;
   href: string;
-  badge?: string;
 }
 
 const navItems: NavItem[] = [
   {
-    icon: <LayoutDashboard className="h-5 w-5" />,
-    label: "Dashboard",
+    icon: LayoutDashboard,
+    label: "dashboard",
     href: "/merchant/dashboard",
   },
   {
-    icon: <Package className="h-5 w-5" />,
-    label: "Products",
+    icon: Package,
+    label: "products",
     href: "/merchant/products",
   },
   {
-    icon: <BarChart3 className="h-5 w-5" />,
-    label: "Analytics",
+    icon: BarChart3,
+    label: "analytics",
     href: "/merchant/analytics",
   },
   {
-    icon: <Link2 className="h-5 w-5" />,
-    label: "Traffic Sources",
-    href: "/merchant/traffic-sources",
+    icon: ShoppingBag,
+    label: "orders",
+    href: "/merchant/orders",
   },
   {
-    icon: <Target className="h-5 w-5" />,
-    label: "Campaigns",
-    href: "/merchant/campaigns",
-  },
-  {
-    icon: <Users className="h-5 w-5" />,
-    label: "Customer Insights",
-    href: "/merchant/customer-insights",
-  },
-  {
-    icon: <Bell className="h-5 w-5" />,
-    label: "Notifications",
-    href: "/merchant/notifications",
-    badge: "3",
-  },
-  {
-    icon: <Settings className="h-5 w-5" />,
-    label: "Settings",
+    icon: Settings,
+    label: "settings",
     href: "/merchant/settings",
   },
   {
-    icon: <Plug className="h-5 w-5" />,
-    label: "Integrations",
+    icon: Plug,
+    label: "integrations",
     href: "/merchant/integrations",
   },
 ];
@@ -89,6 +70,9 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
   const { data: session } = useSession();
   const pathname = usePathname();
   const locale = useLocale();
+  const { switchLocale } = useLocaleHook();
+  const t = useTranslations("merchantSidebar");
+  const layoutT = useTranslations("merchantLayout");
   const isRtl = locale === "ar";
   const merchantId = session?.user?.merchantId ?? null;
   const { profile } = useMerchantProfile(Boolean(merchantId));
@@ -182,12 +166,12 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
                     }}
                   />
                   <span className="font-semibold text-raff-primary">
-                    {profile?.name || "Your Store"}
+                    {profile?.name || layoutT("storeFallback")}
                   </span>
                 </div>
                 <Badge variant="success" className="gap-1 text-xs">
                   <div className="h-2 w-2 animate-pulse rounded-full bg-raff-success" />
-                  Connected
+                  {layoutT("connected")}
                 </Badge>
               </div>
             )}
@@ -197,6 +181,7 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
           <nav className="flex-1 overflow-y-auto p-4">
             <ul className="space-y-1">
               {navItems.map((item) => {
+                const Icon = item.icon;
                 const isActive = pathname === item.href;
                 return (
                   <li key={item.href}>
@@ -210,17 +195,10 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
                       onClick={() => setSidebarOpen(false)}
                     >
                       <div className="flex items-center gap-3">
-                        {item.icon}
-                        <span className="font-medium">{item.label}</span>
+                        <Icon className="h-5 w-5" />
+                        <span className="font-medium">{t(item.label)}</span>
                       </div>
-                      {item.badge && !isActive && (
-                        <Badge variant="error" className="text-xs">
-                          {item.badge}
-                        </Badge>
-                      )}
-                      {isActive && (
-                        <ChevronForward className="h-4 w-4" />
-                      )}
+                      {isActive && <ChevronForward className="h-4 w-4" />}
                     </Link>
                   </li>
                 );
@@ -230,8 +208,19 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
 
           {/* Footer */}
           <div className="border-t border-raff-neutral-200 p-4">
-            <div className="text-xs text-raff-neutral-500">
-              <p>Logged in as</p>
+            <AnimatedButton
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start gap-3"
+              onClick={() => switchLocale(locale === "ar" ? "en" : "ar")}
+            >
+              <Globe className="h-4 w-4" />
+              {locale === "ar"
+                ? layoutT("languageEnglish")
+                : layoutT("languageArabic")}
+            </AnimatedButton>
+            <div className="mt-4 text-xs text-raff-neutral-500">
+              <p>{layoutT("loggedInAs")}</p>
               <p className="font-medium text-raff-neutral-700">
                 {session?.user?.email}
               </p>
@@ -253,9 +242,7 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
         </header>
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
     </div>
   );

@@ -53,9 +53,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const isZidConnected = !!merchant.zidStoreId && !!merchant.zidAccessToken;
-    const isSallaConnected =
-      !!merchant.sallaStoreId && !!merchant.sallaAccessToken;
+    const isZidConnected = !!merchant.zidAccessToken;
+    const isSallaConnected = !!merchant.sallaAccessToken;
 
     if (!isZidConnected && !isSallaConnected) {
       return NextResponse.json(

@@ -64,8 +64,16 @@ export function MerchantIntegrationsContent() {
     }
   }, [searchParams, router]);
 
-  const isZidConnected = Boolean(profile?.zidStoreId);
-  const isSallaConnected = Boolean(profile?.sallaStoreId);
+  const isZidConnected = Boolean(
+    profile?.zidStoreId ||
+      profile?.zidStoreUrl ||
+      (profile?.storeInfo.platform === "zid" && profile?.storeInfo.isConnected)
+  );
+  const isSallaConnected = Boolean(
+    profile?.sallaStoreId ||
+      profile?.sallaStoreUrl ||
+      (profile?.storeInfo.platform === "salla" && profile?.storeInfo.isConnected)
+  );
 
   const handleConnectStore = (platform: "salla" | "zid") => {
     if (!merchantId) return;

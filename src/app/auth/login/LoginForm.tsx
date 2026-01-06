@@ -50,6 +50,31 @@ export function LoginForm() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const mapAuthError = (message: string) => {
+    const normalized = message.toLowerCase();
+
+    if (normalized.includes("invalid email or password")) {
+      return "invalidCredentials";
+    }
+    if (normalized.includes("too many")) {
+      return "tooManyAttempts";
+    }
+    if (normalized.includes("pending approval")) {
+      return "pendingApproval";
+    }
+    if (normalized.includes("deactivated")) {
+      return "deactivated";
+    }
+    if (normalized.includes("complete your registration")) {
+      return "incompleteRegistration";
+    }
+    if (normalized.includes("merchant profile not found")) {
+      return "merchantNotFound";
+    }
+
+    return "generic";
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -67,20 +92,20 @@ export function LoginForm() {
       });
 
       if (result?.error) {
-        // Handle specific error messages
-        if (result.error.includes("Invalid email or password")) {
+        const errorKey = mapAuthError(result.error);
+
+        if (errorKey === "invalidCredentials") {
           setErrors({
             password: t("errors.invalidCredentials"),
           });
-        } else if (result.error.includes("Too many")) {
-          toast.error(t("errors.tooManyAttempts"));
-        } else if (result.error.includes("pending approval")) {
-          toast.error(result.error, { duration: 5000 });
-        } else if (result.error.includes("deactivated")) {
-          toast.error(result.error, { duration: 5000 });
         } else {
-          toast.error(result.error);
+          const shouldHold =
+            errorKey === "pendingApproval" ||
+            errorKey === "deactivated" ||
+            errorKey === "incompleteRegistration";
+          toast.error(t(`errors.${errorKey}`), shouldHold ? { duration: 5000 } : undefined);
         }
+
         setLoading(false);
         return;
       }
@@ -88,7 +113,7 @@ export function LoginForm() {
       if (result?.ok) {
         // Success - show beautiful toast
         const session = await getSession();
-        const userName = session?.user?.name || "there";
+        const userName = session?.user?.name || t("successFallbackName");
 
         toast.success(t("success"), {
           description: t("successDescription", { name: userName }),
@@ -109,7 +134,7 @@ export function LoginForm() {
       }
     } catch (error) {
       console.error("Login error:", error);
-      toast.error(t("error"));
+      toast.error(t("errors.generic"));
       setLoading(false);
     }
   };

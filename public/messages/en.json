@@ -265,8 +265,16 @@
     "analytics": "Analytics",
     "orders": "Orders",
     "settings": "Settings",
+    "integrations": "Integrations",
     "viewStorefront": "View Storefront",
     "logout": "Logout"
+  },
+  "merchantLayout": {
+    "loggedInAs": "Logged in as",
+    "connected": "Connected",
+    "storeFallback": "Store",
+    "languageEnglish": "English",
+    "languageArabic": "Arabic"
   },
   "merchantDashboard": {
     "title": "Merchant Dashboard",
@@ -275,6 +283,7 @@
     "connectStore": {
       "title": "Connect Your Store to Raff",
       "description": "Link your Salla or Zid store to start showcasing your products on Raff and track conversions",
+      "note": "You'll be redirected to Zid or Salla to authorize. We never see your password.",
       "connectSalla": "Connect Salla Store",
       "connectZid": "Connect Zid Store",
       "connecting": "Connecting..."
@@ -615,8 +624,21 @@
       "registerCta": "Register now",
       "success": "Login successful!",
       "successDescription": "Welcome back, {name}!",
+      "successFallbackName": "there",
       "error": "Login failed",
-      "errorDescription": "Please check your credentials and try again"
+      "errorDescription": "Please check your credentials and try again",
+      "errors": {
+        "emailRequired": "Email is required",
+        "emailInvalid": "Invalid email address",
+        "passwordRequired": "Password is required",
+        "invalidCredentials": "Invalid email or password",
+        "tooManyAttempts": "Too many login attempts. Please try again later.",
+        "pendingApproval": "Your account is pending approval. Please wait for admin approval.",
+        "deactivated": "Your account has been deactivated. Please contact support.",
+        "incompleteRegistration": "Please complete your registration to continue.",
+        "merchantNotFound": "Merchant profile not found",
+        "generic": "Something went wrong. Please try again."
+      }
     },
     "register": {
       "title": "Register",

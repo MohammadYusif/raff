@@ -1,7 +1,7 @@
 // src/app/merchant/dashboard/MerchantDashboardContent.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
@@ -139,8 +139,11 @@ export function MerchantDashboardContent() {
   const { data: session } = useSession();
   const merchantId = session?.user?.merchantId ?? null;
   const { profile } = useMerchantProfile(Boolean(merchantId));
-  const { triggerSync, syncing } = useMerchantSync(Boolean(merchantId));
+  const { triggerSync, syncing, lastSync } = useMerchantSync(
+    Boolean(merchantId)
+  );
   const { stats } = useMerchantStats(merchantId);
+  const hasAutoSynced = useRef(false);
 
   const [connectingPlatform, setConnectingPlatform] = useState<
     "salla" | "zid" | null
@@ -154,6 +157,29 @@ export function MerchantDashboardContent() {
     setConnectingPlatform(platform);
     window.location.href = `/api/${platform}/oauth/start`;
   };
+
+  useEffect(() => {
+    if (!isStoreConnected || !lastSync || syncing || hasAutoSynced.current) {
+      return;
+    }
+
+    if (lastSync.lastSyncAt || !lastSync.canSyncNow) {
+      return;
+    }
+
+    hasAutoSynced.current = true;
+    const runInitialSync = async () => {
+      const result = await triggerSync();
+      if (result?.success) {
+        toast.success(t("quickActions.syncSuccess"));
+        return;
+      }
+      toast.error(result?.error || t("quickActions.syncError"));
+      hasAutoSynced.current = false;
+    };
+
+    void runInitialSync();
+  }, [isStoreConnected, lastSync, syncing, triggerSync, t]);
 
   const handleSync = async () => {
     const result = await triggerSync();
@@ -204,7 +230,7 @@ export function MerchantDashboardContent() {
                       {t("connectStore.description")}
                     </p>
                     <p className="mb-4 text-sm text-raff-neutral-500 italic">
-                      You&apos;ll be redirected to Zid or Salla to authorize. We never see your password.
+                      {t("connectStore.note")}
                     </p>
                     <div className="flex flex-wrap gap-3 justify-center md:justify-start">
                       <AnimatedButton

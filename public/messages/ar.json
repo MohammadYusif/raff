@@ -265,8 +265,16 @@
     "analytics": "التحليلات",
     "orders": "الطلبات",
     "settings": "الإعدادات",
+    "integrations": "التكاملات",
     "viewStorefront": "عرض المتجر",
     "logout": "تسجيل الخروج"
+  },
+  "merchantLayout": {
+    "loggedInAs": "مسجل الدخول باسم",
+    "connected": "متصل",
+    "storeFallback": "المتجر",
+    "languageEnglish": "الإنجليزية",
+    "languageArabic": "العربية"
   },
   "merchantDashboard": {
     "title": "لوحة تحكم التاجر",
@@ -275,6 +283,7 @@
     "connectStore": {
       "title": "اربط متجرك برَفّ",
       "description": "اربط متجر سلة أو زد الخاص بك لبدء عرض منتجاتك على رَفّ وتتبع التحويلات",
+      "note": "سيتم تحويلك إلى زد أو سلة للتفويض. نحن لا نرى كلمة المرور.",
       "connectSalla": "ربط متجر سلة",
       "connectZid": "ربط متجر زد",
       "connecting": "جارٍ الربط..."
@@ -615,8 +624,21 @@
       "registerCta": "سجّل الآن",
       "success": "تم تسجيل الدخول بنجاح!",
       "successDescription": "مرحباً بعودتك، {name}!",
+      "successFallbackName": "صديقنا",
       "error": "فشل تسجيل الدخول",
-      "errorDescription": "يرجى التحقق من بيانات الدخول والمحاولة مرة أخرى"
+      "errorDescription": "يرجى التحقق من بيانات الدخول والمحاولة مرة أخرى",
+      "errors": {
+        "emailRequired": "البريد الإلكتروني مطلوب",
+        "emailInvalid": "عنوان البريد الإلكتروني غير صالح",
+        "passwordRequired": "كلمة المرور مطلوبة",
+        "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+        "tooManyAttempts": "محاولات تسجيل دخول كثيرة. يرجى المحاولة لاحقًا.",
+        "pendingApproval": "حسابك بانتظار الموافقة. يرجى انتظار موافقة الإدارة.",
+        "deactivated": "تم تعطيل حسابك. يرجى التواصل مع الدعم.",
+        "incompleteRegistration": "يرجى إكمال التسجيل للمتابعة.",
+        "merchantNotFound": "لم يتم العثور على ملف التاجر",
+        "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+      }
     },
     "register": {
       "title": "إنشاء حساب",

@@ -35,8 +35,10 @@ export async function GET(_request: NextRequest) {
         descriptionAr: true,
         zidStoreId: true,
         zidStoreUrl: true,
+        zidAccessToken: true,
         sallaStoreId: true,
         sallaStoreUrl: true,
+        sallaAccessToken: true,
         status: true,
         isActive: true,
         autoSyncProducts: true,
@@ -70,12 +72,19 @@ export async function GET(_request: NextRequest) {
     let storeUrl: string | null = null;
     let isConnected = false;
 
-    if (merchant.zidStoreId) {
+    const hasZidConnection = Boolean(
+      merchant.zidAccessToken || merchant.zidStoreId || merchant.zidStoreUrl
+    );
+    const hasSallaConnection = Boolean(
+      merchant.sallaAccessToken || merchant.sallaStoreId || merchant.sallaStoreUrl
+    );
+
+    if (hasZidConnection) {
       platform = "zid";
       storeId = merchant.zidStoreId;
       storeUrl = merchant.zidStoreUrl;
       isConnected = true;
-    } else if (merchant.sallaStoreId) {
+    } else if (hasSallaConnection) {
       platform = "salla";
       storeId = merchant.sallaStoreId;
       storeUrl = merchant.sallaStoreUrl;
