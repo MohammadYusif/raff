@@ -60,9 +60,37 @@ interface MerchantStats {
   }>;
 }
 
+let cachedMerchantProfile: MerchantProfile | null = null;
+let merchantProfilePromise: Promise<MerchantProfile | null> | null = null;
+
+async function fetchMerchantProfile() {
+  if (merchantProfilePromise) {
+    return merchantProfilePromise;
+  }
+
+  merchantProfilePromise = (async () => {
+    const response = await fetch("/api/merchant/profile");
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch profile");
+    }
+
+    const data = await response.json();
+    return (data?.merchant as MerchantProfile | null) ?? null;
+  })();
+
+  try {
+    return await merchantProfilePromise;
+  } finally {
+    merchantProfilePromise = null;
+  }
+}
+
 export function useMerchantProfile(enabled: boolean) {
-  const [profile, setProfile] = useState<MerchantProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<MerchantProfile | null>(
+    cachedMerchantProfile
+  );
+  const [loading, setLoading] = useState(enabled && !cachedMerchantProfile);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -71,26 +99,40 @@ export function useMerchantProfile(enabled: boolean) {
       return;
     }
 
-    async function fetchProfile() {
-      try {
-        setLoading(true);
-        const response = await fetch("/api/merchant/profile");
+    let isActive = true;
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch profile");
+    async function loadProfile() {
+      try {
+        if (!cachedMerchantProfile) {
+          setLoading(true);
+        } else {
+          setLoading(false);
         }
 
-        const data = await response.json();
-        setProfile(data.merchant);
+        const merchant = await fetchMerchantProfile();
+
+        if (!isActive) return;
+
+        if (merchant) {
+          cachedMerchantProfile = merchant;
+          setProfile(merchant);
+        }
         setError(null);
       } catch (err) {
+        if (!isActive) return;
         setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
-        setLoading(false);
+        if (isActive) {
+          setLoading(false);
+        }
       }
     }
 
-    fetchProfile();
+    loadProfile();
+
+    return () => {
+      isActive = false;
+    };
   }, [enabled]);
 
   return { profile, loading, error };

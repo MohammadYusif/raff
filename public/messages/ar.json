@@ -26,6 +26,7 @@
       "addToCart": "أضف للسلة",
       "removeFromCart": "إزالة من السلة",
       "orders": "طلباتي",
+      "goToDashboard": "الذهاب إلى لوحة التحكم",
       "previous": "السابق",
       "next": "التالي"
     },
@@ -109,7 +110,8 @@
       "merchantsBenefit1": "زد من ظهورك",
       "merchantsBenefit2": "اتصل في ثوانٍ",
       "merchantsBenefit3": "تتبع أداءك",
-      "merchants": "كن تاجراً"
+      "merchants": "كن تاجراً",
+      "goToDashboard": "الذهاب إلى لوحة التحكم"
     }
   },
   "search": {
@@ -315,6 +317,8 @@
     "quickActions": {
       "title": "إجراءات سريعة",
       "syncProducts": "مزامنة المنتجات",
+      "syncSuccess": "تمت المزامنة بنجاح",
+      "syncError": "فشلت المزامنة. حاول مرة أخرى.",
       "viewAnalytics": "عرض التحليلات",
       "settings": "الإعدادات",
       "viewStore": "عرض المتجر"
@@ -408,6 +412,7 @@
     "syncNow": "مزامنة الآن",
     "syncing": "جاري المزامنة...",
     "syncSuccess": "تمت المزامنة بنجاح",
+    "syncError": "فشلت المزامنة. حاول مرة أخرى.",
     "fetchError": "فشل تحميل المنتجات",
     "loading": "جاري التحميل...",
     "noProducts": "لا توجد منتجات",
@@ -645,7 +650,7 @@
       "contact": "اتصل بالدعم",
       "alreadyMerchant": "تاجر بالفعل؟",
       "signIn": "تسجيل الدخول للوحة التحكم",
-      "goToDashboard": "الذهاب للوحة التحكم"
+      "goToDashboard": "الذهاب إلى لوحة التحكم"
     }
   },
   "completeRegistration": {
