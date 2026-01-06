@@ -150,7 +150,9 @@ export function getSallaConfig() {
     scopes: parseScopes(process.env.SALLA_SCOPES),
     webhook: {
       secret: process.env.SALLA_WEBHOOK_SECRET,
-      header: process.env.SALLA_WEBHOOK_HEADER || "X-Salla-Signature",
+      header: (
+        process.env.SALLA_WEBHOOK_HEADER || "x-salla-signature"
+      ).toLowerCase(),
       createUrl:
         process.env.SALLA_WEBHOOK_CREATE_URL ||
         "https://api.salla.dev/admin/v2/webhooks/subscribe", // Default URL
@@ -168,7 +170,7 @@ export function getSallaConfig() {
 export function getZidWebhookConfig(): WebhookConfig {
   return {
     secret: process.env.ZID_WEBHOOK_SECRET,
-    header: process.env.ZID_WEBHOOK_HEADER,
+    header: process.env.ZID_WEBHOOK_HEADER?.toLocaleLowerCase(),
     signatureMode:
       (process.env.ZID_WEBHOOK_SIGNATURE_MODE as WebhookSignatureMode) ??
       "plain",
@@ -178,11 +180,11 @@ export function getZidWebhookConfig(): WebhookConfig {
 export function getSallaWebhookConfig(): WebhookConfig {
   return {
     secret: process.env.SALLA_WEBHOOK_SECRET,
-    header: process.env.SALLA_WEBHOOK_HEADER || "X-Salla-Signature",
+    header: (
+      process.env.SALLA_WEBHOOK_HEADER || "x-salla-signature"
+    ).toLowerCase(),
     signatureMode:
       (process.env.SALLA_WEBHOOK_SIGNATURE_MODE as WebhookSignatureMode) ??
-      "sha256",
+      "hmac-sha256",
   };
 }
-
-
