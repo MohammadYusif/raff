@@ -26,6 +26,7 @@
       "addToCart": "Add to Cart",
       "removeFromCart": "Remove from Cart",
       "orders": "My Orders",
+      "goToDashboard": "Go to Dashboard",
       "previous": "Previous",
       "next": "Next"
     },

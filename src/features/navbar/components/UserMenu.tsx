@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronDown, Package } from "lucide-react";
+import { ChevronDown, LayoutDashboard, Package } from "lucide-react";
 import { ArrowForward } from "@/core/i18n";
 import { toast } from "sonner";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
@@ -150,6 +150,20 @@ export function UserMenu({ isMobile = false }: UserMenuProps) {
               >
                 <Package className="h-4 w-4" />
                 <span className="font-medium">{t("actions.orders")}</span>
+              </Link>
+            )}
+
+            {/* Dashboard Link - Only for merchants */}
+            {session.user.role === "MERCHANT" && (
+              <Link
+                href="/merchant/dashboard"
+                onClick={() => setIsOpen(false)}
+                className="group flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-raff-neutral-700 transition-all hover:bg-raff-primary/10 hover:text-raff-primary"
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                <span className="font-medium">
+                  {t("actions.goToDashboard")}
+                </span>
               </Link>
             )}
 
