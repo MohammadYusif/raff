@@ -179,7 +179,7 @@ export async function sallaListOrders(
 
     return { items, pagination };
   } catch (error) {
-    handleOrdersError(error);
+    return handleOrdersError(error);
   }
 }
 
@@ -199,7 +199,7 @@ export async function sallaGetOrderDetails(
 
     return response.data as SallaOrderDetails;
   } catch (error) {
-    handleOrdersError(error);
+    return handleOrdersError(error);
   }
 }
 
@@ -220,7 +220,7 @@ export async function sallaListOrderItems(
 
     return response.data as SallaOrderItem[];
   } catch (error) {
-    handleOrdersError(error);
+    return handleOrdersError(error);
   }
 }
 
@@ -245,6 +245,6 @@ export async function sallaListOrderHistories(
       pagination: parsePagination(response.pagination),
     };
   } catch (error) {
-    handleOrdersError(error);
+    return handleOrdersError(error);
   }
 }

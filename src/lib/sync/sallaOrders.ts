@@ -204,7 +204,8 @@ export async function syncSallaOrdersForMerchant(
     select: { id: true, sallaAccessToken: true },
   });
 
-  if (!merchant?.sallaAccessToken) {
+  const token = merchant?.sallaAccessToken ?? null;
+  if (!token) {
     throw new Error("Salla access token missing");
   }
 
@@ -219,7 +220,7 @@ export async function syncSallaOrdersForMerchant(
 
   while (page <= maxPages) {
     const { items, pagination } = await sallaListOrders(
-      merchant.sallaAccessToken,
+      token,
       {
         page,
         perPage,
@@ -241,9 +242,9 @@ export async function syncSallaOrdersForMerchant(
 
       try {
         const [detailResult, itemsResult, historiesResult] = await Promise.all([
-          sallaGetOrderDetails(merchant.sallaAccessToken, orderId),
-          sallaListOrderItems(merchant.sallaAccessToken, orderId),
-          sallaListOrderHistories(merchant.sallaAccessToken, orderId, 1),
+          sallaGetOrderDetails(token, orderId),
+          sallaListOrderItems(token, orderId),
+          sallaListOrderHistories(token, orderId, 1),
         ]);
         details = detailResult;
         itemsList = itemsResult;
@@ -305,7 +306,6 @@ export async function syncSallaOrdersForMerchant(
           customerName: customerInfo.name,
           customerEmail: customerInfo.email,
           customerPhone: customerInfo.phone,
-          void: histories.length > 0 ? histories[0] : undefined,
         },
       });
 
