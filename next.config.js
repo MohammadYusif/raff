@@ -27,6 +27,15 @@ const nextConfig = {
       },
     ];
   },
+   images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "salla-dev.s3.eu-central-1.amazonaws.com" },
+      { protocol: "https", hostname: "salla.sa" },
+      { protocol: "https", hostname: "s.salla.sa" },
+    ],
+  },
 };
 
+
 module.exports = nextConfig;
+

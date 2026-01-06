@@ -73,21 +73,19 @@ function useMerchantStats(merchantId: string | null, days = 30) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  useEffect(() => {
-    if (!merchantId) {
-      setStats({ ...DEFAULT_STATS });
-      return;
-    }
+  const fetchStats = useMemo(
+    () => async (signal?: AbortSignal) => {
+      if (!merchantId) {
+        setStats({ ...DEFAULT_STATS });
+        return;
+      }
 
-    const controller = new AbortController();
-
-    async function fetchStats() {
       try {
         setLoading(true);
         setError(null);
 
         const response = await fetch(`/api/merchant/stats?days=${days}`, {
-          signal: controller.signal,
+          signal,
         });
 
         if (!response.ok) {
@@ -124,14 +122,23 @@ function useMerchantStats(merchantId: string | null, days = 30) {
       } finally {
         setLoading(false);
       }
+    },
+    [merchantId, days]
+  );
+
+  useEffect(() => {
+    if (!merchantId) {
+      setStats({ ...DEFAULT_STATS });
+      return;
     }
 
-    fetchStats();
+    const controller = new AbortController();
+    void fetchStats(controller.signal);
 
     return () => controller.abort();
-  }, [merchantId, days]);
+  }, [merchantId, fetchStats]);
 
-  return { stats, loading, error };
+  return { stats, loading, error, refetch: fetchStats };
 }
 
 function DashboardLoadingSkeleton() {
@@ -309,7 +316,7 @@ export function MerchantDashboardContent() {
     };
 
     void runInitialSync();
-  }, [isStoreConnected, lastSync, syncing, triggerSync, t]);
+  }, [isStoreConnected, lastSync, syncing, triggerSync, t, refetchStats]);
 
   const handleSync = async () => {
     const result = await triggerSync();

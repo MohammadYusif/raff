@@ -44,24 +44,30 @@ const extractImages = (product: SallaProduct): string[] => {
   return fallback ? [fallback] : [];
 };
 
-const normalizeQuantity = (product: SallaProduct): number | null => {
-  const directQuantity =
-    toNumberOrNull(product.quantity) ?? toNumberOrNull(product.stock_quantity);
-  if (directQuantity !== null) {
-    return Math.trunc(directQuantity);
+const toIntOrNull = (value: unknown): number | null => {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return Math.trunc(value);
   }
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? Math.trunc(parsed) : null;
+  }
+  return null;
+};
+
+const normalizeQuantity = (product: SallaProduct): number | null => {
+  const productQty = toIntOrNull(product.quantity);
+  if (productQty !== null) return productQty;
 
   const skus = Array.isArray(product.skus) ? product.skus : [];
-  let total = 0;
-  let hasQuantity = false;
-  for (const sku of skus) {
-    const qty = toNumberOrNull(sku.stock_quantity);
-    if (qty === null) continue;
-    total += qty;
-    hasQuantity = true;
-  }
+  if (skus.length === 0) return null;
 
-  return hasQuantity ? Math.trunc(total) : null;
+  const skuQtySum = skus.reduce(
+    (sum, sku) => sum + (toIntOrNull(sku.stock_quantity) ?? 0),
+    0
+  );
+
+  return skuQtySum;
 };
 
 const resolveSallaUrl = (product: SallaProduct): string | null => {
@@ -178,6 +184,7 @@ export async function syncSallaProductsForMerchant(
         images[0] ??
         null;
       const sallaUrl = resolveSallaUrl(product);
+      // Quantity: prefer product.quantity, fallback to sum of sku.stock_quantity.
       const quantity = normalizeQuantity(product);
       const inStock = quantity === null ? true : quantity > 0;
       const isActive =
