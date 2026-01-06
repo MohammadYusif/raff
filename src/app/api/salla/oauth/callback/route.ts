@@ -66,7 +66,7 @@ async function handleJoinFlow(
     code,
     client_id: config.clientId,
     client_secret: config.clientSecret,
-    redirect_uri: `${config.appBaseUrl}/api/salla/oauth/callback`,
+    redirect_uri: config.redirectUri,
   });
 
   const tokenResponse = await fetch(config.tokenUrl, {
