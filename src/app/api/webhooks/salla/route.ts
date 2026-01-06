@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import crypto from "crypto";
 import { notifyOrderCreated } from "@/lib/services/notification.service";
+import { Prisma } from "@prisma/client";
 
 // Salla webhook events
 interface SallaWebhookPayload {
@@ -53,6 +54,27 @@ interface SallaWebhookPayload {
   };
 }
 
+type UnknownRecord = Record<string, unknown>;
+
+function isRecord(value: unknown): value is UnknownRecord {
+  return typeof value === "object" && value !== null;
+}
+
+function getStringField(obj: unknown, key: string): string | undefined {
+  if (!isRecord(obj)) return undefined;
+  const value = obj[key];
+  return typeof value === "string" ? value : undefined;
+}
+
+function isPrismaKnownRequestError(error: unknown): error is { code: string } {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    typeof (error as { code: unknown }).code === "string"
+  );
+}
+
 // Verify Salla webhook signature
 function verifySallaSignature(
   payload: string,
@@ -62,17 +84,15 @@ function verifySallaSignature(
   const hmac = crypto.createHmac("sha256", secret);
   hmac.update(payload);
   const digest = hmac.digest("hex");
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(digest)
-  );
+  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(digest));
 }
 
 export async function POST(request: NextRequest) {
   try {
     const headersList = await headers();
     const signature = headersList.get("x-salla-signature");
-    const deliveryId = headersList.get("x-salla-event-id") || headersList.get("x-webhook-id");
+    const deliveryId =
+      headersList.get("x-salla-event-id") || headersList.get("x-webhook-id");
     const webhookSecret = process.env.SALLA_WEBHOOK_SECRET;
 
     if (!webhookSecret) {
@@ -108,17 +128,17 @@ export async function POST(request: NextRequest) {
       console.warn("Salla webhook missing signature - allowed in dev mode");
     } else if (!verifySallaSignature(rawBody, signature, webhookSecret)) {
       console.error("Invalid Salla webhook signature");
-      return NextResponse.json(
-        { error: "Invalid signature" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
     const payload: SallaWebhookPayload = JSON.parse(rawBody);
 
     // Normalize event type (defensive against provider field name changes)
     const eventType = String(
-      payload.event || (payload as any).event_type || (payload as any).type || "unknown"
+      payload.event ||
+        getStringField(payload, "event_type") ||
+        getStringField(payload, "type") ||
+        "unknown"
     );
 
     if (eventType === "unknown") {
@@ -134,10 +154,13 @@ export async function POST(request: NextRequest) {
     const rawMerchantId = payload.merchant;
 
     if (!rawMerchantId) {
-      console.error("Salla webhook missing merchant ID in payload - cannot process", {
-        event: eventType,
-        hasData: !!payload.data,
-      });
+      console.error(
+        "Salla webhook missing merchant ID in payload - cannot process",
+        {
+          event: eventType,
+          hasData: !!payload.data,
+        }
+      );
       // Return 200 to prevent retry storms for malformed webhooks
       return NextResponse.json({
         success: false,
@@ -148,12 +171,15 @@ export async function POST(request: NextRequest) {
     const storeId = String(rawMerchantId);
 
     // Idempotency key: Use delivery header ID if available, otherwise hash of payload
-    const contentHash = deliveryId || crypto.createHash('sha256').update(rawBody).digest('hex');
+    const contentHash =
+      deliveryId || crypto.createHash("sha256").update(rawBody).digest("hex");
     const idempotencyKey = `${eventType}:${contentHash}`;
 
     // Log when delivery header is missing
     if (!deliveryId) {
-      console.warn(`Salla webhook missing delivery header ID, using content hash for event: ${eventType}`);
+      console.warn(
+        `Salla webhook missing delivery header ID, using content hash for event: ${eventType}`
+      );
     }
 
     // Atomic insert with unique constraint - handles race conditions
@@ -165,13 +191,13 @@ export async function POST(request: NextRequest) {
           eventType,
           idempotencyKey,
           deliveryHeaderId: deliveryId,
-          payload: payload as any,
+          payload: payload as unknown as Prisma.InputJsonValue,
           processingStatus: "PROCESSED",
         },
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       // P2002 = Unique constraint violation (duplicate)
-      if (error.code === 'P2002') {
+      if (isPrismaKnownRequestError(error) && error.code === "P2002") {
         console.log(`Duplicate Salla webhook ignored: ${idempotencyKey}`);
         return NextResponse.json({ success: true, duplicate: true });
       }

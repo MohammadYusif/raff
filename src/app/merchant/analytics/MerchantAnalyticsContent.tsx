@@ -1,7 +1,7 @@
 // src/app/merchant/analytics/MerchantAnalyticsContent.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import {
@@ -73,19 +73,18 @@ export function MerchantAnalyticsContent() {
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState<"7d" | "30d" | "90d">("30d");
 
-  useEffect(() => {
-    if (merchantId) {
-      fetchAnalytics();
-    }
-  }, [merchantId, dateRange]);
-
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
     try {
       setLoading(true);
+
       const response = await fetch(
         `/api/merchant/analytics?range=${dateRange}`
       );
-      if (!response.ok) throw new Error("Failed to fetch analytics");
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch analytics");
+      }
+
       const data = await response.json();
       setAnalytics(data);
     } catch (error) {
@@ -94,7 +93,13 @@ export function MerchantAnalyticsContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [dateRange, t]);
+
+  useEffect(() => {
+    if (merchantId) {
+      fetchAnalytics();
+    }
+  }, [merchantId, fetchAnalytics]);
 
   if (loading) {
     return (

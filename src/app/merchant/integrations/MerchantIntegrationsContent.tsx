@@ -35,7 +35,7 @@ export function MerchantIntegrationsContent() {
   const searchParams = useSearchParams();
   const { data: session } = useSession();
   const merchantId = session?.user?.merchantId ?? null;
-  const { profile, loading } = useMerchantProfile(Boolean(merchantId));
+  const { profile } = useMerchantProfile(Boolean(merchantId));
 
   const [connectingPlatform, setConnectingPlatform] = useState<
     "salla" | "zid" | null
@@ -114,7 +114,8 @@ export function MerchantIntegrationsContent() {
                   <p className="mb-3 text-raff-neutral-700">
                     When you connect your store, you&apos;ll be redirected to{" "}
                     <strong>Zid</strong> or <strong>Salla</strong> to authorize
-                    Raff. We <strong>never see or store your store password</strong>.
+                    Raff. We{" "}
+                    <strong>never see or store your store password</strong>.
                   </p>
                   <ul className="space-y-1 text-sm text-raff-neutral-600">
                     <li className="flex items-start gap-2">
@@ -129,7 +130,9 @@ export function MerchantIntegrationsContent() {
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-raff-success" />
-                      <span>You can revoke access anytime from your store settings</span>
+                      <span>
+                        You can revoke access anytime from your store settings
+                      </span>
                     </li>
                   </ul>
                 </div>
@@ -369,8 +372,8 @@ export function MerchantIntegrationsContent() {
                     Can I disconnect my store?
                   </p>
                   <p>
-                    Yes. You can revoke access at any time from your store&apos;s
-                    settings or by contacting Raff support.
+                    Yes. You can revoke access at any time from your
+                    store&apos;s settings or by contacting Raff support.
                   </p>
                 </div>
               </div>

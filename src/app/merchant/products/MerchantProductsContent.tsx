@@ -1,7 +1,7 @@
 // src/app/merchant/products/MerchantProductsContent.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
@@ -62,17 +62,15 @@ export function MerchantProductsContent() {
 
   const { triggerSync, syncing } = useMerchantSync(Boolean(merchantId));
 
-  useEffect(() => {
-    if (merchantId) {
-      fetchProducts();
-    }
-  }, [merchantId]);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
+
       const response = await fetch("/api/merchant/products");
-      if (!response.ok) throw new Error("Failed to fetch products");
+      if (!response.ok) {
+        throw new Error("Failed to fetch products");
+      }
+
       const data = await response.json();
       setProducts(data.products || []);
     } catch (error) {
@@ -81,7 +79,13 @@ export function MerchantProductsContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
+
+  useEffect(() => {
+    if (merchantId) {
+      fetchProducts();
+    }
+  }, [merchantId, fetchProducts]);
 
   const handleSync = async () => {
     const result = await triggerSync();
