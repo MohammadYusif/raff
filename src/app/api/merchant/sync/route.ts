@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { syncZidProducts } from "@/lib/services/zid.service";
-import { syncSallaProducts } from "@/lib/services/salla.service";
+import { syncSallaProductsForMerchant } from "@/lib/sync/sallaProducts";
 import { requireMerchant } from "@/lib/auth/guards";
 
 const shouldDebugSync = process.env.RAFF_SYNC_DEBUG === "true";
@@ -194,6 +194,8 @@ export async function POST(request: NextRequest) {
           productsUpdated?: number;
           categoriesCreated?: number;
           categoriesUpdated?: number;
+          syncedCount?: number;
+          pagesFetched?: number;
         }
       | undefined;
 
@@ -205,25 +207,27 @@ export async function POST(request: NextRequest) {
         platform,
         storeUrl: storeUrl || null,
       });
-      syncSummary =
-        platform === "zid"
-          ? await syncZidProducts({
-              id: merchant.id,
-              zidAccessToken: merchant.zidAccessToken,
-              zidRefreshToken: merchant.zidRefreshToken,
-              zidTokenExpiry: merchant.zidTokenExpiry,
-              zidManagerToken: merchant.zidManagerToken,
-              zidStoreId: merchant.zidStoreId,
-              zidStoreUrl: merchant.zidStoreUrl,
-            })
-          : await syncSallaProducts({
-              id: merchant.id,
-              sallaAccessToken: merchant.sallaAccessToken,
-              sallaRefreshToken: merchant.sallaRefreshToken,
-              sallaTokenExpiry: merchant.sallaTokenExpiry,
-              sallaStoreId: merchant.sallaStoreId,
-              sallaStoreUrl: merchant.sallaStoreUrl,
-            });
+      if (platform === "zid") {
+        syncSummary = await syncZidProducts({
+          id: merchant.id,
+          zidAccessToken: merchant.zidAccessToken,
+          zidRefreshToken: merchant.zidRefreshToken,
+          zidTokenExpiry: merchant.zidTokenExpiry,
+          zidManagerToken: merchant.zidManagerToken,
+          zidStoreId: merchant.zidStoreId,
+          zidStoreUrl: merchant.zidStoreUrl,
+        });
+      } else {
+        const sallaResult = await syncSallaProductsForMerchant(merchant.id);
+        syncSummary = {
+          productsCreated: sallaResult.createdCount,
+          productsUpdated: sallaResult.updatedCount,
+          categoriesCreated: 0,
+          categoriesUpdated: 0,
+          syncedCount: sallaResult.syncedCount,
+          pagesFetched: sallaResult.pagesFetched,
+        };
+      }
 
       await prisma.merchant.update({
         where: { id: merchantId },
@@ -252,6 +256,8 @@ export async function POST(request: NextRequest) {
       productsUpdated: safeNumber(syncSummary?.productsUpdated),
       categoriesCreated: safeNumber(syncSummary?.categoriesCreated),
       categoriesUpdated: safeNumber(syncSummary?.categoriesUpdated),
+      syncedCount: safeNumber(syncSummary?.syncedCount),
+      pagesFetched: safeNumber(syncSummary?.pagesFetched),
     };
 
     const syncResult = {
@@ -269,6 +275,8 @@ export async function POST(request: NextRequest) {
         categoriesChecked: summary.categoriesCreated + summary.categoriesUpdated,
         categoriesCreated: summary.categoriesCreated,
         categoriesUpdated: summary.categoriesUpdated,
+        syncedCount: summary.syncedCount,
+        pagesFetched: summary.pagesFetched,
       },
     };
 
