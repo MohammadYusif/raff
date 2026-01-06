@@ -107,10 +107,11 @@
       "merchantsTitle": "للتجار",
       "merchantsDescription": "تواصل مع آلاف العملاء في أنحاء السعودية",
       "merchantsBenefit1": "زد من ظهورك",
-      "merchantsBenefit2": "اتصل في ثوانٍ",
-      "merchantsBenefit3": "تتبع أداءك",
-      "merchants": "كن تاجراً"
-    }
+    "merchantsBenefit2": "اتصل في ثوانٍ",
+    "merchantsBenefit3": "تتبع أداءك",
+    "merchants": "كن تاجراً",
+    "goToDashboard": "اذهب إلى لوحة التحكم"
+  }
   },
   "search": {
     "title": "البحث عن المنتجات",
@@ -291,7 +292,7 @@
     },
     "storeConnected": {
       "title": "تم ربط المتجر بنجاح!",
-      "description": "متجرك على {{platform}} متصل الآن برَفّ",
+      "description": "متجرك على {platform} متصل الآن برَفّ",
       "manage": "إدارة الاتصال"
     },
     "stats": {

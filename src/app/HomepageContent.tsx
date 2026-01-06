@@ -4,6 +4,7 @@
 import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import {
   Container,
   Card,
@@ -101,6 +102,12 @@ export function HomepageContent({
 }: HomepageContentProps) {
   const t = useTranslations("homepage");
   const locale = useLocale();
+  const { data: session } = useSession();
+  const isMerchant = session?.user?.role === "MERCHANT";
+  const merchantCtaHref = isMerchant ? "/merchant/dashboard" : "/merchant/join";
+  const merchantCtaLabel = isMerchant
+    ? t("cta.goToDashboard")
+    : t("cta.merchants");
 
   return (
     <PageLayout>
@@ -549,12 +556,12 @@ export function HomepageContent({
                     {t("cta.merchantsBenefit3")}
                   </li>
                 </ul>
-                <Link href="/merchant/join">
+                <Link href={merchantCtaHref}>
                   <AnimatedButton
                     size="lg"
                     className="w-full gap-2 bg-raff-accent hover:bg-raff-accent/90 transition-all hover:gap-3"
                   >
-                    {t("cta.merchants")}
+                    {merchantCtaLabel}
                     <ArrowForward className="h-5 w-5" />
                   </AnimatedButton>
                 </Link>

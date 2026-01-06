@@ -107,10 +107,11 @@
       "merchantsTitle": "For Merchants",
       "merchantsDescription": "Reach thousands of customers across Saudi Arabia",
       "merchantsBenefit1": "Increase your visibility",
-      "merchantsBenefit2": "Connect in seconds",
-      "merchantsBenefit3": "Track your performance",
-      "merchants": "Become a Merchant"
-    }
+    "merchantsBenefit2": "Connect in seconds",
+    "merchantsBenefit3": "Track your performance",
+    "merchants": "Become a Merchant",
+    "goToDashboard": "Go to Dashboard"
+  }
   },
   "search": {
     "title": "Search Products",
@@ -291,7 +292,7 @@
     },
     "storeConnected": {
       "title": "Store Connected Successfully!",
-      "description": "Your {{platform}} store is now connected to Raff",
+      "description": "Your {platform} store is now connected to Raff",
       "manage": "Manage Connection"
     },
     "stats": {

@@ -238,6 +238,24 @@ function resolveSallaProductUrl(product: SallaProduct): string | null {
   return product.url || product.urls?.product || null;
 }
 
+const INACTIVE_SALLA_STATUSES = new Set([
+  "inactive",
+  "draft",
+  "archived",
+  "deleted",
+  "hidden",
+  "disabled",
+  "unavailable",
+  "unlisted",
+]);
+
+function isSallaProductActive(status?: string | null): boolean {
+  if (!status) return true;
+  const normalized = String(status).trim().toLowerCase();
+  if (!normalized) return true;
+  return !INACTIVE_SALLA_STATUSES.has(normalized);
+}
+
 function extractNumericAmount(value: unknown): number | null {
   if (typeof value === "number") {
     return Number.isFinite(value) ? value : null;
@@ -472,12 +490,7 @@ export async function syncSallaProducts(merchant: SallaMerchantAuth): Promise<{
       const images =
         sallaProduct.images?.map((image) => image.url).filter(Boolean) || [];
 
-      const normalizedStatus = sallaProduct.status?.toLowerCase() || "";
-      const isActive =
-        normalizedStatus === "active" ||
-        normalizedStatus === "published" ||
-        normalizedStatus === "" ||
-        normalizedStatus === "available";
+      const isActive = isSallaProductActive(sallaProduct.status);
       const inStock =
         typeof sallaProduct.quantity === "number"
           ? sallaProduct.quantity > 0
@@ -616,12 +629,7 @@ export async function syncSallaProductById(
   const images =
     sallaProduct.images?.map((image) => image.url).filter(Boolean) || [];
 
-  const normalizedStatus = sallaProduct.status?.toLowerCase() || "";
-  const isActive =
-    normalizedStatus === "active" ||
-    normalizedStatus === "published" ||
-    normalizedStatus === "" ||
-    normalizedStatus === "available";
+  const isActive = isSallaProductActive(sallaProduct.status);
   const inStock =
     typeof sallaProduct.quantity === "number"
       ? sallaProduct.quantity > 0
