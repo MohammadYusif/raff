@@ -15,6 +15,7 @@ import {
   Badge,
   Input,
   AnimatedButton,
+  Skeleton,
 } from "@/shared/components/ui";
 import {
   User,
@@ -29,6 +30,55 @@ import {
 } from "lucide-react";
 import { useMerchantProfile } from "@/lib/hooks/useMerchantApi";
 import { toast } from "sonner";
+
+function SettingsLoadingSkeleton() {
+  return (
+    <Container className="py-8">
+      {/* Header Skeleton */}
+      <div className="mb-6 space-y-2">
+        <Skeleton variant="shimmer" className="h-8 w-56" />
+        <Skeleton variant="shimmer" className="h-5 w-72" />
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Sidebar Skeleton */}
+        <div className="space-y-2">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <Skeleton
+              key={index}
+              variant="shimmer"
+              className="h-11 w-full"
+            />
+          ))}
+        </div>
+
+        {/* Content Skeleton */}
+        <div className="space-y-6 lg:col-span-2">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <Card key={index}>
+              <CardHeader className="space-y-2">
+                <Skeleton variant="shimmer" className="h-6 w-40" />
+                <Skeleton variant="shimmer" className="h-4 w-64" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Skeleton variant="shimmer" className="h-4 w-24" />
+                  <Skeleton variant="shimmer" className="h-10 w-full" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton variant="shimmer" className="h-4 w-28" />
+                  <Skeleton variant="shimmer" className="h-10 w-full" />
+                  <Skeleton variant="shimmer" className="h-3 w-40" />
+                </div>
+                <Skeleton variant="shimmer" className="h-10 w-32" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </Container>
+  );
+}
 
 export function MerchantSettingsContent() {
   const { data: session, update: updateSession } = useSession();
@@ -104,16 +154,7 @@ export function MerchantSettingsContent() {
   };
 
   if (isLoading) {
-    return (
-      <Container className="py-8">
-        <Card>
-          <CardContent className="p-12 text-center">
-            <RefreshCw className="mx-auto mb-4 h-12 w-12 animate-spin text-raff-primary" />
-            <p className="text-raff-neutral-600">{t("loading")}</p>
-          </CardContent>
-        </Card>
-      </Container>
-    );
+    return <SettingsLoadingSkeleton />;
   }
 
   return (

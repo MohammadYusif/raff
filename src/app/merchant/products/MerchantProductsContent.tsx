@@ -12,6 +12,7 @@ import {
   Badge,
   Input,
   AnimatedButton,
+  Skeleton,
 } from "@/shared/components/ui";
 import {
   Package,
@@ -43,6 +44,89 @@ interface Product {
   conversionRate: number;
   lastViewedAt: Date | null;
   createdAt: Date;
+}
+
+function ProductsLoadingSkeleton() {
+  return (
+    <Container className="py-8">
+      {/* Header Skeleton */}
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <Skeleton variant="shimmer" className="mb-2 h-8 w-56" />
+          <Skeleton variant="shimmer" className="h-5 w-72" />
+        </div>
+        <Skeleton variant="shimmer" className="h-10 w-32" />
+      </div>
+
+      {/* Stats Cards Skeleton */}
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <Card key={index}>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-2">
+                  <Skeleton variant="shimmer" className="h-4 w-28" />
+                  <Skeleton variant="shimmer" className="h-7 w-20" />
+                  <Skeleton variant="shimmer" className="h-3 w-32" />
+                </div>
+                <Skeleton variant="shimmer" className="h-10 w-10 rounded-full" />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Filters Skeleton */}
+      <Card className="mb-6">
+        <CardContent className="p-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <Skeleton variant="shimmer" className="h-10 w-full lg:max-w-md" />
+            <div className="flex flex-wrap gap-3">
+              <Skeleton variant="shimmer" className="h-10 w-40" />
+              <Skeleton variant="shimmer" className="h-10 w-40" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Products List Skeleton */}
+      <div className="space-y-4">
+        {Array.from({ length: 5 }).map((_, index) => (
+          <Card key={index} className="overflow-hidden">
+            <CardContent className="p-0">
+              <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
+                <div className="flex flex-1 items-center gap-4">
+                  <Skeleton
+                    variant="shimmer"
+                    className="h-20 w-20 rounded-lg"
+                  />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton variant="shimmer" className="h-5 w-48" />
+                    <Skeleton variant="shimmer" className="h-4 w-24" />
+                    <div className="flex flex-wrap gap-2">
+                      <Skeleton variant="shimmer" className="h-3 w-16" />
+                      <Skeleton variant="shimmer" className="h-3 w-16" />
+                      <Skeleton variant="shimmer" className="h-3 w-20" />
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-3 border-t border-raff-neutral-200 pt-4 sm:border-s sm:border-t-0 sm:ps-4 sm:pt-0">
+                  <div className="space-y-2 text-center">
+                    <Skeleton variant="shimmer" className="h-3 w-16" />
+                    <Skeleton variant="shimmer" className="h-6 w-14" />
+                  </div>
+                  <div className="space-y-2 text-center">
+                    <Skeleton variant="shimmer" className="h-3 w-16" />
+                    <Skeleton variant="shimmer" className="h-6 w-14" />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </Container>
+  );
 }
 
 export function MerchantProductsContent() {
@@ -104,6 +188,10 @@ export function MerchantProductsContent() {
       fetchProducts();
     }
   }, [merchantId, fetchProducts]);
+
+  if (loading) {
+    return <ProductsLoadingSkeleton />;
+  }
 
   const handleSync = async () => {
     const result = await triggerSync();
@@ -303,14 +391,7 @@ export function MerchantProductsContent() {
       </Card>
 
       {/* Products Table */}
-      {loading ? (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <RefreshCw className="mx-auto mb-4 h-12 w-12 animate-spin text-raff-primary" />
-            <p className="text-raff-neutral-600">{t("loading")}</p>
-          </CardContent>
-        </Card>
-      ) : filteredProducts.length === 0 ? (
+      {filteredProducts.length === 0 ? (
         <Card>
           <CardContent className="p-12 text-center">
             <Package className="mx-auto mb-4 h-16 w-16 text-raff-neutral-400" />
@@ -431,7 +512,7 @@ export function MerchantProductsContent() {
       )}
 
       {/* Results Count */}
-      {!loading && filteredProducts.length > 0 && (
+      {filteredProducts.length > 0 && (
         <div className="mt-6 text-center text-sm text-raff-neutral-600">
           {t("showingResults", {
             count: formatNumber(filteredProducts.length),
