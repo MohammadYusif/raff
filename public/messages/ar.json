@@ -408,33 +408,33 @@
   },
   "merchantProducts": {
     "title": "إدارة المنتجات",
-    "subtitle": "عرض ومزامنة منتجات متجرك",
-    "syncNow": "مزامنة الآن",
+    "subtitle": "اعرض منتجات متجرك وقم بالمزامنة",
+    "syncNow": "زامن الآن",
     "syncing": "جاري المزامنة...",
     "syncSuccess": "تمت المزامنة بنجاح",
     "syncError": "فشلت المزامنة. حاول مرة أخرى.",
-    "fetchError": "فشل تحميل المنتجات",
+    "fetchError": "تعذر تحميل المنتجات",
     "loading": "جاري التحميل...",
     "noProducts": "لا توجد منتجات",
     "noProductsDesc": "ابدأ بمزامنة منتجاتك من متجرك",
     "noResults": "لا توجد نتائج",
-    "noResultsDesc": "جرب تغيير خيارات البحث أو الفلترة",
-    "searchPlaceholder": "ابحث في المنتجات...",
+    "noResultsDesc": "جرّب تغيير البحث أو عوامل التصفية",
+    "searchPlaceholder": "ابحث عن المنتجات...",
     "showingResults": "عرض {count} من {total} منتج",
     "comingSoon": "قريباً",
     "comingSoonDesc": "ستتمكن من إدارة منتجاتك من هنا قريباً",
     "stats": {
       "totalProducts": "إجمالي المنتجات",
-      "active": "نشط",
-      "inactive": "غير نشط",
+      "active": "نشطة",
+      "inactive": "غير نشطة",
+      "outOfStock": "نفد المخزون",
       "totalViews": "إجمالي المشاهدات",
       "totalClicks": "إجمالي النقرات",
       "totalOrders": "إجمالي الطلبات",
       "revenue": "الإيرادات",
       "viewsGrowth": "نمو المشاهدات",
-      "summary": "{active} نشط | {inactive} غير نشط",
-      "ctrValue": "{value} معدل النقر",
-      "outOfStock": "نفد المخزون"
+      "summary": "{active} نشطة | {inactive} غير نشطة",
+      "ctrValue": "{value} نسبة النقر"
     },
     "filters": {
       "all": "الكل",
@@ -444,9 +444,9 @@
     },
     "sortBy": {
       "views": "الأكثر مشاهدة",
-      "clicks": "الأكثر نقراً",
-      "orders": "الأكثر طلباً",
-      "revenue": "الأعلى إيراداً"
+      "clicks": "الأكثر نقرًا",
+      "orders": "الأكثر طلبًا",
+      "revenue": "الأعلى إيرادًا"
     },
     "status": {
       "active": "نشط",
@@ -454,14 +454,14 @@
       "outOfStock": "نفد المخزون"
     },
     "metrics": {
-      "views": "مشاهدة",
-      "clicks": "نقرة",
-      "orders": "طلب",
-      "revenue": "إيرادات",
-      "ctr": "معدل النقر",
-      "conversion": "معدل التحويل",
       "quantity": "الكمية",
-      "quantityUnknown": "غير محدد"
+      "quantityUnknown": "غير محدد",
+      "views": "مشاهدات",
+      "clicks": "نقرات",
+      "orders": "طلبات",
+      "revenue": "الإيرادات",
+      "ctr": "نسبة النقر",
+      "conversion": "نسبة التحويل"
     }
   },
   "merchantAnalytics": {
