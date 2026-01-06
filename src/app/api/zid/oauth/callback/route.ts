@@ -17,6 +17,7 @@ import { normalizeStoreUrl } from "@/lib/platform/store";
 import { registerZidWebhooks } from "@/lib/platform/webhook-register";
 import { verifyOAuthState } from "@/lib/platform/oauth";
 import { ZidService } from "@/lib/services/zid.service";
+import { createRegistrationToken } from "@/lib/registrationToken";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
@@ -164,28 +165,29 @@ async function handleJoinFlow(
     }
 
     const response = NextResponse.redirect(
-      `${config.appBaseUrl}/merchant/dashboard?connected=zid`
+      `${config.appBaseUrl}/merchant/integrations?connected=zid`
     );
     response.cookies.set("raff_zid_join_state", "", { maxAge: 0, path: "/" });
     response.cookies.set("raff_zid_join_flow", "", { maxAge: 0, path: "/" });
     return response;
   }
 
-  // Create new user and merchant
-  const tempPassword = crypto.randomBytes(16).toString("hex");
+  // Create new user and merchant with incomplete registration
+  const tempPassword = crypto.randomBytes(32).toString("hex");
   const passwordHash = await bcrypt.hash(tempPassword, 10);
 
   // Use transaction to create both user and merchant
-  await prisma.$transaction(async (tx) => {
-    // Create user
+  const { user, merchant } = await prisma.$transaction(async (tx) => {
+    // Create user with incomplete registration
     const user = await tx.user.create({
       data: {
         name: storeName,
-        email,
-        passwordHash,
+        email, // Temporary email (might be fake)
+        passwordHash, // Temporary password
         role: UserRole.MERCHANT,
         language: "ar",
-        emailVerified: new Date(), // Auto-verify since they authenticated via OAuth
+        emailVerified: null, // Not verified yet
+        registrationCompleted: false, // Mark as incomplete
       },
     });
 
@@ -217,8 +219,16 @@ async function handleJoinFlow(
     console.error("Zid webhook registration failed:", error);
   }
 
+  // Create registration token
+  const registrationToken = createRegistrationToken(
+    user.id,
+    merchant.id,
+    storeEmail || "" // Pass the store email if available
+  );
+
+  // Redirect to complete registration page
   const response = NextResponse.redirect(
-    `${config.appBaseUrl}/merchant/dashboard?registered=true&platform=zid`
+    `${config.appBaseUrl}/merchant/complete-registration?token=${registrationToken}`
   );
   response.cookies.set("raff_zid_join_state", "", { maxAge: 0, path: "/" });
   response.cookies.set("raff_zid_join_flow", "", { maxAge: 0, path: "/" });
@@ -347,7 +357,7 @@ async function handleRegularFlow(
   }
 
   const response = NextResponse.redirect(
-    `${config.appBaseUrl}/merchant/dashboard?connected=zid`
+    `${config.appBaseUrl}/merchant/integrations?connected=zid`
   );
   response.cookies.set("raff_zid_oauth_state", "", { maxAge: 0, path: "/" });
   return response;

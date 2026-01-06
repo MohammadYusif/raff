@@ -49,11 +49,18 @@ export const authOptions: NextAuthOptions = {
             role: true,
             passwordHash: true,
             avatar: true,
+            registrationCompleted: true,
           },
         });
 
         if (!userRecord?.passwordHash) {
           throw new Error("Invalid email or password");
+        }
+
+        if (!userRecord.registrationCompleted) {
+          throw new Error(
+            "Please complete your registration by setting up your account credentials"
+          );
         }
 
         const isPasswordValid = await bcrypt.compare(
