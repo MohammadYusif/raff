@@ -155,7 +155,7 @@ export function MerchantDashboardContent() {
   };
 
   return (
-    <div className="min-h-screen bg-raff-neutral-50">
+    <div className="h-full bg-raff-neutral-50">
       {/* Header */}
       <div className="border-b border-raff-neutral-200 bg-white">
         <Container className="py-6">
@@ -190,8 +190,11 @@ export function MerchantDashboardContent() {
                     <h3 className="mb-2 text-xl font-semibold text-raff-primary">
                       {t("connectStore.title")}
                     </h3>
-                    <p className="mb-4 text-raff-neutral-600">
+                    <p className="mb-2 text-raff-neutral-600">
                       {t("connectStore.description")}
+                    </p>
+                    <p className="mb-4 text-sm text-raff-neutral-500 italic">
+                      You&apos;ll be redirected to Zid or Salla to authorize. We never see your password.
                     </p>
                     <div className="flex flex-wrap gap-3 justify-center md:justify-start">
                       <AnimatedButton
@@ -276,10 +279,12 @@ export function MerchantDashboardContent() {
                       })}
                     </p>
                   </div>
-                  <AnimatedButton variant="ghost" size="sm" className="gap-2">
-                    <Settings className="h-4 w-4" />
-                    {t("storeConnected.manage")}
-                  </AnimatedButton>
+                  <Link href="/merchant/integrations">
+                    <AnimatedButton variant="ghost" size="sm" className="gap-2">
+                      <Settings className="h-4 w-4" />
+                      {t("storeConnected.manage")}
+                    </AnimatedButton>
+                  </Link>
                 </div>
               </CardContent>
             </Card>

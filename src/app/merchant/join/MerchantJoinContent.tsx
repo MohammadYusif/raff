@@ -59,6 +59,12 @@ export function MerchantJoinContent() {
                   {t("heading")}
                 </h2>
                 <p className="text-raff-neutral-600">{t("description")}</p>
+                <div className="mt-4 flex items-center justify-center gap-2 text-sm text-raff-neutral-500">
+                  <Shield className="h-4 w-4 text-raff-primary" />
+                  <span className="italic">
+                    You&apos;ll be redirected to authorize. We never see your password.
+                  </span>
+                </div>
               </div>
 
               {/* OAuth Buttons */}
