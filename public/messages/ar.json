@@ -505,10 +505,47 @@
     "comingSoonDesc": "ØªØ­Ù„ÙŠÙ„Ø§Øª Ù…ØªÙ‚Ø¯Ù…Ø© ÙˆØªÙ‚Ø§Ø±ÙŠØ± ØªÙØµÙŠÙ„ÙŠØ© Ù‚Ø±ÙŠØ¨Ø§Ù‹"
   },
   "merchantOrders": {
-    "title": "Ø§Ù„Ø·Ù„Ø¨Ø§Øª",
-    "subtitle": "ØªØªØ¨Ø¹ Ø§Ù„Ø·Ù„Ø¨Ø§Øª ÙˆØ§Ù„ØªØ­ÙˆÙŠÙ„Ø§Øª",
-    "comingSoon": "Ù‚Ø±ÙŠØ¨Ø§Ù‹",
-    "comingSoonDesc": "Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ø·Ù„Ø¨Ø§Øª ÙˆØªØªØ¨Ø¹ Ø§Ù„ØªØ­ÙˆÙŠÙ„Ø§Øª Ù‚Ø±ÙŠØ¨Ø§Ù‹"
+    "title": "الطلبات",
+    "subtitle": "تتبع الطلبات والتحويلات من متجرك",
+    "noOrders": "لا توجد طلبات",
+    "noProduct": "المنتج غير متاح",
+    "orderNumber": "رقم الطلب",
+    "quantity": "الكمية",
+    "total": "المجموع",
+    "summary": {
+      "totalOrders": "إجمالي الطلبات",
+      "totalRevenue": "إجمالي الإيرادات",
+      "totalCommissions": "إجمالي العمولات",
+      "avgOrderValue": "متوسط قيمة الطلب"
+    },
+    "filters": {
+      "all": "الكل"
+    },
+    "status": {
+      "pending": "قيد الانتظار",
+      "confirmed": "مؤكد",
+      "processing": "قيد المعالجة",
+      "shipped": "تم الشحن",
+      "delivered": "تم التسليم",
+      "cancelled": "ملغى",
+      "refunded": "تم الاسترداد"
+    },
+    "commission": {
+      "label": "العمولة",
+      "pending": "قيد الانتظار",
+      "approved": "موافق عليها",
+      "onHold": "معلقة",
+      "paid": "مدفوعة",
+      "cancelled": "ملغاة"
+    },
+    "pagination": {
+      "showing": "عرض {start}-{end} من {total}",
+      "previous": "السابق",
+      "next": "التالي"
+    },
+    "error": {
+      "loadFailed": "فشل تحميل الطلبات"
+    }
   },
   "merchantSettings": {
     "title": "Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª",

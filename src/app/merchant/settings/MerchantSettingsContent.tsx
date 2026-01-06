@@ -1,7 +1,7 @@
 // src/app/merchant/settings/MerchantSettingsContent.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -93,6 +93,7 @@ export function MerchantSettingsContent() {
     "account" | "store" | "notifications" | "security" | "integrations"
   >("account");
   const [saving, setSaving] = useState(false);
+  const observerRef = useRef<IntersectionObserver | null>(null);
   const [accountData, setAccountData] = useState({
     name: session?.user?.name || "",
     email: session?.user?.email || "",
@@ -109,10 +110,58 @@ export function MerchantSettingsContent() {
     weeklyDigest: true,
   });
 
+  // Set up IntersectionObserver to detect which section is visible
+  useEffect(() => {
+    const sections = [
+      "account",
+      "store",
+      "notifications",
+      "security",
+      "integrations",
+    ];
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        // Find the section with the highest intersection ratio
+        const visibleSections = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+
+        if (visibleSections.length > 0) {
+          const mostVisibleSection = visibleSections[0].target.id as
+            | "account"
+            | "store"
+            | "notifications"
+            | "security"
+            | "integrations";
+          setActiveSection(mostVisibleSection);
+        }
+      },
+      {
+        root: null,
+        rootMargin: "-20% 0px -60% 0px", // Trigger when section is in the top 40% of viewport
+        threshold: [0, 0.25, 0.5, 0.75, 1],
+      }
+    );
+
+    // Observe all sections
+    sections.forEach((sectionId) => {
+      const element = document.getElementById(sectionId);
+      if (element && observerRef.current) {
+        observerRef.current.observe(element);
+      }
+    });
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, []);
+
   const handleSectionChange = (
     sectionId: "account" | "store" | "notifications" | "security" | "integrations"
   ) => {
-    setActiveSection(sectionId);
     const section = document.getElementById(sectionId);
     if (section) {
       section.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -182,7 +231,7 @@ export function MerchantSettingsContent() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Sidebar Navigation */}
-        <div className="space-y-2">
+        <div className="space-y-2 lg:sticky lg:top-24 lg:self-start">
           {(
             [
               { id: "account", label: t("nav.account"), icon: User },

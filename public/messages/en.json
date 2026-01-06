@@ -506,9 +506,46 @@
   },
   "merchantOrders": {
     "title": "Orders",
-    "subtitle": "Track orders and conversions",
-    "comingSoon": "Coming Soon",
-    "comingSoonDesc": "Order management and conversion tracking coming soon"
+    "subtitle": "Track orders and conversions from your store",
+    "noOrders": "No orders found",
+    "noProduct": "Product unavailable",
+    "orderNumber": "Order #",
+    "quantity": "Qty",
+    "total": "Total",
+    "summary": {
+      "totalOrders": "Total Orders",
+      "totalRevenue": "Total Revenue",
+      "totalCommissions": "Total Commissions",
+      "avgOrderValue": "Avg Order Value"
+    },
+    "filters": {
+      "all": "All"
+    },
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "processing": "Processing",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled",
+      "refunded": "Refunded"
+    },
+    "commission": {
+      "label": "Commission",
+      "pending": "Pending",
+      "approved": "Approved",
+      "onHold": "On Hold",
+      "paid": "Paid",
+      "cancelled": "Cancelled"
+    },
+    "pagination": {
+      "showing": "Showing {start}-{end} of {total}",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "error": {
+      "loadFailed": "Failed to load orders"
+    }
   },
   "merchantSettings": {
     "title": "Settings",
