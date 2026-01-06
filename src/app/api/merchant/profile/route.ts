@@ -64,6 +64,7 @@ export async function GET(_request: NextRequest) {
       );
     }
 
+    // Determine primary platform (first one connected)
     let platform: "zid" | "salla" | null = null;
     let storeId: string | null = null;
     let storeUrl: string | null = null;
@@ -91,6 +92,7 @@ export async function GET(_request: NextRequest) {
         logo: merchant.logo,
         description: merchant.description,
         descriptionAr: merchant.descriptionAr,
+        // Primary store info (for backwards compatibility)
         storeInfo: {
           platform,
           storeId,
@@ -99,6 +101,11 @@ export async function GET(_request: NextRequest) {
           lastSyncAt: merchant.lastSyncAt,
           autoSyncEnabled: merchant.autoSyncProducts,
         },
+        // Individual platform connection status
+        zidStoreId: merchant.zidStoreId,
+        zidStoreUrl: merchant.zidStoreUrl,
+        sallaStoreId: merchant.sallaStoreId,
+        sallaStoreUrl: merchant.sallaStoreUrl,
         totalProducts: merchant._count.products,
         status: merchant.status,
         approvedAt: merchant.approvedAt,

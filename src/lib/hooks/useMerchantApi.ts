@@ -20,6 +20,11 @@ interface MerchantProfile {
     lastSyncAt: Date | null;
     autoSyncEnabled: boolean;
   };
+  // Individual platform connection status
+  zidStoreId: string | null;
+  zidStoreUrl: string | null;
+  sallaStoreId: string | null;
+  sallaStoreUrl: string | null;
   totalProducts: number;
   status: string;
   createdAt: Date;

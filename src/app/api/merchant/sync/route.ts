@@ -67,19 +67,40 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (merchant.lastSyncAt) {
-      const timeSinceLastSync = Date.now() - merchant.lastSyncAt.getTime();
-      const fiveMinutesInMs = 5 * 60 * 1000;
+    // Atomic concurrency lock: Try to acquire sync by updating lastSyncAt
+    const fiveMinutesInMs = 5 * 60 * 1000;
+    const now = new Date();
+    const fiveMinutesAgo = new Date(now.getTime() - fiveMinutesInMs);
 
-      if (timeSinceLastSync < fiveMinutesInMs) {
+    const acquiredLock = await prisma.merchant.updateMany({
+      where: {
+        id: merchantId,
+        OR: [
+          { lastSyncAt: null },
+          { lastSyncAt: { lt: fiveMinutesAgo } },
+        ],
+      },
+      data: { lastSyncAt: now },
+    });
+
+    if (acquiredLock.count === 0) {
+      // Lock acquisition failed - another sync is in progress or rate limited
+      const currentMerchant = await prisma.merchant.findUnique({
+        where: { id: merchantId },
+        select: { lastSyncAt: true },
+      });
+
+      if (currentMerchant?.lastSyncAt) {
+        const timeSinceLastSync =
+          Date.now() - currentMerchant.lastSyncAt.getTime();
         const waitTime = Math.ceil(
           (fiveMinutesInMs - timeSinceLastSync) / 1000 / 60
         );
         return NextResponse.json(
           {
-            error: "Sync in progress",
+            error: "Sync in progress or rate limited",
             message: `Please wait ${waitTime} minute(s) before syncing again`,
-            lastSyncAt: merchant.lastSyncAt,
+            lastSyncAt: currentMerchant.lastSyncAt,
           },
           { status: 429 }
         );
@@ -94,6 +115,11 @@ export async function POST(request: NextRequest) {
         : "salla";
 
     if (platform === "zid" && !isZidConnected) {
+      // Release lock by reverting lastSyncAt
+      await prisma.merchant.update({
+        where: { id: merchantId },
+        data: { lastSyncAt: merchant.lastSyncAt },
+      });
       return NextResponse.json(
         { error: "Zid store not connected" },
         { status: 400 }
@@ -101,6 +127,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (platform === "salla" && !isSallaConnected) {
+      // Release lock by reverting lastSyncAt
+      await prisma.merchant.update({
+        where: { id: merchantId },
+        data: { lastSyncAt: merchant.lastSyncAt },
+      });
       return NextResponse.json(
         { error: "Salla store not connected" },
         { status: 400 }
@@ -114,7 +145,6 @@ export async function POST(request: NextRequest) {
       typeof value === "number" && Number.isFinite(value) ? value : 0;
 
     const previousLastSyncAt = merchant.lastSyncAt;
-    const syncStartedAt = new Date();
     let syncSummary:
       | {
           productsCreated?: number;
@@ -125,10 +155,7 @@ export async function POST(request: NextRequest) {
       | undefined;
 
     try {
-      await prisma.merchant.update({
-        where: { id: merchantId },
-        data: { lastSyncAt: syncStartedAt },
-      });
+      // Lock already acquired above via updateMany
 
       syncSummary =
         platform === "zid"
