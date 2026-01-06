@@ -97,7 +97,7 @@ async function handleJoinFlow(
     null;
   let zidStoreId =
     tokenData.store_id || tokenData.storeId || tokenData.store?.id || null;
-  let zidStoreUrl =
+  const zidStoreUrl =
     tokenData.store_url || tokenData.storeUrl || tokenData.store?.url || null;
 
   if (!accessToken) {
@@ -297,7 +297,7 @@ async function handleRegularFlow(
     null;
   let zidStoreId =
     tokenData.store_id || tokenData.storeId || tokenData.store?.id || null;
-  let zidStoreUrl =
+  const zidStoreUrl =
     tokenData.store_url || tokenData.storeUrl || tokenData.store?.url || null;
 
   if (!accessToken) {

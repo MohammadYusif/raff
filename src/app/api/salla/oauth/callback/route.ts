@@ -291,7 +291,7 @@ async function handleRegularFlow(
     : null;
   let sallaStoreId =
     tokenData.store_id || tokenData.storeId || tokenData.store?.id || null;
-  let sallaStoreUrl =
+  const sallaStoreUrl =
     tokenData.store_url || tokenData.storeUrl || tokenData.store?.url || null;
 
   if (!accessToken) {

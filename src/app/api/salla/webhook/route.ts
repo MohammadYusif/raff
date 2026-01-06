@@ -1,16 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  CommissionStatus,
-  MerchantStatus,
-  Prisma,
-  type Merchant,
-} from "@prisma/client";
+import { CommissionStatus, type Merchant } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getSallaWebhookConfig } from "@/lib/platform/config";
-import {
-  syncSallaProductById,
-  deactivateSallaProduct,
-} from "@/lib/services/salla.service";
+import { syncSallaProductById } from "@/lib/services/salla.service";
 import {
   normalizeSallaOrderWebhook,
   logProcessedWebhook,
@@ -23,17 +15,6 @@ import crypto from "crypto";
 /* ============================================================
    Helpers
 ============================================================ */
-
-function isSameAmount(value: unknown, target: number): boolean {
-  const numeric =
-    typeof value === "number" ? value : Number(value ?? Number.NaN);
-  if (Number.isNaN(numeric)) return false;
-  return Math.abs(numeric - target) < 0.0001;
-}
-
-function isSameCurrency(value: string | null | undefined, target: string) {
-  return (value ?? "").toUpperCase() === target.toUpperCase();
-}
 
 function sha256SecretPlusBody(secret: string, rawBody: string): string {
   return crypto
@@ -80,8 +61,6 @@ async function processOrderWebhook(
   normalized: NonNullable<ReturnType<typeof normalizeSallaOrderWebhook>>,
   merchant: Merchant
 ): Promise<{ success: boolean; message: string; commission?: number }> {
-  const isDev = process.env.NODE_ENV !== "production";
-
   const referrerCode = normalized.referrerCode;
   if (!referrerCode || !isValidRaffReferrer(referrerCode)) {
     return { success: true, message: "No valid Raff referrer code" };
@@ -132,7 +111,7 @@ async function processOrderWebhook(
         ? CommissionStatus.APPROVED
         : CommissionStatus.PENDING;
 
-    const commission = await tx.commission.upsert({
+    await tx.commission.upsert({
       where: {
         merchantId_orderId: {
           merchantId: merchant.id,
