@@ -244,7 +244,7 @@ export function MerchantDashboardContent() {
   const { triggerSync, syncing, lastSync } = useMerchantSync(
     Boolean(merchantId)
   );
-  const { stats } = useMerchantStats(merchantId);
+  const { stats, refetch: refetchStats } = useMerchantStats(merchantId);
   const hasAutoSynced = useRef(false);
   const localeKey = locale === "ar" ? "ar-SA" : "en-US";
   const numberFormatter = useMemo(
@@ -301,6 +301,7 @@ export function MerchantDashboardContent() {
       const result = await triggerSync();
       if (result?.success) {
         toast.success(t("quickActions.syncSuccess"));
+        void refetchStats();
         return;
       }
       toast.error(result?.error || t("quickActions.syncError"));
@@ -314,6 +315,7 @@ export function MerchantDashboardContent() {
     const result = await triggerSync();
     if (result?.success) {
       toast.success(t("quickActions.syncSuccess"));
+      void refetchStats();
       return;
     }
     toast.error(result?.error || t("quickActions.syncError"));

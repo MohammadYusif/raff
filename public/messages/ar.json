@@ -433,12 +433,14 @@
       "revenue": "الإيرادات",
       "viewsGrowth": "نمو المشاهدات",
       "summary": "{active} نشط | {inactive} غير نشط",
-      "ctrValue": "{value} معدل النقر"
+      "ctrValue": "{value} معدل النقر",
+      "outOfStock": "نفد المخزون"
     },
     "filters": {
       "all": "الكل",
       "active": "المنتجات النشطة",
-      "inactive": "المنتجات غير النشطة"
+      "inactive": "المنتجات غير النشطة",
+      "outOfStock": "نفد المخزون"
     },
     "sortBy": {
       "views": "الأكثر مشاهدة",
@@ -448,7 +450,8 @@
     },
     "status": {
       "active": "نشط",
-      "inactive": "غير نشط"
+      "inactive": "غير نشط",
+      "outOfStock": "نفد المخزون"
     },
     "metrics": {
       "views": "مشاهدة",
@@ -456,7 +459,9 @@
       "orders": "طلب",
       "revenue": "إيرادات",
       "ctr": "معدل النقر",
-      "conversion": "معدل التحويل"
+      "conversion": "معدل التحويل",
+      "quantity": "الكمية",
+      "quantityUnknown": "غير محدد"
     }
   },
   "merchantAnalytics": {

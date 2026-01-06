@@ -1,7 +1,7 @@
 // src/app/merchant/products/MerchantProductsContent.tsx
 "use client";
 
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations, useLocale } from "next-intl";
 import Image from "next/image";
@@ -16,6 +16,7 @@ import {
 } from "@/shared/components/ui";
 import {
   Package,
+  PackageX,
   RefreshCw,
   Eye,
   MousePointerClick,
@@ -36,6 +37,8 @@ interface Product {
   nameAr: string;
   price: number;
   image: string | null;
+  quantity: number | null;
+  inStock: boolean;
   isActive: boolean;
   views: number;
   clicks: number;
@@ -59,8 +62,8 @@ function ProductsLoadingSkeleton() {
       </div>
 
       {/* Stats Cards Skeleton */}
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, index) => (
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        {Array.from({ length: 5 }).map((_, index) => (
           <Card key={index}>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -156,13 +159,16 @@ export function MerchantProductsContent() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<
-    "all" | "active" | "inactive"
+    "all" | "active" | "inactive" | "outOfStock"
   >("all");
   const [sortBy, setSortBy] = useState<
     "views" | "clicks" | "orders" | "revenue"
   >("views");
 
-  const { triggerSync, syncing } = useMerchantSync(Boolean(merchantId));
+  const { triggerSync, syncing, lastSync, refetchStatus } = useMerchantSync(
+    Boolean(merchantId)
+  );
+  const lastSyncRef = useRef<number | null>(null);
 
   const fetchProducts = useCallback(async () => {
     try {
@@ -189,6 +195,29 @@ export function MerchantProductsContent() {
     }
   }, [merchantId, fetchProducts]);
 
+  useEffect(() => {
+    if (!merchantId) return;
+    const interval = setInterval(() => {
+      void refetchStatus();
+    }, 15000);
+
+    return () => clearInterval(interval);
+  }, [merchantId, refetchStatus]);
+
+  useEffect(() => {
+    if (!lastSync?.lastSyncAt) return;
+    const timestamp = lastSync.lastSyncAt.getTime();
+
+    if (lastSyncRef.current === null) {
+      lastSyncRef.current = timestamp;
+      return;
+    }
+
+    if (lastSyncRef.current === timestamp) return;
+    lastSyncRef.current = timestamp;
+    void fetchProducts();
+  }, [lastSync?.lastSyncAt, fetchProducts]);
+
   if (loading) {
     return <ProductsLoadingSkeleton />;
   }
@@ -208,6 +237,7 @@ export function MerchantProductsContent() {
       // Filter by status
       if (filterStatus === "active" && !product.isActive) return false;
       if (filterStatus === "inactive" && product.isActive) return false;
+      if (filterStatus === "outOfStock" && product.inStock) return false;
 
       // Filter by search query
       if (searchQuery) {
@@ -229,6 +259,7 @@ export function MerchantProductsContent() {
     total: products.length,
     active: products.filter((p) => p.isActive).length,
     inactive: products.filter((p) => !p.isActive).length,
+    outOfStock: products.filter((p) => !p.inStock).length,
     totalViews: products.reduce((sum, p) => sum + p.views, 0),
     totalClicks: products.reduce((sum, p) => sum + p.clicks, 0),
     totalOrders: products.reduce((sum, p) => sum + p.orders, 0),
@@ -279,6 +310,28 @@ export function MerchantProductsContent() {
                 </p>
               </div>
               <Package className="h-10 w-10 text-raff-primary/20" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-raff-neutral-600">
+                  {t("stats.outOfStock")}
+                </p>
+                <p className="text-2xl font-bold text-raff-primary">
+                  {formatNumber(stats.outOfStock)}
+                </p>
+                <p className="text-xs text-raff-neutral-500">
+                  {t("stats.summary", {
+                    active: formatNumber(stats.active),
+                    inactive: formatNumber(stats.inactive),
+                  })}
+                </p>
+              </div>
+              <PackageX className="h-10 w-10 text-raff-warning/30" />
             </div>
           </CardContent>
         </Card>
@@ -372,6 +425,7 @@ export function MerchantProductsContent() {
                   <option value="all">{t("filters.all")}</option>
                   <option value="active">{t("filters.active")}</option>
                   <option value="inactive">{t("filters.inactive")}</option>
+                  <option value="outOfStock">{t("filters.outOfStock")}</option>
                 </select>
               </div>
 
@@ -447,11 +501,23 @@ export function MerchantProductsContent() {
                             {t("status.inactive")}
                           </Badge>
                         )}
+                        {!product.inStock && (
+                          <Badge variant="warning" className="gap-1 text-xs">
+                            {t("status.outOfStock")}
+                          </Badge>
+                        )}
                       </div>
                       <p className="mb-2 text-lg font-bold text-raff-primary">
                         {formatPrice(product.price, locale)}
                       </p>
                       <div className="flex flex-wrap gap-3 text-xs text-raff-neutral-600">
+                        <span className="flex items-center gap-1">
+                          <Package className="h-3 w-3" />
+                          {t("metrics.quantity")}:{" "}
+                          {product.quantity === null
+                            ? t("metrics.quantityUnknown")
+                            : formatNumber(product.quantity)}
+                        </span>
                         <span className="flex items-center gap-1">
                           <Eye className="h-3 w-3" />
                           {formatNumber(product.views)} {t("metrics.views")}

@@ -427,6 +427,7 @@
       "totalProducts": "Total Products",
       "active": "Active",
       "inactive": "Inactive",
+      "outOfStock": "Out of Stock",
       "totalViews": "Total Views",
       "totalClicks": "Total Clicks",
       "totalOrders": "Total Orders",
@@ -438,7 +439,8 @@
     "filters": {
       "all": "All",
       "active": "Active Products",
-      "inactive": "Inactive Products"
+      "inactive": "Inactive Products",
+      "outOfStock": "Out of Stock"
     },
     "sortBy": {
       "views": "Most Viewed",
@@ -448,9 +450,12 @@
     },
     "status": {
       "active": "Active",
-      "inactive": "Inactive"
+      "inactive": "Inactive",
+      "outOfStock": "Out of Stock"
     },
     "metrics": {
+      "quantity": "Qty",
+      "quantityUnknown": "Unknown",
       "views": "views",
       "clicks": "clicks",
       "orders": "orders",

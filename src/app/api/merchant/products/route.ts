@@ -36,6 +36,8 @@ export async function GET() {
         price: true,
         images: true,
         thumbnail: true,
+        quantity: true,
+        inStock: true,
         isActive: true,
         createdAt: true,
         clickTrackings: {
@@ -78,6 +80,8 @@ export async function GET() {
         nameAr: product.titleAr || product.title,
         price: Number(product.price),
         image: product.thumbnail || product.images[0] || null,
+        quantity: product.quantity,
+        inStock: product.inStock,
         isActive: product.isActive,
         views,
         clicks,
