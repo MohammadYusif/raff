@@ -39,10 +39,7 @@ function sha256SecretPlusBody(secret: string, rawBody: string): string {
   return crypto
     .createHash("sha256")
     .update(
-      Buffer.concat([
-        Buffer.from(secret, "utf8"),
-        Buffer.from(rawBody, "utf8"),
-      ])
+      Buffer.concat([Buffer.from(secret, "utf8"), Buffer.from(rawBody, "utf8")])
     )
     .digest("hex");
 }
@@ -51,10 +48,7 @@ function sha256BodyPlusSecret(secret: string, rawBody: string): string {
   return crypto
     .createHash("sha256")
     .update(
-      Buffer.concat([
-        Buffer.from(rawBody, "utf8"),
-        Buffer.from(secret, "utf8"),
-      ])
+      Buffer.concat([Buffer.from(rawBody, "utf8"), Buffer.from(secret, "utf8")])
     )
     .digest("hex");
 }
@@ -165,7 +159,7 @@ async function processOrderWebhook(
     });
 
     console.log(
-      `✅ Commission ${desiredStatus}: ${commissionAmount} ${normalized.currency} for order ${normalized.orderId}`
+      `Commission ${desiredStatus}: ${commissionAmount} ${normalized.currency} for order ${normalized.orderId}`
     );
 
     return {
@@ -279,7 +273,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
-    const configuredMode = webhookConfig.signatureMode ?? "sha256";
+    const configuredMode = webhookConfig.signatureMode ?? "hmac-sha256";
 
     if (
       configuredMode === "sha256" &&
@@ -322,7 +316,7 @@ export async function POST(request: NextRequest) {
       .trim()
       .toLowerCase();
 
-    console.log(`📥 Salla webhook received: ${eventType}`);
+    console.log(`Salla webhook received: ${eventType}`);
 
     /* --------------------------------------------------------
        ORDER EVENTS
@@ -382,11 +376,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    console.log("⚠️ Unhandled Salla webhook event:", eventType);
+    console.log("Unhandled Salla webhook event:", eventType);
     processedOk = true;
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("❌ Salla webhook error:", error);
+    console.error("Salla webhook error:", error);
     errorMessage =
       error instanceof Error ? error.message : "Unknown error occurred";
     return NextResponse.json(
