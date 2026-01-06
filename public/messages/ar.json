@@ -324,12 +324,94 @@
     "title": "إدارة المنتجات",
     "subtitle": "عرض ومزامنة منتجات متجرك",
     "syncNow": "مزامنة الآن",
+    "syncing": "جاري المزامنة...",
+    "syncSuccess": "تمت المزامنة بنجاح",
+    "fetchError": "فشل تحميل المنتجات",
+    "loading": "جاري التحميل...",
+    "noProducts": "لا توجد منتجات",
+    "noProductsDesc": "ابدأ بمزامنة منتجاتك من متجرك",
+    "noResults": "لا توجد نتائج",
+    "noResultsDesc": "جرب تغيير خيارات البحث أو الفلترة",
+    "searchPlaceholder": "ابحث في المنتجات...",
+    "showingResults": "عرض {count} من {total} منتج",
     "comingSoon": "قريباً",
-    "comingSoonDesc": "ستتمكن من إدارة منتجاتك من هنا قريباً"
+    "comingSoonDesc": "ستتمكن من إدارة منتجاتك من هنا قريباً",
+    "stats": {
+      "totalProducts": "إجمالي المنتجات",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "totalViews": "إجمالي المشاهدات",
+      "totalClicks": "إجمالي النقرات",
+      "totalOrders": "إجمالي الطلبات",
+      "revenue": "الإيرادات",
+      "viewsGrowth": "نمو المشاهدات"
+    },
+    "filters": {
+      "all": "الكل",
+      "active": "المنتجات النشطة",
+      "inactive": "المنتجات غير النشطة"
+    },
+    "sortBy": {
+      "views": "الأكثر مشاهدة",
+      "clicks": "الأكثر نقراً",
+      "orders": "الأكثر طلباً",
+      "revenue": "الأعلى إيراداً"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "metrics": {
+      "views": "مشاهدة",
+      "clicks": "نقرة",
+      "orders": "طلب",
+      "revenue": "إيرادات",
+      "ctr": "معدل النقر",
+      "conversion": "معدل التحويل"
+    }
   },
   "merchantAnalytics": {
     "title": "التحليلات والتقارير",
     "subtitle": "تتبع أداء متجرك بالتفصيل",
+    "loading": "جاري التحميل...",
+    "fetchError": "فشل تحميل البيانات",
+    "noData": "لا توجد بيانات",
+    "noDataDesc": "لم يتم العثور على بيانات تحليلية للفترة المحددة",
+    "dateRange": {
+      "last7Days": "آخر 7 أيام",
+      "last30Days": "آخر 30 يوم",
+      "last90Days": "آخر 90 يوم"
+    },
+    "metrics": {
+      "totalViews": "إجمالي المشاهدات",
+      "totalClicks": "إجمالي النقرات",
+      "totalOrders": "إجمالي الطلبات",
+      "totalRevenue": "إجمالي الإيرادات",
+      "avgCTR": "متوسط معدل النقر",
+      "avgConversion": "متوسط معدل التحويل"
+    },
+    "topProducts": {
+      "title": "المنتجات الأكثر أداءً",
+      "noData": "لا توجد بيانات منتجات",
+      "views": "مشاهدة",
+      "clicks": "نقرة",
+      "orders": "طلب"
+    },
+    "trafficSources": {
+      "title": "مصادر الزيارات",
+      "noData": "لا توجد بيانات مصادر",
+      "visits": "زيارة",
+      "conversions": "تحويلات",
+      "conversionRate": "معدل التحويل"
+    },
+    "performanceTrend": {
+      "title": "اتجاه الأداء",
+      "noData": "لا توجد بيانات اتجاهات",
+      "date": "التاريخ",
+      "views": "المشاهدات",
+      "clicks": "النقرات",
+      "orders": "الطلبات"
+    },
     "comingSoon": "قريباً",
     "comingSoonDesc": "تحليلات متقدمة وتقارير تفصيلية قريباً"
   },
@@ -342,8 +424,46 @@
   "merchantSettings": {
     "title": "الإعدادات",
     "subtitle": "إدارة حسابك وتفضيلاتك",
+    "loading": "جاري التحميل...",
+    "save": "حفظ التغييرات",
+    "saving": "جاري الحفظ...",
+    "saveSuccess": "تم حفظ التغييرات بنجاح",
+    "saveError": "فشل حفظ التغييرات",
     "comingSoon": "قريباً",
-    "comingSoonDesc": "إعدادات الحساب والتفضيلات قريباً"
+    "nav": {
+      "account": "الحساب",
+      "store": "المتجر",
+      "notifications": "الإشعارات",
+      "security": "الأمان",
+      "integrations": "الربط"
+    },
+    "account": {
+      "title": "معلومات الحساب",
+      "description": "إدارة معلومات حسابك الشخصية",
+      "name": "الاسم",
+      "namePlaceholder": "أدخل اسمك",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "بريدك الإلكتروني",
+      "emailHelp": "سيتم استخدام هذا البريد لتسجيل الدخول واستعادة الحساب",
+      "roleInfo": "نوع الحساب"
+    },
+    "store": {
+      "title": "إعدادات المتجر",
+      "description": "إدارة إعدادات متجرك وربطه بالمنصات",
+      "connectedStore": "المتجر المرتبط",
+      "noStore": "لا يوجد متجر مرتبط",
+      "connected": "متصل",
+      "autoSync": "المزامنة التلقائية",
+      "autoSyncDesc": "مزامنة المنتجات تلقائياً من متجرك"
+    },
+    "notifications": {
+      "title": "إعدادات الإشعارات",
+      "description": "اختر الإشعارات التي تريد استلامها",
+      "emailNotifications": "إشعارات البريد الإلكتروني",
+      "orderNotifications": "إشعارات الطلبات",
+      "analyticsReports": "تقارير التحليلات",
+      "weeklyDigest": "ملخص أسبوعي"
+    }
   },
   "merchantJoin": {
     "title": "انضم لرَفّ كتاجر",

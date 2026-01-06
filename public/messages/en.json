@@ -324,12 +324,94 @@
     "title": "Product Management",
     "subtitle": "View and sync your store products",
     "syncNow": "Sync Now",
+    "syncing": "Syncing...",
+    "syncSuccess": "Synced successfully",
+    "fetchError": "Failed to load products",
+    "loading": "Loading...",
+    "noProducts": "No Products",
+    "noProductsDesc": "Start by syncing your products from your store",
+    "noResults": "No Results",
+    "noResultsDesc": "Try changing your search or filter options",
+    "searchPlaceholder": "Search products...",
+    "showingResults": "Showing {count} of {total} products",
     "comingSoon": "Coming Soon",
-    "comingSoonDesc": "You'll be able to manage your products from here soon"
+    "comingSoonDesc": "You'll be able to manage your products from here soon",
+    "stats": {
+      "totalProducts": "Total Products",
+      "active": "Active",
+      "inactive": "Inactive",
+      "totalViews": "Total Views",
+      "totalClicks": "Total Clicks",
+      "totalOrders": "Total Orders",
+      "revenue": "Revenue",
+      "viewsGrowth": "Views Growth"
+    },
+    "filters": {
+      "all": "All",
+      "active": "Active Products",
+      "inactive": "Inactive Products"
+    },
+    "sortBy": {
+      "views": "Most Viewed",
+      "clicks": "Most Clicked",
+      "orders": "Most Ordered",
+      "revenue": "Highest Revenue"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "metrics": {
+      "views": "views",
+      "clicks": "clicks",
+      "orders": "orders",
+      "revenue": "revenue",
+      "ctr": "CTR",
+      "conversion": "Conversion"
+    }
   },
   "merchantAnalytics": {
     "title": "Analytics & Reports",
     "subtitle": "Track your store performance in detail",
+    "loading": "Loading...",
+    "fetchError": "Failed to load data",
+    "noData": "No Data",
+    "noDataDesc": "No analytics data found for the selected period",
+    "dateRange": {
+      "last7Days": "Last 7 Days",
+      "last30Days": "Last 30 Days",
+      "last90Days": "Last 90 Days"
+    },
+    "metrics": {
+      "totalViews": "Total Views",
+      "totalClicks": "Total Clicks",
+      "totalOrders": "Total Orders",
+      "totalRevenue": "Total Revenue",
+      "avgCTR": "Avg CTR",
+      "avgConversion": "Avg Conversion"
+    },
+    "topProducts": {
+      "title": "Top Performing Products",
+      "noData": "No product data",
+      "views": "views",
+      "clicks": "clicks",
+      "orders": "orders"
+    },
+    "trafficSources": {
+      "title": "Traffic Sources",
+      "noData": "No source data",
+      "visits": "visits",
+      "conversions": "conversions",
+      "conversionRate": "conv. rate"
+    },
+    "performanceTrend": {
+      "title": "Performance Trend",
+      "noData": "No trend data",
+      "date": "Date",
+      "views": "Views",
+      "clicks": "Clicks",
+      "orders": "Orders"
+    },
     "comingSoon": "Coming Soon",
     "comingSoonDesc": "Advanced analytics and detailed reports coming soon"
   },
@@ -342,8 +424,46 @@
   "merchantSettings": {
     "title": "Settings",
     "subtitle": "Manage your account and preferences",
+    "loading": "Loading...",
+    "save": "Save Changes",
+    "saving": "Saving...",
+    "saveSuccess": "Changes saved successfully",
+    "saveError": "Failed to save changes",
     "comingSoon": "Coming Soon",
-    "comingSoonDesc": "Account settings and preferences coming soon"
+    "nav": {
+      "account": "Account",
+      "store": "Store",
+      "notifications": "Notifications",
+      "security": "Security",
+      "integrations": "Integrations"
+    },
+    "account": {
+      "title": "Account Information",
+      "description": "Manage your personal account information",
+      "name": "Name",
+      "namePlaceholder": "Enter your name",
+      "email": "Email Address",
+      "emailPlaceholder": "Your email address",
+      "emailHelp": "This email will be used for login and account recovery",
+      "roleInfo": "Account Type"
+    },
+    "store": {
+      "title": "Store Settings",
+      "description": "Manage your store settings and platform connections",
+      "connectedStore": "Connected Store",
+      "noStore": "No store connected",
+      "connected": "Connected",
+      "autoSync": "Auto Sync",
+      "autoSyncDesc": "Automatically sync products from your store"
+    },
+    "notifications": {
+      "title": "Notification Settings",
+      "description": "Choose which notifications you want to receive",
+      "emailNotifications": "Email Notifications",
+      "orderNotifications": "Order Notifications",
+      "analyticsReports": "Analytics Reports",
+      "weeklyDigest": "Weekly Digest"
+    }
   },
   "merchantJoin": {
     "title": "Join Raff as a Merchant",
