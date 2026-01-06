@@ -422,13 +422,14 @@ export function HomepageContent({
                             );
                             const previewImage =
                               product.thumbnail || product.images?.[0] || null;
+                            const originalPrice = product.originalPrice;
                             const hasDiscount =
-                              product.originalPrice !== null &&
-                              product.originalPrice > product.price;
+                              originalPrice !== null &&
+                              originalPrice > product.price;
                             const discountPercentage = hasDiscount
                               ? Math.round(
-                                  ((product.originalPrice - product.price) /
-                                    product.originalPrice) *
+                                  ((originalPrice - product.price) /
+                                    originalPrice) *
                                     100
                                 )
                               : 0;
