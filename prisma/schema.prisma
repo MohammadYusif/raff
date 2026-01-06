@@ -253,8 +253,9 @@ model User {
   phone  String?
   avatar String?
 
-  passwordHash  String
-  emailVerified DateTime?
+  passwordHash         String
+  emailVerified        DateTime?
+  registrationCompleted Boolean  @default(true)
 
   role     UserRole @default(CUSTOMER)
   language String   @default("ar")
@@ -266,6 +267,7 @@ model User {
   sessions        Session[]
   merchantProfile Merchant?
   cartItems       CartItem[]
+  notifications   Notification[]
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -652,4 +654,83 @@ enum FraudSeverity {
   LOW
   MEDIUM
   HIGH
+}
+
+// ============================================
+// NOTIFICATION MODEL
+// ============================================
+
+model Notification {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type        NotificationType
+  title       String
+  titleAr     String?
+  message     String           @db.Text
+  messageAr   String?          @db.Text
+  link        String?
+  isRead      Boolean          @default(false)
+  readAt      DateTime?
+  metadata    Json?
+  priority    NotificationPriority @default(NORMAL)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, isRead])
+  @@index([createdAt])
+}
+
+enum NotificationType {
+  ORDER_CREATED
+  ORDER_UPDATED
+  PRODUCT_SYNC_COMPLETED
+  PRODUCT_OUT_OF_STOCK
+  NEW_COMMISSION
+  PAYOUT_PROCESSED
+  MERCHANT_APPROVED
+  MERCHANT_REJECTED
+  SYSTEM_ANNOUNCEMENT
+  SECURITY_ALERT
+}
+
+enum NotificationPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+// ============================================
+// WEBHOOK EVENT LOG (Idempotency)
+// ============================================
+
+model WebhookEvent {
+  id String @id @default(cuid())
+
+  platform         Platform
+  storeId          String   // merchantId or storeId from webhook
+  eventType        String   // order.created, product.updated, etc.
+  idempotencyKey   String   // Composite: platform:storeId:eventType:hash
+  deliveryHeaderId String?  // Optional delivery ID from webhook provider headers
+  payload          Json
+  processedAt      DateTime @default(now())
+  processingStatus WebhookProcessingStatus @default(PROCESSED)
+  errorMessage     String?  @db.Text
+
+  createdAt DateTime @default(now())
+
+  @@unique([platform, storeId, idempotencyKey])
+  @@index([platform, storeId])
+  @@index([createdAt])
+}
+
+enum WebhookProcessingStatus {
+  PROCESSED
+  FAILED
+  DUPLICATE
 }
