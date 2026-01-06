@@ -54,8 +54,11 @@ export default async function HomePage() {
         slug: true,
         price: true,
         originalPrice: true,
+        currency: true,
         thumbnail: true,
         images: true,
+        externalProductUrl: true,
+        sallaUrl: true,
         trendingScore: true,
         viewCount: true,
         merchant: {
@@ -148,6 +151,9 @@ export default async function HomePage() {
             slug: true,
             price: true,
             originalPrice: true,
+            currency: true,
+            thumbnail: true,
+            images: true,
             category: {
               select: {
                 name: true,
@@ -196,6 +202,10 @@ export default async function HomePage() {
     slug: product.slug,
     price: Number(product.price),
     originalPrice: product.originalPrice ? Number(product.originalPrice) : null,
+    currency: product.currency,
+    thumbnail: product.thumbnail,
+    images: product.images,
+    externalUrl: product.externalProductUrl || product.sallaUrl || null,
     trendingScore: product.trendingScore,
     viewCount: product.viewCount,
     merchant: product.merchant,
@@ -219,6 +229,9 @@ export default async function HomePage() {
       originalPrice: product.originalPrice
         ? Number(product.originalPrice)
         : null,
+      currency: product.currency,
+      thumbnail: product.thumbnail,
+      images: product.images,
       category: product.category,
     })),
   }));

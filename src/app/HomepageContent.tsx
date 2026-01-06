@@ -9,6 +9,7 @@ import {
   Container,
   Card,
   CardContent,
+  Badge,
 } from "@/shared/components/ui";
 import { ProductCard } from "@/shared/components/ProductCard";
 import { PageLayout } from "@/shared/components/layouts";
@@ -33,6 +34,10 @@ interface SerializedProduct {
   slug: string;
   price: number;
   originalPrice: number | null;
+  currency: string;
+  thumbnail: string | null;
+  images: string[];
+  externalUrl: string | null;
   trendingScore: number | null;
   viewCount: number;
   merchant: {
@@ -77,6 +82,9 @@ interface SerializedFeaturedMerchant {
     slug: string;
     price: number;
     originalPrice: number | null;
+    currency: string;
+    thumbnail: string | null;
+    images: string[];
     category: {
       name: string;
       nameAr: string | null;
@@ -215,6 +223,10 @@ export function HomepageContent({
                   titleAr: product.titleAr,
                   price: product.price,
                   originalPrice: product.originalPrice,
+                  currency: product.currency,
+                  thumbnail: product.thumbnail,
+                  images: product.images,
+                  externalUrl: product.externalUrl,
                   trendingScore: product.trendingScore ?? 0,
                   merchant: {
                     name: product.merchant.name,
@@ -408,6 +420,18 @@ export function HomepageContent({
                               product.titleAr,
                               product.title
                             );
+                            const previewImage =
+                              product.thumbnail || product.images?.[0] || null;
+                            const hasDiscount =
+                              product.originalPrice !== null &&
+                              product.originalPrice > product.price;
+                            const discountPercentage = hasDiscount
+                              ? Math.round(
+                                  ((product.originalPrice - product.price) /
+                                    product.originalPrice) *
+                                    100
+                                )
+                              : 0;
 
                             return (
                               <Link
@@ -416,15 +440,32 @@ export function HomepageContent({
                                 className="group/product"
                               >
                                 <div className="overflow-hidden rounded-xl bg-raff-neutral-100 transition-all duration-300 hover:shadow-md">
-                                  <div className="aspect-square">
-                                    <div className="flex h-full flex-col items-center justify-center p-3 text-center transition-transform group-hover/product:scale-105">
-                                      <div className="mb-2 text-3xl opacity-60">
-                                        📦
+                                  <div className="relative aspect-square">
+                                    {previewImage ? (
+                                      <Image
+                                        src={previewImage}
+                                        alt={productTitle}
+                                        fill
+                                        sizes="(max-width: 1024px) 33vw, 120px"
+                                        className="object-cover transition-transform duration-300 group-hover/product:scale-105"
+                                      />
+                                    ) : (
+                                      <div className="flex h-full items-center justify-center">
+                                        <Package className="h-7 w-7 text-raff-neutral-400" />
                                       </div>
-                                      <p className="line-clamp-2 text-xs font-medium text-raff-neutral-700">
-                                        {productTitle}
-                                      </p>
-                                    </div>
+                                    )}
+                                    {hasDiscount && (
+                                      <div className="absolute start-2 top-2">
+                                        <Badge variant="error" className="text-xs">
+                                          -{discountPercentage}%
+                                        </Badge>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="p-2 text-center">
+                                    <p className="line-clamp-2 text-xs font-medium text-raff-neutral-700">
+                                      {productTitle}
+                                    </p>
                                   </div>
                                 </div>
                               </Link>

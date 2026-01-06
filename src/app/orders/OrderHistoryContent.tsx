@@ -7,6 +7,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Container,
   Card,
@@ -290,10 +291,20 @@ export function OrderHistoryContent() {
                       {/* Product Info */}
                       {order.product && (
                         <div className="flex gap-4">
-                          <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-raff-neutral-100">
-                            <div className="flex h-full items-center justify-center text-3xl opacity-40">
-                              📦
-                            </div>
+                          <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-raff-neutral-100">
+                            {order.product.thumbnail ? (
+                              <Image
+                                src={order.product.thumbnail}
+                                alt={productTitle || "Product"}
+                                fill
+                                sizes="80px"
+                                className="object-cover"
+                              />
+                            ) : (
+                              <div className="flex h-full items-center justify-center">
+                                <Package className="h-8 w-8 text-raff-neutral-400" />
+                              </div>
+                            )}
                           </div>
                           <div className="flex-1">
                             <Link href={`/products/${order.product.slug}`}>

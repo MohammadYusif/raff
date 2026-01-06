@@ -4,7 +4,8 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { Search, X, Loader2 } from "lucide-react";
+import { Search, X, Loader2, Package } from "lucide-react";
+import Image from "next/image";
 import { Input } from "@/shared/components/ui";
 import { cn, formatPrice, debounce, getLocalizedText } from "@/lib/utils";
 import Link from "next/link";
@@ -301,8 +302,20 @@ export function SearchInput({
                   className="flex w-full items-center gap-3 border-b border-raff-neutral-100 p-3 text-start transition-colors hover:bg-raff-neutral-50 last:border-b-0"
                 >
                   {/* Product Thumbnail */}
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-raff-neutral-100">
-                    <div className="text-2xl opacity-40">📦</div>
+                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-raff-neutral-100">
+                    {suggestion.thumbnail ? (
+                      <Image
+                        src={suggestion.thumbnail}
+                        alt={productTitle}
+                        fill
+                        sizes="48px"
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center">
+                        <Package className="h-5 w-5 text-raff-neutral-400" />
+                      </div>
+                    )}
                   </div>
 
                   {/* Product Info */}
