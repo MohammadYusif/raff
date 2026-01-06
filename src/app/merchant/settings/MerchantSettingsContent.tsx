@@ -162,6 +162,9 @@ export function MerchantSettingsContent() {
   const handleSectionChange = (
     sectionId: "account" | "store" | "notifications" | "security" | "integrations"
   ) => {
+    // Immediately set active section for responsive UI feedback
+    setActiveSection(sectionId);
+
     const section = document.getElementById(sectionId);
     if (section) {
       section.scrollIntoView({ behavior: "smooth", block: "start" });

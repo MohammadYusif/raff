@@ -128,9 +128,11 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
                 <Image
                   src="/logo.svg"
                   alt={layoutT("brandAlt")}
-                  width={96}
-                  height={28}
-                  className="h-7 w-auto object-contain"
+                  width={128}
+                  height={36}
+                  className="h-9 w-auto object-contain"
+                  priority
+                  unoptimized
                 />
                 {platformLogo && platformName && (
                   <>
@@ -144,6 +146,8 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
                       width={28}
                       height={28}
                       className="h-7 w-7 object-contain"
+                      priority
+                      unoptimized
                     />
                   </>
                 )}
@@ -166,6 +170,8 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
                     width={20}
                     height={20}
                     className="h-5 w-5"
+                    priority
+                    unoptimized
                     onError={(e) => {
                       e.currentTarget.style.display = "none";
                     }}
