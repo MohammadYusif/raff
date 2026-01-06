@@ -13,6 +13,18 @@ import {
 } from "@/lib/platform/webhook-normalizer";
 import crypto from "crypto";
 
+const shouldDebug =
+  process.env.RAFF_SALLA_WEBHOOK_DEBUG === "true" ||
+  process.env.NODE_ENV !== "production";
+const debugLog = (message: string, details?: Record<string, unknown>) => {
+  if (!shouldDebug) return;
+  if (details) {
+    console.log("[salla-webhook]", message, details);
+    return;
+  }
+  console.log("[salla-webhook]", message);
+};
+
 /* ============================================================
    Helpers
 ============================================================ */
@@ -168,7 +180,7 @@ export async function POST(request: NextRequest) {
     /* --------------------------------------------------------
        CONFIG DEBUG (safe)
     -------------------------------------------------------- */
-    console.log("Salla webhook config:", {
+    debugLog("config", {
       headerName: webhookConfig.header,
       signatureMode: webhookConfig.signatureMode,
       hasSecret: Boolean(webhookConfig.secret),
@@ -187,7 +199,7 @@ export async function POST(request: NextRequest) {
     const signatureRaw = request.headers.get(headerName);
     const strategyHeader = request.headers.get("x-salla-security-strategy");
 
-    console.log("Incoming headers:", {
+    debugLog("incoming-headers", {
       signatureHeaderName: headerName.toLowerCase(),
       signaturePresent: Boolean(signatureRaw),
       signatureLength: signatureRaw ? signatureRaw.trim().length : 0,
@@ -196,7 +208,7 @@ export async function POST(request: NextRequest) {
       contentType: request.headers.get("content-type"),
     });
 
-    console.log("Raw body debug:", {
+    debugLog("raw-body", {
       rawBodyLength: rawBody.length,
       rawBodyHash: crypto.createHash("sha256").update(rawBody).digest("hex"),
     });
@@ -228,7 +240,7 @@ export async function POST(request: NextRequest) {
     const matchHmac = provided === expHmac;
     const matchPlain = signatureRaw.trim() === secret.trim();
 
-    console.log("Signature candidates:", {
+    debugLog("signature-candidates", {
       providedPrefix: safePrefix(provided),
       providedLength: provided.length,
       sha256_secret_plus_body: safePrefix(expSecretPlusBody),
@@ -236,7 +248,7 @@ export async function POST(request: NextRequest) {
       hmac_sha256: safePrefix(expHmac),
     });
 
-    console.log("Signature match:", {
+    debugLog("signature-match", {
       matchShaSecretBody,
       matchShaBodySecret,
       matchHmac,
@@ -296,7 +308,7 @@ export async function POST(request: NextRequest) {
       .trim()
       .toLowerCase();
 
-    console.log(`Salla webhook received: ${eventType}`);
+    debugLog("received-event", { eventType });
 
     /* --------------------------------------------------------
        ORDER EVENTS
@@ -371,10 +383,38 @@ export async function POST(request: NextRequest) {
       if (storeIdString) {
         const merchant = await prisma.merchant.findUnique({
           where: { sallaStoreId: storeIdString },
-          select: { id: true, sallaAccessToken: true },
+          select: {
+            id: true,
+            sallaAccessToken: true,
+            sallaStoreId: true,
+            updatedAt: true,
+          },
         });
 
-        if (merchant?.sallaAccessToken) {
+        if (!merchant) {
+          console.warn("Salla app.installed: merchant not found for store", {
+            storeId: storeIdString,
+          });
+          processedOk = true;
+          return NextResponse.json({ success: true });
+        }
+
+        const recentWindowMs = 5 * 60 * 1000;
+        const recentlySynced =
+          merchant.updatedAt &&
+          Date.now() - merchant.updatedAt.getTime() < recentWindowMs &&
+          merchant.sallaStoreId === storeIdString;
+
+        if (recentlySynced) {
+          debugLog("app-installed-skip-recent", {
+            merchantId: merchant.id,
+            sallaStoreId: storeIdString,
+          });
+          processedOk = true;
+          return NextResponse.json({ success: true, skipped: true });
+        }
+
+        if (merchant.sallaAccessToken) {
           await syncSallaStoreInfo(merchant.id);
         } else {
           console.warn("Salla app.installed: missing access token for store", {
@@ -389,7 +429,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    console.log("Unhandled Salla webhook event:", eventType);
+    debugLog("unhandled-event", { eventType });
     processedOk = true;
     return NextResponse.json({ success: true });
   } catch (error) {
