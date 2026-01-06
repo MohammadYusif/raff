@@ -17,8 +17,6 @@ import {
   isValidRaffReferrer,
   isPaymentConfirmed,
   isOrderCancelled,
-  verifySignature,
-  SignatureConfig,
 } from "@/lib/platform/webhook-normalizer";
 import crypto from "crypto";
 
@@ -35,6 +33,49 @@ function isSameAmount(value: unknown, target: number): boolean {
 
 function isSameCurrency(value: string | null | undefined, target: string) {
   return (value ?? "").toUpperCase() === target.toUpperCase();
+}
+
+function sha256SecretPlusBody(secret: string, rawBody: string): string {
+  return crypto
+    .createHash("sha256")
+    .update(
+      Buffer.concat([
+        Buffer.from(secret, "utf8"),
+        Buffer.from(rawBody, "utf8"),
+      ])
+    )
+    .digest("hex");
+}
+
+function sha256BodyPlusSecret(secret: string, rawBody: string): string {
+  return crypto
+    .createHash("sha256")
+    .update(
+      Buffer.concat([
+        Buffer.from(rawBody, "utf8"),
+        Buffer.from(secret, "utf8"),
+      ])
+    )
+    .digest("hex");
+}
+
+function hmacSha256(secret: string, rawBody: string): string {
+  return crypto
+    .createHmac("sha256", Buffer.from(secret, "utf8"))
+    .update(rawBody, "utf8")
+    .digest("hex");
+}
+
+function normalizeHexSig(sig: string): string {
+  const trimmed = sig.trim();
+  const parts = trimmed.split("=");
+  const candidate = parts.length === 2 ? parts[1] : trimmed;
+  return candidate.trim().toLowerCase();
+}
+
+function safePrefix(value: string, n = 12): string {
+  const v = value ?? "";
+  return v.length <= n ? v : `${v.slice(0, n)}...`;
 }
 
 /* ============================================================
@@ -153,10 +194,14 @@ export async function POST(request: NextRequest) {
     /* --------------------------------------------------------
        CONFIG DEBUG (safe)
     -------------------------------------------------------- */
-    console.log("🧷 Salla webhook config:", {
-      header: webhookConfig.header,
+    console.log("Salla webhook config:", {
+      headerName: webhookConfig.header,
       signatureMode: webhookConfig.signatureMode,
       hasSecret: Boolean(webhookConfig.secret),
+      secretLength: webhookConfig.secret ? webhookConfig.secret.length : 0,
+      secretTrimmedLength: webhookConfig.secret
+        ? webhookConfig.secret.trim().length
+        : 0,
     });
 
     rawBody = await request.text();
@@ -164,63 +209,109 @@ export async function POST(request: NextRequest) {
     /* --------------------------------------------------------
        HEADER + BODY DEBUG (safe)
     -------------------------------------------------------- */
-    const signatureHeaderName = webhookConfig.header ?? "x-salla-signature";
-    const signature = request.headers.get(signatureHeaderName);
-    const strategyHeader =
-      request.headers.get("X-Salla-Security-Strategy") ??
-      request.headers.get("x-salla-security-strategy");
+    const headerName = webhookConfig.header ?? "x-salla-signature";
+    const signatureRaw = request.headers.get(headerName);
+    const strategyHeader = request.headers.get("x-salla-security-strategy");
 
-    console.log("🔍 Incoming headers:", {
-      signatureHeaderName,
-      signaturePresent: Boolean(signature),
-      signaturePrefix: signature ? `${signature.slice(0, 12)}...` : null,
-      signatureLength: signature?.length ?? null,
+    console.log("Incoming headers:", {
+      signatureHeaderName: headerName.toLowerCase(),
+      signaturePresent: Boolean(signatureRaw),
+      signatureLength: signatureRaw ? signatureRaw.trim().length : 0,
+      signaturePrefix: signatureRaw ? safePrefix(signatureRaw.trim()) : null,
       strategy: strategyHeader ?? null,
       contentType: request.headers.get("content-type"),
     });
 
-    console.log("📦 Raw body debug:", {
+    console.log("Raw body debug:", {
       rawBodyLength: rawBody.length,
       rawBodyHash: crypto.createHash("sha256").update(rawBody).digest("hex"),
     });
 
     /* --------------------------------------------------------
-       SIGNATURE VERIFICATION (SALLA = SHA256)
+       SIGNATURE VERIFICATION (SALLA)
     -------------------------------------------------------- */
     if (!webhookConfig.secret) {
-      console.error("❌ SALLA_WEBHOOK_SECRET missing");
+      console.error("SALLA_WEBHOOK_SECRET missing");
       return NextResponse.json(
         { error: "Webhook not configured" },
         { status: 500 }
       );
     }
 
-    if (!signature) {
-      console.error("❌ Missing Salla signature header");
+    if (!signatureRaw) {
+      console.error("Missing Salla signature header");
       return NextResponse.json({ error: "Missing signature" }, { status: 401 });
     }
 
-    const signatureConfig: SignatureConfig = {
-      mode: "sha256", // SALLA USES SHA256 (secret + body)
-      secret: webhookConfig.secret,
-    };
+    const provided = normalizeHexSig(signatureRaw);
+    const secret = webhookConfig.secret;
 
-    const expectedSha256 = crypto
-      .createHash("sha256")
-      .update(webhookConfig.secret + rawBody)
-      .digest("hex");
+    const expSecretPlusBody = sha256SecretPlusBody(secret, rawBody);
+    const expBodyPlusSecret = sha256BodyPlusSecret(secret, rawBody);
+    const expHmac = hmacSha256(secret, rawBody);
+    const matchShaSecretBody = provided === expSecretPlusBody;
+    const matchShaBodySecret = provided === expBodyPlusSecret;
+    const matchHmac = provided === expHmac;
+    const matchPlain = signatureRaw.trim() === secret.trim();
 
-    console.log("🧪 Signature debug:", {
-      mode: signatureConfig.mode,
-      providedPrefix: `${signature.slice(0, 12)}...`,
-      expectedPrefix: `${expectedSha256.slice(0, 12)}...`,
-      providedLength: signature.length,
-      expectedLength: expectedSha256.length,
+    console.log("Signature candidates:", {
+      providedPrefix: safePrefix(provided),
+      providedLength: provided.length,
+      sha256_secret_plus_body: safePrefix(expSecretPlusBody),
+      sha256_body_plus_secret: safePrefix(expBodyPlusSecret),
+      hmac_sha256: safePrefix(expHmac),
     });
 
-    if (!verifySignature(signature, signatureConfig, rawBody)) {
-      console.error("❌ Salla webhook signature verification failed");
+    console.log("Signature match:", {
+      matchShaSecretBody,
+      matchShaBodySecret,
+      matchHmac,
+      matchPlain,
+    });
+
+    if (
+      !matchShaSecretBody &&
+      !matchShaBodySecret &&
+      !matchHmac &&
+      !matchPlain
+    ) {
+      console.error("Salla webhook signature verification failed");
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+    }
+
+    const configuredMode = webhookConfig.signatureMode ?? "sha256";
+
+    if (
+      configuredMode === "sha256" &&
+      !(matchShaSecretBody || matchShaBodySecret)
+    ) {
+      console.error(
+        "Mode mismatch: expected sha256 but signature matched other method"
+      );
+      return NextResponse.json(
+        { error: "Invalid signature mode" },
+        { status: 401 }
+      );
+    }
+
+    if (configuredMode === "hmac-sha256" && !matchHmac) {
+      console.error(
+        "Mode mismatch: expected hmac-sha256 but signature matched other method"
+      );
+      return NextResponse.json(
+        { error: "Invalid signature mode" },
+        { status: 401 }
+      );
+    }
+
+    if (configuredMode === "plain" && !matchPlain) {
+      console.error(
+        "Mode mismatch: expected plain but signature matched other method"
+      );
+      return NextResponse.json(
+        { error: "Invalid signature mode" },
+        { status: 401 }
+      );
     }
 
     /* --------------------------------------------------------
