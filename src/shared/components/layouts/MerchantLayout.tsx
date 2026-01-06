@@ -93,11 +93,12 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
         ? "/images/brands/salla.svg"
         : null;
 
-  const sidebarOrder = isRtl ? "lg:order-2" : "lg:order-1";
-  const contentOrder = isRtl ? "lg:order-1" : "lg:order-2";
-
   return (
-    <div className="flex h-screen bg-raff-neutral-50 lg:flex-row">
+    <div
+      className={`flex h-screen bg-raff-neutral-50 ${
+        isRtl ? "lg:flex-row-reverse" : "lg:flex-row"
+      }`}
+    >
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div
@@ -108,7 +109,7 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 start-0 z-50 w-64 transform bg-white shadow-lg transition-transform duration-300 lg:static lg:translate-x-0 ${sidebarOrder} ${
+        className={`fixed inset-y-0 start-0 z-50 w-64 transform bg-white shadow-lg transition-transform duration-300 lg:static lg:translate-x-0 ${
           sidebarOpen
             ? "translate-x-0"
             : isRtl
@@ -242,7 +243,7 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
       </aside>
 
       {/* Main Content */}
-      <div className={`flex flex-1 flex-col overflow-hidden ${contentOrder}`}>
+      <div className="flex flex-1 flex-col overflow-hidden">
         {/* Mobile Header */}
         <header className="border-b border-raff-neutral-200 bg-white p-4 lg:hidden">
           <button

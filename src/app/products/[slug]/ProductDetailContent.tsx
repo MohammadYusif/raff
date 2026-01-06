@@ -1,8 +1,10 @@
 // src/app/products/[slug]/ProductDetailContent.tsx
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
+import Image from "next/image";
 import { PageLayout } from "@/shared/components/layouts";
 import {
   Container,
@@ -34,6 +36,23 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
   const t = useTranslations("product");
   const commonT = useTranslations("common");
   const locale = useLocale();
+
+  const productImages = useMemo(() => {
+    const images = Array.isArray(product.images)
+      ? product.images.filter(Boolean)
+      : [];
+    if (product.imageUrl && !images.includes(product.imageUrl)) {
+      images.unshift(product.imageUrl);
+    }
+    return images;
+  }, [product.images, product.imageUrl]);
+  const [activeImage, setActiveImage] = useState<string | null>(
+    productImages[0] ?? null
+  );
+
+  useEffect(() => {
+    setActiveImage(productImages[0] ?? null);
+  }, [productImages]);
 
   // ✅ NEW: Use click tracking hook
   const { trackAndRedirect, isTracking } = useProductClick();
@@ -115,20 +134,55 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
         <Container className="py-8">
           <div className="grid gap-8 lg:grid-cols-2">
             {/* Product Image */}
-            <div className="relative aspect-square overflow-hidden rounded-lg bg-raff-neutral-100">
-              <div className="flex h-full items-center justify-center text-9xl opacity-40">
-                📦
+            <div className="space-y-4">
+              <div className="relative aspect-square overflow-hidden rounded-lg bg-raff-neutral-100">
+                {activeImage ? (
+                  <Image
+                    src={activeImage}
+                    alt={productTitle}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center">
+                    <Package className="h-16 w-16 text-raff-neutral-400" />
+                  </div>
+                )}
+                {product.trendingScore > 70 && (
+                  <div className="absolute start-4 top-4">
+                    <Badge className="gap-1 bg-raff-accent text-white">
+                      <TrendingUp className="h-3 w-3" />
+                      {commonT("labels.trending")}
+                    </Badge>
+                  </div>
+                )}
               </div>
-              {product.trendingScore > 70 && (
-                <div className="absolute start-4 top-4">
-                  <Badge className="gap-1 bg-raff-accent text-white">
-                    <TrendingUp className="h-3 w-3" />
-                    {commonT("labels.trending")}
-                  </Badge>
+              {productImages.length > 1 && (
+                <div className="grid grid-cols-5 gap-2">
+                  {productImages.map((image) => (
+                    <button
+                      key={image}
+                      type="button"
+                      onClick={() => setActiveImage(image)}
+                      className={`relative aspect-square overflow-hidden rounded-md border ${
+                        image === activeImage
+                          ? "border-raff-primary"
+                          : "border-raff-neutral-200"
+                      }`}
+                    >
+                      <Image
+                        src={image}
+                        alt={productTitle}
+                        fill
+                        sizes="96px"
+                        className="object-cover"
+                      />
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
-
             {/* Product Info */}
             <div>
               {/* Category */}

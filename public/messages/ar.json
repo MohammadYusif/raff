@@ -293,7 +293,7 @@
     },
     "storeConnected": {
       "title": "تم ربط المتجر بنجاح!",
-      "description": "متجرك على {{platform}} متصل الآن برَفّ",
+      "description": "متجرك على {platform} متصل الآن برَفّ",
       "manage": "إدارة الاتصال"
     },
     "stats": {

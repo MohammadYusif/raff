@@ -62,12 +62,15 @@ const normalizeQuantity = (product: SallaProduct): number | null => {
   const skus = Array.isArray(product.skus) ? product.skus : [];
   if (skus.length === 0) return null;
 
-  const skuQtySum = skus.reduce(
-    (sum, sku) => sum + (toIntOrNull(sku.stock_quantity) ?? 0),
-    0
-  );
+  let hasSkuQuantity = false;
+  const skuQtySum = skus.reduce((sum, sku) => {
+    const qty = toIntOrNull(sku.stock_quantity);
+    if (qty === null) return sum;
+    hasSkuQuantity = true;
+    return sum + qty;
+  }, 0);
 
-  return skuQtySum;
+  return hasSkuQuantity ? skuQtySum : null;
 };
 
 const resolveSallaUrl = (product: SallaProduct): string | null => {

@@ -3,8 +3,9 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
-import { TrendingUp, ArrowRight, ShoppingCart } from "lucide-react";
+import { TrendingUp, ArrowRight, ShoppingCart, Package } from "lucide-react";
 import { Card, CardContent, Badge } from "@/shared/components/ui";
 import { easeOut } from "framer-motion";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
@@ -30,6 +31,8 @@ interface ProductCardProps {
       nameAr?: string | null;
     } | null;
     imageUrl?: string | null;
+    thumbnail?: string | null;
+    images?: string[];
     currency?: string;
     externalUrl?: string | null;
   };
@@ -79,6 +82,8 @@ export function ProductCard({
   const categoryName = product.category
     ? getLocalizedText(locale, product.category.nameAr, product.category.name)
     : null;
+  const resolvedImage =
+    product.imageUrl || product.thumbnail || product.images?.[0] || null;
 
   const hasDiscount = originalPrice !== null && originalPrice > price;
   const discountPercentage = hasDiscount
@@ -96,7 +101,7 @@ export function ProductCard({
       slug: product.slug,
       name: product.title,
       nameAr: product.titleAr,
-      image: product.imageUrl || null,
+      image: resolvedImage,
       price,
       currency: product.currency || "SAR",
       merchantName: product.merchant.name,
@@ -175,10 +180,19 @@ export function ProductCard({
               whileHover="hover"
             >
               <motion.div variants={imageVariants} className="h-full w-full">
-                {/* Placeholder for image - you can add Image component here */}
-                <div className="flex h-full w-full items-center justify-center from-raff-primary/10 to-raff-accent/10">
-                  <span className="text-4xl opacity-50">📦</span>
-                </div>
+                {resolvedImage ? (
+                  <Image
+                    src={resolvedImage}
+                    alt={productTitle}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-raff-neutral-100">
+                    <Package className="h-10 w-10 text-raff-neutral-400" />
+                  </div>
+                )}
               </motion.div>
 
               {/* Trending Badge */}

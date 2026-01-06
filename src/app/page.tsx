@@ -54,6 +54,8 @@ export default async function HomePage() {
         slug: true,
         price: true,
         originalPrice: true,
+        thumbnail: true,
+        images: true,
         trendingScore: true,
         viewCount: true,
         merchant: {
