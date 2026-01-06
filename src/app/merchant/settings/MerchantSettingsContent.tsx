@@ -89,6 +89,9 @@ export function MerchantSettingsContent() {
     Boolean(merchantId)
   );
 
+  const [activeSection, setActiveSection] = useState<
+    "account" | "store" | "notifications" | "security" | "integrations"
+  >("account");
   const [saving, setSaving] = useState(false);
   const [accountData, setAccountData] = useState({
     name: session?.user?.name || "",
@@ -105,6 +108,16 @@ export function MerchantSettingsContent() {
     analyticsReports: false,
     weeklyDigest: true,
   });
+
+  const handleSectionChange = (
+    sectionId: "account" | "store" | "notifications" | "security" | "integrations"
+  ) => {
+    setActiveSection(sectionId);
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   const handleSaveAccount = async () => {
     try {
@@ -170,53 +183,70 @@ export function MerchantSettingsContent() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Sidebar Navigation */}
         <div className="space-y-2">
-          <button className="flex w-full items-center gap-3 rounded-lg bg-raff-primary px-4 py-3 text-start text-white transition-colors">
-            <User className="h-5 w-5" />
-            <span className="font-medium">{t("nav.account")}</span>
-          </button>
-          <button className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-start text-raff-neutral-700 transition-colors hover:bg-raff-neutral-100">
-            <Store className="h-5 w-5" />
-            <span className="font-medium">{t("nav.store")}</span>
-          </button>
-          <button className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-start text-raff-neutral-700 transition-colors hover:bg-raff-neutral-100">
-            <Bell className="h-5 w-5" />
-            <span className="font-medium">{t("nav.notifications")}</span>
-          </button>
-          <button className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-start text-raff-neutral-700 transition-colors hover:bg-raff-neutral-100">
-            <Shield className="h-5 w-5" />
-            <span className="font-medium">{t("nav.security")}</span>
-          </button>
-          <button className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-start text-raff-neutral-700 transition-colors hover:bg-raff-neutral-100">
-            <Plug className="h-5 w-5" />
-            <span className="font-medium">{t("nav.integrations")}</span>
-          </button>
+          {(
+            [
+              { id: "account", label: t("nav.account"), icon: User },
+              { id: "store", label: t("nav.store"), icon: Store },
+              {
+                id: "notifications",
+                label: t("nav.notifications"),
+                icon: Bell,
+              },
+              { id: "security", label: t("nav.security"), icon: Shield },
+              {
+                id: "integrations",
+                label: t("nav.integrations"),
+                icon: Plug,
+              },
+            ] as const
+          ).map((item) => {
+            const isActive = activeSection === item.id;
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => handleSectionChange(item.id)}
+                aria-current={isActive ? "page" : undefined}
+                className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-start transition-colors ${
+                  isActive
+                    ? "bg-raff-primary text-white"
+                    : "text-raff-neutral-700 hover:bg-raff-neutral-100"
+                }`}
+              >
+                <Icon className="h-5 w-5" />
+                <span className="font-medium">{item.label}</span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Main Content */}
         <div className="space-y-6 lg:col-span-2">
           {/* Account Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                {t("account.title")}
-              </CardTitle>
-              <CardDescription>{t("account.description")}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-raff-primary">
-                  {t("account.name")}
-                </label>
-                <Input
-                  type="text"
-                  value={accountData.name}
-                  onChange={(e) =>
-                    setAccountData({ ...accountData, name: e.target.value })
-                  }
-                  placeholder={t("account.namePlaceholder")}
-                />
-              </div>
+          <section id="account" className="scroll-mt-24">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  {t("account.title")}
+                </CardTitle>
+                <CardDescription>{t("account.description")}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-raff-primary">
+                    {t("account.name")}
+                  </label>
+                  <Input
+                    type="text"
+                    value={accountData.name}
+                    onChange={(e) =>
+                      setAccountData({ ...accountData, name: e.target.value })
+                    }
+                    placeholder={t("account.namePlaceholder")}
+                  />
+                </div>
 
               <div>
                 <label className="mb-2 block text-sm font-medium text-raff-primary">
@@ -245,33 +275,35 @@ export function MerchantSettingsContent() {
                 </p>
               </div>
 
-              <AnimatedButton
-                onClick={handleSaveAccount}
-                disabled={saving}
-                className="gap-2"
-              >
-                {saving ? (
-                  <>
-                    <RefreshCw className="h-4 w-4 animate-spin" />
-                    {t("saving")}
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4" />
-                    {t("save")}
-                  </>
-                )}
-              </AnimatedButton>
-            </CardContent>
-          </Card>
+                <AnimatedButton
+                  onClick={handleSaveAccount}
+                  disabled={saving}
+                  className="gap-2"
+                >
+                  {saving ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                      {t("saving")}
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4" />
+                      {t("save")}
+                    </>
+                  )}
+                </AnimatedButton>
+              </CardContent>
+            </Card>
+          </section>
 
           {/* Store Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Store className="h-5 w-5" />
-                {t("store.title")}
-              </CardTitle>
+          <section id="store" className="scroll-mt-24">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Store className="h-5 w-5" />
+                  {t("store.title")}
+                </CardTitle>
               <CardDescription>{t("store.description")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -348,20 +380,22 @@ export function MerchantSettingsContent() {
                 )}
               </AnimatedButton>
             </CardContent>
-          </Card>
+            </Card>
+          </section>
 
           {/* Notification Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5" />
-                {t("notifications.title")}
-              </CardTitle>
-              <CardDescription>
-                {t("notifications.description")}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
+          <section id="notifications" className="scroll-mt-24">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="h-5 w-5" />
+                  {t("notifications.title")}
+                </CardTitle>
+                <CardDescription>
+                  {t("notifications.description")}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
               {Object.entries(notificationSettings).map(([key, value]) => (
                 <div
                   key={key}
@@ -394,7 +428,34 @@ export function MerchantSettingsContent() {
                 {t("save")} ({t("comingSoon")})
               </AnimatedButton>
             </CardContent>
-          </Card>
+            </Card>
+          </section>
+
+          {/* Security */}
+          <section id="security" className="scroll-mt-24">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  {t("nav.security")}
+                </CardTitle>
+                <CardDescription>{t("comingSoon")}</CardDescription>
+              </CardHeader>
+            </Card>
+          </section>
+
+          {/* Integrations */}
+          <section id="integrations" className="scroll-mt-24">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Plug className="h-5 w-5" />
+                  {t("nav.integrations")}
+                </CardTitle>
+                <CardDescription>{t("comingSoon")}</CardDescription>
+              </CardHeader>
+            </Card>
+          </section>
         </div>
       </div>
     </Container>
