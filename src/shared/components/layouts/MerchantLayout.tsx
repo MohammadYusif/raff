@@ -73,6 +73,7 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
   const { switchLocale } = useLocaleHook();
   const t = useTranslations("merchantSidebar");
   const layoutT = useTranslations("merchantLayout");
+  const integrationsT = useTranslations("merchantIntegrations");
   const isRtl = locale === "ar";
   const merchantId = session?.user?.merchantId ?? null;
   const { profile } = useMerchantProfile(Boolean(merchantId));
@@ -80,7 +81,11 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
 
   const platform = profile?.storeInfo.platform;
   const platformName =
-    platform === "zid" ? "Zid" : platform === "salla" ? "Salla" : null;
+    platform === "zid"
+      ? integrationsT("platforms.zid.name")
+      : platform === "salla"
+        ? integrationsT("platforms.salla.name")
+        : null;
   const platformLogo =
     platform === "zid"
       ? "/images/brands/zid.svg"
@@ -122,7 +127,7 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
               >
                 <Image
                   src="/logo.svg"
-                  alt="Raff"
+                  alt={layoutT("brandAlt")}
                   width={96}
                   height={28}
                   className="h-7 w-auto object-contain"

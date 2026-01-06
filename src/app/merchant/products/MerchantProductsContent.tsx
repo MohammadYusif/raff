@@ -1,9 +1,9 @@
 // src/app/merchant/products/MerchantProductsContent.tsx
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import Image from "next/image";
 import {
   Container,
@@ -48,7 +48,25 @@ interface Product {
 export function MerchantProductsContent() {
   const { data: session } = useSession();
   const t = useTranslations("merchantProducts");
+  const locale = useLocale();
   const merchantId = session?.user?.merchantId;
+
+  const localeKey = locale === "ar" ? "ar-SA" : "en-US";
+  const numberFormatter = useMemo(
+    () => new Intl.NumberFormat(localeKey),
+    [localeKey]
+  );
+  const percentFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(localeKey, {
+        style: "percent",
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      }),
+    [localeKey]
+  );
+  const formatNumber = (value: number) => numberFormatter.format(value);
+  const formatPercent = (value: number) => percentFormatter.format(value / 100);
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -128,6 +146,10 @@ export function MerchantProductsContent() {
     totalOrders: products.reduce((sum, p) => sum + p.orders, 0),
     totalRevenue: products.reduce((sum, p) => sum + p.revenue, 0),
   };
+  const ctrValue =
+    stats.totalViews > 0
+      ? (stats.totalClicks / stats.totalViews) * 100
+      : 0;
 
   return (
     <Container className="py-8">
@@ -159,11 +181,13 @@ export function MerchantProductsContent() {
                   {t("stats.totalProducts")}
                 </p>
                 <p className="text-2xl font-bold text-raff-primary">
-                  {stats.total}
+                  {formatNumber(stats.total)}
                 </p>
                 <p className="text-xs text-raff-neutral-500">
-                  {stats.active} {t("stats.active")} • {stats.inactive}{" "}
-                  {t("stats.inactive")}
+                  {t("stats.summary", {
+                    active: formatNumber(stats.active),
+                    inactive: formatNumber(stats.inactive),
+                  })}
                 </p>
               </div>
               <Package className="h-10 w-10 text-raff-primary/20" />
@@ -179,7 +203,7 @@ export function MerchantProductsContent() {
                   {t("stats.totalViews")}
                 </p>
                 <p className="text-2xl font-bold text-raff-primary">
-                  {stats.totalViews.toLocaleString()}
+                  {formatNumber(stats.totalViews)}
                 </p>
                 <p className="text-xs text-raff-success">
                   <TrendingUp className="inline h-3 w-3" />{" "}
@@ -199,12 +223,10 @@ export function MerchantProductsContent() {
                   {t("stats.totalClicks")}
                 </p>
                 <p className="text-2xl font-bold text-raff-primary">
-                  {stats.totalClicks.toLocaleString()}
+                  {formatNumber(stats.totalClicks)}
                 </p>
                 <p className="text-xs text-raff-neutral-500">
-                  {stats.totalViews > 0
-                    ? `${((stats.totalClicks / stats.totalViews) * 100).toFixed(1)}% CTR`
-                    : "0% CTR"}
+                  {t("stats.ctrValue", { value: formatPercent(ctrValue) })}
                 </p>
               </div>
               <MousePointerClick className="h-10 w-10 text-raff-accent/20" />
@@ -220,10 +242,10 @@ export function MerchantProductsContent() {
                   {t("stats.totalOrders")}
                 </p>
                 <p className="text-2xl font-bold text-raff-primary">
-                  {stats.totalOrders.toLocaleString()}
+                  {formatNumber(stats.totalOrders)}
                 </p>
                 <p className="text-xs text-raff-neutral-500">
-                  {formatPrice(stats.totalRevenue)} {t("stats.revenue")}
+                  {formatPrice(stats.totalRevenue, locale)} {t("stats.revenue")}
                 </p>
               </div>
               <ShoppingCart className="h-10 w-10 text-raff-success/20" />
@@ -238,13 +260,13 @@ export function MerchantProductsContent() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             {/* Search */}
             <div className="relative flex-1 lg:max-w-md">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-raff-neutral-400 z-10" />
+              <Search className="absolute start-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-raff-neutral-400" />
               <Input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t("searchPlaceholder")}
-                className="pl-10"
+                className="ps-10"
               />
             </div>
 
@@ -346,27 +368,27 @@ export function MerchantProductsContent() {
                         )}
                       </div>
                       <p className="mb-2 text-lg font-bold text-raff-primary">
-                        {formatPrice(product.price)}
+                        {formatPrice(product.price, locale)}
                       </p>
                       <div className="flex flex-wrap gap-3 text-xs text-raff-neutral-600">
                         <span className="flex items-center gap-1">
                           <Eye className="h-3 w-3" />
-                          {product.views.toLocaleString()} {t("metrics.views")}
+                          {formatNumber(product.views)} {t("metrics.views")}
                         </span>
                         <span className="flex items-center gap-1">
                           <MousePointerClick className="h-3 w-3" />
-                          {product.clicks.toLocaleString()}{" "}
+                          {formatNumber(product.clicks)}{" "}
                           {t("metrics.clicks")}
                         </span>
                         <span className="flex items-center gap-1">
                           <ShoppingCart className="h-3 w-3" />
-                          {product.orders.toLocaleString()}{" "}
+                          {formatNumber(product.orders)}{" "}
                           {t("metrics.orders")}
                         </span>
                         {product.orders > 0 && (
                           <span className="flex items-center gap-1 text-raff-success">
                             <TrendingUp className="h-3 w-3" />
-                            {formatPrice(product.revenue)}{" "}
+                            {formatPrice(product.revenue, locale)}{" "}
                             {t("metrics.revenue")}
                           </span>
                         )}
@@ -375,15 +397,17 @@ export function MerchantProductsContent() {
                   </div>
 
                   {/* Performance Metrics */}
-                  <div className="flex gap-3 border-t border-raff-neutral-200 pt-4 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0">
+                  <div className="flex gap-3 border-t border-raff-neutral-200 pt-4 sm:border-s sm:border-t-0 sm:ps-4 sm:pt-0">
                     <div className="text-center">
                       <p className="text-xs text-raff-neutral-600">
                         {t("metrics.ctr")}
                       </p>
                       <p className="text-lg font-bold text-raff-primary">
                         {product.views > 0
-                          ? `${((product.clicks / product.views) * 100).toFixed(1)}%`
-                          : "0%"}
+                          ? formatPercent(
+                              (product.clicks / product.views) * 100
+                            )
+                          : formatPercent(0)}
                       </p>
                     </div>
                     <div className="text-center">
@@ -392,8 +416,10 @@ export function MerchantProductsContent() {
                       </p>
                       <p className="text-lg font-bold text-raff-success">
                         {product.clicks > 0
-                          ? `${((product.orders / product.clicks) * 100).toFixed(1)}%`
-                          : "0%"}
+                          ? formatPercent(
+                              (product.orders / product.clicks) * 100
+                            )
+                          : formatPercent(0)}
                       </p>
                     </div>
                   </div>
@@ -408,8 +434,8 @@ export function MerchantProductsContent() {
       {!loading && filteredProducts.length > 0 && (
         <div className="mt-6 text-center text-sm text-raff-neutral-600">
           {t("showingResults", {
-            count: filteredProducts.length,
-            total: products.length,
+            count: formatNumber(filteredProducts.length),
+            total: formatNumber(products.length),
           })}
         </div>
       )}

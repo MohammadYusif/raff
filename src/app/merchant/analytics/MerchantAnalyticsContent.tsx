@@ -1,9 +1,9 @@
 // src/app/merchant/analytics/MerchantAnalyticsContent.tsx
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import {
   Container,
   Card,
@@ -67,7 +67,25 @@ interface AnalyticsData {
 export function MerchantAnalyticsContent() {
   const { data: session } = useSession();
   const t = useTranslations("merchantAnalytics");
+  const locale = useLocale();
   const merchantId = session?.user?.merchantId;
+
+  const localeKey = locale === "ar" ? "ar-SA" : "en-US";
+  const numberFormatter = useMemo(
+    () => new Intl.NumberFormat(localeKey),
+    [localeKey]
+  );
+  const percentFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(localeKey, {
+        style: "percent",
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      }),
+    [localeKey]
+  );
+  const formatNumber = (value: number) => numberFormatter.format(value);
+  const formatPercent = (value: number) => percentFormatter.format(value / 100);
 
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -180,7 +198,7 @@ export function MerchantAnalyticsContent() {
                   ) : (
                     <ArrowDownRight className="h-3 w-3" />
                   )}
-                  {Math.abs(overview.viewsGrowth).toFixed(1)}%
+                  {formatPercent(Math.abs(overview.viewsGrowth))}
                 </div>
               )}
             </div>
@@ -188,7 +206,7 @@ export function MerchantAnalyticsContent() {
               {t("metrics.totalViews")}
             </p>
             <p className="text-2xl font-bold text-raff-primary">
-              {overview.totalViews.toLocaleString()}
+              {formatNumber(overview.totalViews)}
             </p>
           </CardContent>
         </Card>
@@ -213,7 +231,7 @@ export function MerchantAnalyticsContent() {
                   ) : (
                     <ArrowDownRight className="h-3 w-3" />
                   )}
-                  {Math.abs(overview.clicksGrowth).toFixed(1)}%
+                  {formatPercent(Math.abs(overview.clicksGrowth))}
                 </div>
               )}
             </div>
@@ -221,10 +239,10 @@ export function MerchantAnalyticsContent() {
               {t("metrics.totalClicks")}
             </p>
             <p className="text-2xl font-bold text-raff-primary">
-              {overview.totalClicks.toLocaleString()}
+              {formatNumber(overview.totalClicks)}
             </p>
             <p className="text-xs text-raff-neutral-500">
-              {overview.avgCTR.toFixed(1)}% {t("metrics.avgCTR")}
+              {formatPercent(overview.avgCTR)} {t("metrics.avgCTR")}
             </p>
           </CardContent>
         </Card>
@@ -249,7 +267,7 @@ export function MerchantAnalyticsContent() {
                   ) : (
                     <ArrowDownRight className="h-3 w-3" />
                   )}
-                  {Math.abs(overview.ordersGrowth).toFixed(1)}%
+                  {formatPercent(Math.abs(overview.ordersGrowth))}
                 </div>
               )}
             </div>
@@ -257,10 +275,10 @@ export function MerchantAnalyticsContent() {
               {t("metrics.totalOrders")}
             </p>
             <p className="text-2xl font-bold text-raff-primary">
-              {overview.totalOrders.toLocaleString()}
+              {formatNumber(overview.totalOrders)}
             </p>
             <p className="text-xs text-raff-neutral-500">
-              {overview.avgConversion.toFixed(1)}% {t("metrics.avgConversion")}
+              {formatPercent(overview.avgConversion)} {t("metrics.avgConversion")}
             </p>
           </CardContent>
         </Card>
@@ -285,7 +303,7 @@ export function MerchantAnalyticsContent() {
                   ) : (
                     <ArrowDownRight className="h-3 w-3" />
                   )}
-                  {Math.abs(overview.revenueGrowth).toFixed(1)}%
+                  {formatPercent(Math.abs(overview.revenueGrowth))}
                 </div>
               )}
             </div>
@@ -293,7 +311,7 @@ export function MerchantAnalyticsContent() {
               {t("metrics.totalRevenue")}
             </p>
             <p className="text-2xl font-bold text-raff-primary">
-              {formatPrice(overview.totalRevenue)}
+              {formatPrice(overview.totalRevenue, locale)}
             </p>
           </CardContent>
         </Card>
@@ -322,7 +340,7 @@ export function MerchantAnalyticsContent() {
                   >
                     <div className="flex items-center gap-3">
                       <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-raff-primary/10 text-sm font-bold text-raff-primary">
-                        {index + 1}
+                        {formatNumber(index + 1)}
                       </div>
                       <div>
                         <p className="font-medium text-raff-primary">
@@ -330,23 +348,23 @@ export function MerchantAnalyticsContent() {
                         </p>
                         <div className="flex gap-3 text-xs text-raff-neutral-600">
                           <span>
-                            {product.views.toLocaleString()}{" "}
+                            {formatNumber(product.views)}{" "}
                             {t("topProducts.views")}
                           </span>
                           <span>
-                            {product.clicks.toLocaleString()}{" "}
+                            {formatNumber(product.clicks)}{" "}
                             {t("topProducts.clicks")}
                           </span>
                           <span>
-                            {product.orders.toLocaleString()}{" "}
+                            {formatNumber(product.orders)}{" "}
                             {t("topProducts.orders")}
                           </span>
                         </div>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-end">
                       <p className="font-semibold text-raff-success">
-                        {formatPrice(product.revenue)}
+                        {formatPrice(product.revenue, locale)}
                       </p>
                     </div>
                   </div>
@@ -381,22 +399,24 @@ export function MerchantAnalyticsContent() {
                         {source.source}
                       </p>
                       <p className="text-sm font-semibold text-raff-success">
-                        {formatPrice(source.revenue)}
+                        {formatPrice(source.revenue, locale)}
                       </p>
                     </div>
                     <div className="flex items-center gap-4 text-xs text-raff-neutral-600">
                       <span>
-                        {source.visits.toLocaleString()}{" "}
+                        {formatNumber(source.visits)}{" "}
                         {t("trafficSources.visits")}
                       </span>
                       <span>
-                        {source.conversions.toLocaleString()}{" "}
+                        {formatNumber(source.conversions)}{" "}
                         {t("trafficSources.conversions")}
                       </span>
                       <span className="text-raff-primary">
                         {source.visits > 0
-                          ? `${((source.conversions / source.visits) * 100).toFixed(1)}%`
-                          : "0%"}{" "}
+                          ? formatPercent(
+                              (source.conversions / source.visits) * 100
+                            )
+                          : formatPercent(0)}{" "}
                         {t("trafficSources.conversionRate")}
                       </span>
                     </div>
@@ -433,7 +453,7 @@ export function MerchantAnalyticsContent() {
                       {t("performanceTrend.date")}
                     </p>
                     <p className="font-medium text-raff-primary">
-                      {new Date(day.date).toLocaleDateString()}
+                      {new Date(day.date).toLocaleDateString(localeKey)}
                     </p>
                   </div>
                   <div>
@@ -441,7 +461,7 @@ export function MerchantAnalyticsContent() {
                       {t("performanceTrend.views")}
                     </p>
                     <p className="font-semibold text-raff-primary">
-                      {day.views.toLocaleString()}
+                      {formatNumber(day.views)}
                     </p>
                   </div>
                   <div>
@@ -449,7 +469,7 @@ export function MerchantAnalyticsContent() {
                       {t("performanceTrend.clicks")}
                     </p>
                     <p className="font-semibold text-raff-primary">
-                      {day.clicks.toLocaleString()}
+                      {formatNumber(day.clicks)}
                     </p>
                   </div>
                   <div>
@@ -457,7 +477,7 @@ export function MerchantAnalyticsContent() {
                       {t("performanceTrend.orders")}
                     </p>
                     <p className="font-semibold text-raff-success">
-                      {day.orders.toLocaleString()}
+                      {formatNumber(day.orders)}
                     </p>
                   </div>
                 </div>

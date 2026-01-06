@@ -8,12 +8,22 @@ import { buildExternalProductUrl } from "@/lib/platform/products";
 import { normalizeStoreUrl } from "@/lib/platform/store";
 import { fetchWithTimeout } from "@/lib/platform/fetch";
 
+const shouldDebugSync = process.env.RAFF_SYNC_DEBUG === "true";
+const debugSyncLog = (message: string, details?: Record<string, unknown>) => {
+  if (!shouldDebugSync) return;
+  if (details) {
+    console.log("[salla-sync]", message, details);
+    return;
+  }
+  console.log("[salla-sync]", message);
+};
+
 interface SallaConfig {
   accessToken: string;
 }
 
 interface SallaProduct {
-  id: string;
+  id: string | number;
   name?: string;
   name_ar?: string;
   description?: string;
@@ -81,14 +91,22 @@ export class SallaService {
     }
 
     const url = this.buildPagedUrl(sallaConfig.productsApiUrl, page, perPage);
+    debugSyncLog("fetch-products", { page, perPage, url });
     const response = await fetchWithTimeout(url, { headers: this.getHeaders() });
     if (!response.ok) {
+      debugSyncLog("fetch-products-error", { status: response.status });
       throw new Error(`Salla API error: ${response.status}`);
     }
 
     const data = await response.json();
+    const products = data.data || data.products || data.items || [];
+    debugSyncLog("fetch-products-result", {
+      page,
+      count: Array.isArray(products) ? products.length : 0,
+      pagination: data.pagination || data.meta?.pagination || {},
+    });
     return {
-      products: data.data || data.products || data.items || [],
+      products,
       pagination: data.pagination || data.meta?.pagination || {},
     };
   }
@@ -100,9 +118,14 @@ export class SallaService {
     }
 
     const url = sallaConfig.productApiUrlTemplate.replace("{id}", productId);
+    debugSyncLog("fetch-product", { productId, url });
     const response = await fetchWithTimeout(url, { headers: this.getHeaders() });
     if (!response.ok) {
       if (response.status === 404) return null;
+      debugSyncLog("fetch-product-error", {
+        productId,
+        status: response.status,
+      });
       throw new Error(`Salla API error: ${response.status}`);
     }
 
@@ -116,15 +139,21 @@ export class SallaService {
       throw new Error("Missing SALLA_CATEGORIES_API_URL");
     }
 
+    debugSyncLog("fetch-categories", { url: sallaConfig.categoriesApiUrl });
     const response = await fetchWithTimeout(sallaConfig.categoriesApiUrl, {
       headers: this.getHeaders(),
     });
     if (!response.ok) {
+      debugSyncLog("fetch-categories-error", { status: response.status });
       throw new Error(`Salla API error: ${response.status}`);
     }
 
     const data = await response.json();
-    return data.data || data.categories || [];
+    const categories = data.data || data.categories || [];
+    debugSyncLog("fetch-categories-result", {
+      count: Array.isArray(categories) ? categories.length : 0,
+    });
+    return categories;
   }
 
   static async refreshToken(refreshToken: string): Promise<{
@@ -315,6 +344,12 @@ export async function syncSallaProducts(merchant: SallaMerchantAuth): Promise<{
     throw new Error("Salla access token missing");
   }
 
+  debugSyncLog("sync-start", {
+    merchantId: merchant.id,
+    storeId: merchant.sallaStoreId,
+    storeUrl: merchant.sallaStoreUrl,
+  });
+
   const tokens = await ensureSallaAccessToken(merchant);
   const service = new SallaService({
     accessToken: tokens.accessToken || merchant.sallaAccessToken,
@@ -341,6 +376,10 @@ export async function syncSallaProducts(merchant: SallaMerchantAuth): Promise<{
 
   categoriesCreated = categoryCounters.created;
   categoriesUpdated = categoryCounters.updated;
+  debugSyncLog("categories-synced", {
+    created: categoriesCreated,
+    updated: categoriesUpdated,
+  });
 
   let page = 1;
   const perPage = 50;
@@ -353,24 +392,46 @@ export async function syncSallaProducts(merchant: SallaMerchantAuth): Promise<{
     if (response.pagination?.total_pages) {
       totalPages = response.pagination.total_pages;
     }
+    debugSyncLog("page-loaded", {
+      page,
+      perPage,
+      count: sallaProducts.length,
+      totalPages,
+    });
 
     for (const sallaProduct of sallaProducts) {
       const name =
         sallaProduct.name || sallaProduct.name_ar || sallaProduct.slug || "";
-      if (!name || !sallaProduct.id) {
+      const rawSallaProductId = sallaProduct.id;
+      const sallaProductId =
+        rawSallaProductId !== null && rawSallaProductId !== undefined
+          ? String(rawSallaProductId)
+          : "";
+
+      if (!name || !sallaProductId) {
+        debugSyncLog("skip-product", {
+          reason: !name ? "missing-name" : "missing-id",
+          rawId: rawSallaProductId ?? null,
+        });
         continue;
+      }
+      if (typeof rawSallaProductId === "number") {
+        debugSyncLog("normalized-product-id", {
+          rawId: rawSallaProductId,
+          normalizedId: sallaProductId,
+        });
       }
 
       const existing = await prisma.product.findFirst({
         where: {
           merchantId: merchant.id,
-          sallaProductId: sallaProduct.id,
+          sallaProductId,
         },
       });
 
       const slug = await resolveProductSlug(
         name,
-        sallaProduct.id,
+        sallaProductId,
         existing?.slug
       );
 
@@ -401,7 +462,7 @@ export async function syncSallaProducts(merchant: SallaMerchantAuth): Promise<{
         platform: "salla",
         product: {
           slug,
-          sallaProductId: sallaProduct.id,
+          sallaProductId,
         },
         storeUrl,
         providedUrl: resolveSallaProductUrl(sallaProduct),
@@ -419,7 +480,7 @@ export async function syncSallaProducts(merchant: SallaMerchantAuth): Promise<{
       const productTags = buildProductTagsInput(tagNames);
 
       const productData = {
-        title: sallaProduct.name || sallaProduct.slug || sallaProduct.id,
+        title: sallaProduct.name || sallaProduct.slug || sallaProductId,
         titleAr: sallaProduct.name_ar || null,
         description: sallaProduct.description || null,
         descriptionAr: sallaProduct.description_ar || null,
@@ -429,7 +490,7 @@ export async function syncSallaProducts(merchant: SallaMerchantAuth): Promise<{
         images,
         thumbnail: images[0] || null,
         categoryId,
-        sallaProductId: sallaProduct.id,
+        sallaProductId,
         sallaUrl,
         externalProductUrl: externalProductUrl || undefined,
         merchantId: merchant.id,
@@ -465,6 +526,13 @@ export async function syncSallaProducts(merchant: SallaMerchantAuth): Promise<{
     page += 1;
   }
 
+  debugSyncLog("sync-complete", {
+    merchantId: merchant.id,
+    productsCreated,
+    productsUpdated,
+    categoriesCreated,
+    categoriesUpdated,
+  });
   return {
     productsCreated,
     productsUpdated,
@@ -481,6 +549,10 @@ export async function syncSallaProductById(
     throw new Error("Salla access token missing");
   }
 
+  debugSyncLog("sync-single-start", {
+    merchantId: merchant.id,
+    productId,
+  });
   const tokens = await ensureSallaAccessToken(merchant);
   const service = new SallaService({
     accessToken: tokens.accessToken || merchant.sallaAccessToken,
@@ -493,18 +565,24 @@ export async function syncSallaProductById(
 
   const name =
     sallaProduct.name || sallaProduct.name_ar || sallaProduct.slug || "";
-  if (!name || !sallaProduct.id) {
+  const rawSallaProductId = sallaProduct.id;
+  const sallaProductId =
+    rawSallaProductId !== null && rawSallaProductId !== undefined
+      ? String(rawSallaProductId)
+      : "";
+
+  if (!name || !sallaProductId) {
     return { created: false, updated: false };
   }
 
   const existing = await prisma.product.findFirst({
     where: {
       merchantId: merchant.id,
-      sallaProductId: sallaProduct.id,
+      sallaProductId,
     },
   });
 
-  const slug = await resolveProductSlug(name, sallaProduct.id, existing?.slug);
+  const slug = await resolveProductSlug(name, sallaProductId, existing?.slug);
 
   const images =
     sallaProduct.images?.map((image) => image.url).filter(Boolean) || [];
@@ -525,7 +603,7 @@ export async function syncSallaProductById(
     platform: "salla",
     product: {
       slug,
-      sallaProductId: sallaProduct.id,
+      sallaProductId,
     },
     storeUrl,
     providedUrl: resolveSallaProductUrl(sallaProduct),
@@ -543,7 +621,7 @@ export async function syncSallaProductById(
   const productTags = buildProductTagsInput(tagNames);
 
   const productData = {
-    title: sallaProduct.name || sallaProduct.slug || sallaProduct.id,
+    title: sallaProduct.name || sallaProduct.slug || sallaProductId,
     titleAr: sallaProduct.name_ar || null,
     description: sallaProduct.description || null,
     descriptionAr: sallaProduct.description_ar || null,
@@ -552,7 +630,7 @@ export async function syncSallaProductById(
     currency: "SAR",
     images,
     thumbnail: images[0] || null,
-    sallaProductId: sallaProduct.id,
+    sallaProductId,
     sallaUrl,
     externalProductUrl: externalProductUrl || undefined,
     merchantId: merchant.id,
@@ -573,6 +651,10 @@ export async function syncSallaProductById(
         },
       },
     });
+    debugSyncLog("sync-single-updated", {
+      merchantId: merchant.id,
+      productId: sallaProductId,
+    });
     return { created: false, updated: true };
   }
 
@@ -581,6 +663,10 @@ export async function syncSallaProductById(
       ...productData,
       ...(productTags ? { productTags } : {}),
     },
+  });
+  debugSyncLog("sync-single-created", {
+    merchantId: merchant.id,
+    productId: sallaProductId,
   });
   return { created: true, updated: false };
 }

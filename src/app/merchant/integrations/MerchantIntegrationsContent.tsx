@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import {
   Container,
   Card,
@@ -33,6 +34,7 @@ export function MerchantIntegrationsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session } = useSession();
+  const t = useTranslations("merchantIntegrations");
   const merchantId = session?.user?.merchantId ?? null;
   const { profile } = useMerchantProfile(Boolean(merchantId));
 
@@ -47,22 +49,29 @@ export function MerchantIntegrationsContent() {
     const platform = searchParams.get("platform");
 
     if (connected) {
-      toast.success(
-        `Successfully connected to ${connected === "zid" ? "Zid" : "Salla"}!`,
-        {
-          description: "Your store is now synced with Raff.",
-        }
-      );
+      const platformLabel =
+        connected === "zid"
+          ? t("platforms.zid.name")
+          : t("platforms.salla.name");
+      toast.success(t("toasts.connectedTitle", { platform: platformLabel }), {
+        description: t("toasts.connectedDescription"),
+      });
       // Clean URL
       router.replace("/merchant/integrations");
     } else if (registered && platform) {
-      toast.success(`Welcome to Raff!`, {
-        description: `Your ${platform === "zid" ? "Zid" : "Salla"} store has been connected. Your account is pending approval.`,
+      const platformLabel =
+        platform === "zid"
+          ? t("platforms.zid.name")
+          : t("platforms.salla.name");
+      toast.success(t("toasts.registeredTitle"), {
+        description: t("toasts.registeredDescription", {
+          platform: platformLabel,
+        }),
       });
       // Clean URL
       router.replace("/merchant/integrations");
     }
-  }, [searchParams, router]);
+  }, [searchParams, router, t]);
 
   const isZidConnected = Boolean(
     profile?.zidStoreId ||
@@ -89,16 +98,14 @@ export function MerchantIntegrationsContent() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="mb-2 text-3xl font-bold text-raff-primary">
-                Store Integrations
+                {t("title")}
               </h1>
-              <p className="text-raff-neutral-600">
-                Connect your e-commerce store to sync products with Raff
-              </p>
+              <p className="text-raff-neutral-600">{t("subtitle")}</p>
             </div>
             <Link href="/merchant/dashboard">
               <AnimatedButton variant="ghost" className="gap-2">
                 <ChevronBackward className="h-4 w-4" />
-                Back to Dashboard
+                {t("backToDashboard")}
               </AnimatedButton>
             </Link>
           </div>
@@ -116,30 +123,25 @@ export function MerchantIntegrationsContent() {
                 </div>
                 <div>
                   <h3 className="mb-2 text-lg font-semibold text-raff-primary">
-                    Secure OAuth Connection
+                    {t("security.title")}
                   </h3>
                   <p className="mb-3 text-raff-neutral-700">
-                    When you connect your store, you&apos;ll be redirected to{" "}
-                    <strong>Zid</strong> or <strong>Salla</strong> to authorize
-                    Raff. We{" "}
-                    <strong>never see or store your store password</strong>.
+                    {t("security.description", {
+                      platforms: `${t("platforms.zid.name")} / ${t("platforms.salla.name")}`,
+                    })}
                   </p>
                   <ul className="space-y-1 text-sm text-raff-neutral-600">
                     <li className="flex items-start gap-2">
                       <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-raff-success" />
-                      <span>
-                        You authenticate directly on the platform&apos;s website
-                      </span>
+                      <span>{t("security.items.authenticate")}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-raff-success" />
-                      <span>Raff only receives a secure access token</span>
+                      <span>{t("security.items.token")}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-raff-success" />
-                      <span>
-                        You can revoke access anytime from your store settings
-                      </span>
+                      <span>{t("security.items.revoke")}</span>
                     </li>
                   </ul>
                 </div>
@@ -150,7 +152,7 @@ export function MerchantIntegrationsContent() {
           {/* Available Integrations */}
           <div>
             <h2 className="mb-4 text-xl font-semibold text-raff-primary">
-              Available Platforms
+              {t("platforms.title")}
             </h2>
             <div className="grid gap-6 lg:grid-cols-2">
               {/* Salla Integration */}
@@ -161,7 +163,7 @@ export function MerchantIntegrationsContent() {
                       <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#00C48C]/10">
                         <Image
                           src="/images/brands/salla.svg"
-                          alt="Salla"
+                          alt={t("platforms.salla.name")}
                           width={32}
                           height={32}
                           className="h-8 w-8"
@@ -172,16 +174,16 @@ export function MerchantIntegrationsContent() {
                       </div>
                       <div>
                         <CardTitle className="flex items-center gap-2">
-                          Salla
+                          {t("platforms.salla.name")}
                           {isSallaConnected && (
                             <Badge variant="success" className="gap-1">
                               <CheckCircle className="h-3 w-3" />
-                              Connected
+                              {t("platforms.salla.connected")}
                             </Badge>
                           )}
                         </CardTitle>
                         <CardDescription>
-                          Saudi Arabia&apos;s leading e-commerce platform
+                          {t("platforms.salla.description")}
                         </CardDescription>
                       </div>
                     </div>
@@ -192,7 +194,7 @@ export function MerchantIntegrationsContent() {
                     {isSallaConnected && profile?.sallaStoreUrl && (
                       <div className="rounded-lg border border-raff-neutral-200 bg-raff-neutral-50 p-3">
                         <p className="mb-1 text-xs font-medium text-raff-neutral-600">
-                          Store URL
+                          {t("platforms.salla.storeUrlLabel")}
                         </p>
                         <a
                           href={profile.sallaStoreUrl}
@@ -208,15 +210,15 @@ export function MerchantIntegrationsContent() {
                     <div className="space-y-2 text-sm text-raff-neutral-600">
                       <p className="flex items-center gap-2">
                         <CheckCircle className="h-4 w-4 text-raff-success" />
-                        Automatic product syncing
+                        {t("platforms.salla.benefits.sync")}
                       </p>
                       <p className="flex items-center gap-2">
                         <CheckCircle className="h-4 w-4 text-raff-success" />
-                        Real-time inventory updates
+                        {t("platforms.salla.benefits.inventory")}
                       </p>
                       <p className="flex items-center gap-2">
                         <CheckCircle className="h-4 w-4 text-raff-success" />
-                        Order tracking and analytics
+                        {t("platforms.salla.benefits.orders")}
                       </p>
                     </div>
                     <AnimatedButton
@@ -228,17 +230,17 @@ export function MerchantIntegrationsContent() {
                       {connectingPlatform === "salla" ? (
                         <>
                           <Clock className="h-5 w-5 animate-spin" />
-                          Connecting...
+                          {t("platforms.salla.button.connecting")}
                         </>
                       ) : isSallaConnected ? (
                         <>
                           <RefreshCw className="h-4 w-4" />
-                          Reconnect Salla
+                          {t("platforms.salla.button.reconnect")}
                         </>
                       ) : (
                         <>
                           <Store className="h-4 w-4" />
-                          Connect Salla Store
+                          {t("platforms.salla.button.connect")}
                           <ArrowForward className="h-4 w-4" />
                         </>
                       )}
@@ -255,7 +257,7 @@ export function MerchantIntegrationsContent() {
                       <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-raff-accent/10">
                         <Image
                           src="/images/brands/zid.svg"
-                          alt="Zid"
+                          alt={t("platforms.zid.name")}
                           width={32}
                           height={32}
                           className="h-8 w-8"
@@ -266,16 +268,16 @@ export function MerchantIntegrationsContent() {
                       </div>
                       <div>
                         <CardTitle className="flex items-center gap-2">
-                          Zid
+                          {t("platforms.zid.name")}
                           {isZidConnected && (
                             <Badge variant="success" className="gap-1">
                               <CheckCircle className="h-3 w-3" />
-                              Connected
+                              {t("platforms.zid.connected")}
                             </Badge>
                           )}
                         </CardTitle>
                         <CardDescription>
-                          Build and grow your online store
+                          {t("platforms.zid.description")}
                         </CardDescription>
                       </div>
                     </div>
@@ -286,7 +288,7 @@ export function MerchantIntegrationsContent() {
                     {isZidConnected && profile?.zidStoreUrl && (
                       <div className="rounded-lg border border-raff-neutral-200 bg-raff-neutral-50 p-3">
                         <p className="mb-1 text-xs font-medium text-raff-neutral-600">
-                          Store URL
+                          {t("platforms.zid.storeUrlLabel")}
                         </p>
                         <a
                           href={profile.zidStoreUrl}
@@ -302,15 +304,15 @@ export function MerchantIntegrationsContent() {
                     <div className="space-y-2 text-sm text-raff-neutral-600">
                       <p className="flex items-center gap-2">
                         <CheckCircle className="h-4 w-4 text-raff-success" />
-                        Automatic product syncing
+                        {t("platforms.zid.benefits.sync")}
                       </p>
                       <p className="flex items-center gap-2">
                         <CheckCircle className="h-4 w-4 text-raff-success" />
-                        Real-time inventory updates
+                        {t("platforms.zid.benefits.inventory")}
                       </p>
                       <p className="flex items-center gap-2">
                         <CheckCircle className="h-4 w-4 text-raff-success" />
-                        Order tracking and analytics
+                        {t("platforms.zid.benefits.orders")}
                       </p>
                     </div>
                     <AnimatedButton
@@ -322,17 +324,17 @@ export function MerchantIntegrationsContent() {
                       {connectingPlatform === "zid" ? (
                         <>
                           <Clock className="h-5 w-5 animate-spin" />
-                          Connecting...
+                          {t("platforms.zid.button.connecting")}
                         </>
                       ) : isZidConnected ? (
                         <>
                           <RefreshCw className="h-4 w-4" />
-                          Reconnect Zid
+                          {t("platforms.zid.button.reconnect")}
                         </>
                       ) : (
                         <>
                           <Store className="h-4 w-4" />
-                          Connect Zid Store
+                          {t("platforms.zid.button.connect")}
                           <ArrowForward className="h-4 w-4" />
                         </>
                       )}
@@ -348,39 +350,33 @@ export function MerchantIntegrationsContent() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlertCircle className="h-5 w-5 text-raff-accent" />
-                Need Help?
+                {t("help.title")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3 text-sm text-raff-neutral-600">
                 <div>
                   <p className="mb-1 font-medium text-raff-primary">
-                    How do I connect my store?
+                    {t("help.questions.connect.title")}
                   </p>
                   <p>
-                    Click the &quot;Connect&quot; button above. You&apos;ll be
-                    redirected to your platform&apos;s website to authorize the
-                    connection. After authorization, you&apos;ll be redirected
-                    back to Raff.
+                    {t("help.questions.connect.description")}
                   </p>
                 </div>
                 <div>
                   <p className="mb-1 font-medium text-raff-primary">
-                    Is my data secure?
+                    {t("help.questions.security.title")}
                   </p>
                   <p>
-                    Yes. We use OAuth 2.0, the industry standard for secure
-                    authorization. We never see or store your store password.
-                    Only product and order data is synced.
+                    {t("help.questions.security.description")}
                   </p>
                 </div>
                 <div>
                   <p className="mb-1 font-medium text-raff-primary">
-                    Can I disconnect my store?
+                    {t("help.questions.disconnect.title")}
                   </p>
                   <p>
-                    Yes. You can revoke access at any time from your
-                    store&apos;s settings or by contacting Raff support.
+                    {t("help.questions.disconnect.description")}
                   </p>
                 </div>
               </div>

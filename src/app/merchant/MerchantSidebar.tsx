@@ -56,6 +56,8 @@ const menuItems = [
 export function MerchantSidebar() {
   const pathname = usePathname();
   const t = useTranslations("merchantSidebar");
+  const layoutT = useTranslations("merchantLayout");
+  const integrationsT = useTranslations("merchantIntegrations");
   const currentLocale = useLocale();
   const { switchLocale } = useLocaleHook();
   const { data: session } = useSession();
@@ -65,7 +67,11 @@ export function MerchantSidebar() {
 
   const platform = profile?.storeInfo.platform;
   const platformName =
-    platform === "zid" ? "Zid" : platform === "salla" ? "Salla" : null;
+    platform === "zid"
+      ? integrationsT("platforms.zid.name")
+      : platform === "salla"
+        ? integrationsT("platforms.salla.name")
+        : null;
   const platformLogo =
     platform === "zid"
       ? "/images/brands/zid.svg"
@@ -108,7 +114,7 @@ export function MerchantSidebar() {
           <Link href="/" className="flex items-center gap-3">
             <Image
               src="/logo.svg"
-              alt="Raff Logo"
+              alt={layoutT("brandAlt")}
               width={128}
               height={32}
               className="h-auto w-32 object-contain"
@@ -178,7 +184,9 @@ export function MerchantSidebar() {
             onClick={() => switchLocale(currentLocale === "ar" ? "en" : "ar")}
           >
             <Globe className="h-4 w-4" />
-            {currentLocale === "ar" ? "English" : "العربية"}
+            {currentLocale === "ar"
+              ? layoutT("languageEnglish")
+              : layoutT("languageArabic")}
           </AnimatedButton>
 
           {/* Logout */}

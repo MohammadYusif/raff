@@ -4,7 +4,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useSession } from "next-auth/react";
 import { PageLayout } from "@/shared/components/layouts";
 import { Container, Card, CardContent } from "@/shared/components/ui";
@@ -21,10 +21,13 @@ import { AnimatedButton } from "@/shared/components/AnimatedButton";
  */
 export function MerchantJoinContent() {
   const t = useTranslations("merchantJoin");
+  const locale = useLocale();
   const { data: session } = useSession();
   const [connectingPlatform, setConnectingPlatform] = useState<
     "salla" | "zid" | null
   >(null);
+  const localeKey = locale === "ar" ? "ar-SA" : "en-US";
+  const formatNumber = (value: number) => value.toLocaleString(localeKey);
 
   const handleConnectStore = (platform: "salla" | "zid") => {
     setConnectingPlatform(platform);
@@ -62,7 +65,7 @@ export function MerchantJoinContent() {
                 <div className="mt-4 flex items-center justify-center gap-2 text-sm text-raff-neutral-500">
                   <Shield className="h-4 w-4 text-raff-primary" />
                   <span className="italic">
-                    You&apos;ll be redirected to authorize. We never see your password.
+                    {t("securityNote")}
                   </span>
                 </div>
               </div>
@@ -81,7 +84,7 @@ export function MerchantJoinContent() {
                       <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white/10">
                         <Image
                           src="/images/brands/salla.svg"
-                          alt="Salla"
+                          alt={t("buttons.sallaSubtitle")}
                           width={28}
                           height={28}
                           className="h-7 w-7 brightness-0 invert"
@@ -92,7 +95,7 @@ export function MerchantJoinContent() {
                           {t("buttons.connectSalla")}
                         </div>
                         <div className="text-sm text-white/80">
-                          Salla E-commerce Platform
+                          {t("buttons.sallaSubtitle")}
                         </div>
                       </div>
                     </div>
@@ -122,7 +125,7 @@ export function MerchantJoinContent() {
                       <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white/10">
                         <Image
                           src="/images/brands/zid.svg"
-                          alt="Zid"
+                          alt={t("buttons.zidSubtitle")}
                           width={28}
                           height={28}
                           className="h-7 w-7 brightness-0 invert"
@@ -133,7 +136,7 @@ export function MerchantJoinContent() {
                           {t("buttons.connectZid")}
                         </div>
                         <div className="text-sm text-white/80">
-                          Zid E-commerce Platform
+                          {t("buttons.zidSubtitle")}
                         </div>
                       </div>
                     </div>
@@ -239,7 +242,7 @@ export function MerchantJoinContent() {
               <Card className="border-raff-neutral-200">
                 <CardContent className="p-6">
                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-raff-primary text-2xl font-bold text-white">
-                    1
+                    {formatNumber(1)}
                   </div>
                   <h4 className="mb-2 text-lg font-semibold">
                     {t("howItWorks.step1.title")}
@@ -253,7 +256,7 @@ export function MerchantJoinContent() {
               <Card className="border-raff-neutral-200">
                 <CardContent className="p-6">
                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-raff-primary text-2xl font-bold text-white">
-                    2
+                    {formatNumber(2)}
                   </div>
                   <h4 className="mb-2 text-lg font-semibold">
                     {t("howItWorks.step2.title")}
@@ -267,7 +270,7 @@ export function MerchantJoinContent() {
               <Card className="border-raff-neutral-200">
                 <CardContent className="p-6">
                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-raff-primary text-2xl font-bold text-white">
-                    3
+                    {formatNumber(3)}
                   </div>
                   <h4 className="mb-2 text-lg font-semibold">
                     {t("howItWorks.step3.title")}

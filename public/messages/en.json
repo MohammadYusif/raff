@@ -274,7 +274,8 @@
     "connected": "Connected",
     "storeFallback": "Store",
     "languageEnglish": "English",
-    "languageArabic": "Arabic"
+    "languageArabic": "Arabic",
+    "brandAlt": "Raff logo"
   },
   "merchantDashboard": {
     "title": "Merchant Dashboard",
@@ -331,6 +332,78 @@
       "step3Desc": "Track views, clicks, and conversions in your dashboard"
     }
   },
+  "merchantIntegrations": {
+    "title": "Store Integrations",
+    "subtitle": "Connect your e-commerce store to sync products with Raff",
+    "backToDashboard": "Back to Dashboard",
+    "toasts": {
+      "connectedTitle": "Successfully connected to {platform}!",
+      "connectedDescription": "Your store is now synced with Raff.",
+      "registeredTitle": "Welcome to Raff!",
+      "registeredDescription": "Your {platform} store has been connected. Your account is pending approval."
+    },
+    "security": {
+      "title": "Secure OAuth Connection",
+      "description": "When you connect your store, you'll be redirected to {platforms} to authorize Raff. We never see or store your store password.",
+      "items": {
+        "authenticate": "You authenticate directly on the platform's website",
+        "token": "Raff only receives a secure access token",
+        "revoke": "You can revoke access anytime from your store settings"
+      }
+    },
+    "platforms": {
+      "title": "Available Platforms",
+      "salla": {
+        "name": "Salla",
+        "description": "Saudi Arabia's leading e-commerce platform",
+        "storeUrlLabel": "Store URL",
+        "connected": "Connected",
+        "benefits": {
+          "sync": "Automatic product syncing",
+          "inventory": "Real-time inventory updates",
+          "orders": "Order tracking and analytics"
+        },
+        "button": {
+          "connect": "Connect Salla Store",
+          "reconnect": "Reconnect Salla",
+          "connecting": "Connecting..."
+        }
+      },
+      "zid": {
+        "name": "Zid",
+        "description": "Build and grow your online store",
+        "storeUrlLabel": "Store URL",
+        "connected": "Connected",
+        "benefits": {
+          "sync": "Automatic product syncing",
+          "inventory": "Real-time inventory updates",
+          "orders": "Order tracking and analytics"
+        },
+        "button": {
+          "connect": "Connect Zid Store",
+          "reconnect": "Reconnect Zid",
+          "connecting": "Connecting..."
+        }
+      }
+    },
+    "help": {
+      "title": "Need Help?",
+      "questions": {
+        "connect": {
+          "title": "How do I connect my store?",
+          "description": "Click the Connect button above. You'll be redirected to your platform's website to authorize the connection. After authorization, you'll be redirected back to Raff."
+        },
+        "security": {
+          "title": "Is my data secure?",
+          "description": "Yes. We use OAuth 2.0, the industry standard for secure authorization. We never see or store your store password. Only product and order data is synced."
+        },
+        "disconnect": {
+          "title": "Can I disconnect my store?",
+          "description": "Yes. You can revoke access at any time from your store settings or by contacting Raff support."
+        }
+      }
+    }
+  },
   "merchantProducts": {
     "title": "Product Management",
     "subtitle": "View and sync your store products",
@@ -356,7 +429,9 @@
       "totalClicks": "Total Clicks",
       "totalOrders": "Total Orders",
       "revenue": "Revenue",
-      "viewsGrowth": "Views Growth"
+      "viewsGrowth": "Views Growth",
+      "summary": "{active} active | {inactive} inactive",
+      "ctrValue": "{value} CTR"
     },
     "filters": {
       "all": "All",
@@ -482,6 +557,7 @@
     "subtitle": "Connect your store and start reaching thousands of customers across Saudi Arabia",
     "heading": "Choose Your Platform",
     "description": "Connect your existing Salla or Zid store with one click. No manual setup required.",
+    "securityNote": "You'll be redirected to authorize. We never see your password.",
     "benefits": {
       "title": "Why Join Raff?",
       "visibility": {
@@ -503,7 +579,9 @@
     },
     "buttons": {
       "connectSalla": "Connect Salla Store",
+      "sallaSubtitle": "Salla E-commerce Platform",
       "connectZid": "Connect Zid Store",
+      "zidSubtitle": "Zid E-commerce Platform",
       "connecting": "Connecting..."
     },
     "howItWorks": {

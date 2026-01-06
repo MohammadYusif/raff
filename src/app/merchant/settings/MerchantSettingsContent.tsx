@@ -129,23 +129,23 @@ export function MerchantSettingsContent() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Sidebar Navigation */}
         <div className="space-y-2">
-          <button className="flex w-full items-center gap-3 rounded-lg bg-raff-primary px-4 py-3 text-left text-white transition-colors">
+          <button className="flex w-full items-center gap-3 rounded-lg bg-raff-primary px-4 py-3 text-start text-white transition-colors">
             <User className="h-5 w-5" />
             <span className="font-medium">{t("nav.account")}</span>
           </button>
-          <button className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-raff-neutral-700 transition-colors hover:bg-raff-neutral-100">
+          <button className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-start text-raff-neutral-700 transition-colors hover:bg-raff-neutral-100">
             <Store className="h-5 w-5" />
             <span className="font-medium">{t("nav.store")}</span>
           </button>
-          <button className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-raff-neutral-700 transition-colors hover:bg-raff-neutral-100">
+          <button className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-start text-raff-neutral-700 transition-colors hover:bg-raff-neutral-100">
             <Bell className="h-5 w-5" />
             <span className="font-medium">{t("nav.notifications")}</span>
           </button>
-          <button className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-raff-neutral-700 transition-colors hover:bg-raff-neutral-100">
+          <button className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-start text-raff-neutral-700 transition-colors hover:bg-raff-neutral-100">
             <Shield className="h-5 w-5" />
             <span className="font-medium">{t("nav.security")}</span>
           </button>
-          <button className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-raff-neutral-700 transition-colors hover:bg-raff-neutral-100">
+          <button className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-start text-raff-neutral-700 transition-colors hover:bg-raff-neutral-100">
             <Plug className="h-5 w-5" />
             <span className="font-medium">{t("nav.integrations")}</span>
           </button>
@@ -198,7 +198,7 @@ export function MerchantSettingsContent() {
                 <AlertCircle className="h-4 w-4 text-raff-accent" />
                 <p className="text-sm text-raff-neutral-700">
                   {t("account.roleInfo")}:{" "}
-                  <Badge variant="default" className="ml-1">
+                  <Badge variant="default" className="ms-1">
                     {session?.user?.role}
                   </Badge>
                 </p>

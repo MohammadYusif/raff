@@ -1,7 +1,7 @@
 // src/app/merchant/dashboard/MerchantDashboardContent.tsx
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
@@ -135,6 +135,7 @@ function useMerchantStats(merchantId: string | null, days = 30) {
 
 export function MerchantDashboardContent() {
   const t = useTranslations("merchantDashboard");
+  const integrationsT = useTranslations("merchantIntegrations");
   const locale = useLocale();
   const { data: session } = useSession();
   const merchantId = session?.user?.merchantId ?? null;
@@ -144,6 +145,27 @@ export function MerchantDashboardContent() {
   );
   const { stats } = useMerchantStats(merchantId);
   const hasAutoSynced = useRef(false);
+  const localeKey = locale === "ar" ? "ar-SA" : "en-US";
+  const numberFormatter = useMemo(
+    () => new Intl.NumberFormat(localeKey),
+    [localeKey]
+  );
+  const percentFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(localeKey, {
+        style: "percent",
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      }),
+    [localeKey]
+  );
+  const formatNumber = (value: number) => numberFormatter.format(value);
+  const formatPercent = (value: number) => percentFormatter.format(value / 100);
+  const formatSignedPercent = (value: number) => {
+    if (value === 0) return formatPercent(0);
+    const sign = value > 0 ? "+" : "-";
+    return `${sign}${formatPercent(Math.abs(value))}`;
+  };
 
   const [connectingPlatform, setConnectingPlatform] = useState<
     "salla" | "zid" | null
@@ -151,6 +173,12 @@ export function MerchantDashboardContent() {
 
   const isStoreConnected = !!profile?.storeInfo.isConnected;
   const storePlatform = profile?.storeInfo.platform || null;
+  const platformLabel =
+    storePlatform === "salla"
+      ? integrationsT("platforms.salla.name")
+      : storePlatform === "zid"
+        ? integrationsT("platforms.zid.name")
+        : "";
 
   const handleConnectStore = (platform: "salla" | "zid") => {
     if (!merchantId) return;
@@ -241,7 +269,7 @@ export function MerchantDashboardContent() {
                       >
                         <Image
                           src="/images/brands/salla.svg"
-                          alt="Salla"
+                          alt={integrationsT("platforms.salla.name")}
                           width={20}
                           height={20}
                           className="h-5 w-5"
@@ -270,7 +298,7 @@ export function MerchantDashboardContent() {
                       >
                         <Image
                           src="/images/brands/zid.svg"
-                          alt="Zid"
+                          alt={integrationsT("platforms.zid.name")}
                           width={20}
                           height={20}
                           className="h-5 w-5"
@@ -306,12 +334,7 @@ export function MerchantDashboardContent() {
                     </p>
                     <p className="text-sm text-raff-neutral-600">
                       {t("storeConnected.description", {
-                        platform:
-                          storePlatform === "salla"
-                            ? "Salla"
-                            : storePlatform === "zid"
-                              ? "Zid"
-                              : "",
+                        platform: platformLabel,
                       })}
                     </p>
                   </div>
@@ -339,9 +362,7 @@ export function MerchantDashboardContent() {
                           {t("stats.totalProducts")}
                         </p>
                         <p className="mt-2 text-3xl font-bold text-raff-primary">
-                          {stats.totalProducts.toLocaleString(
-                            locale === "ar" ? "ar-SA" : "en-US"
-                          )}
+                          {formatNumber(stats.totalProducts)}
                         </p>
                       </div>
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-raff-primary/10">
@@ -360,9 +381,7 @@ export function MerchantDashboardContent() {
                           {t("stats.totalViews")}
                         </p>
                         <p className="mt-2 text-3xl font-bold text-raff-primary">
-                          {stats.totalViews.toLocaleString(
-                            locale === "ar" ? "ar-SA" : "en-US"
-                          )}
+                          {formatNumber(stats.totalViews)}
                         </p>
                       </div>
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-raff-accent/10">
@@ -381,9 +400,7 @@ export function MerchantDashboardContent() {
                           {t("stats.totalOrders")}
                         </p>
                         <p className="mt-2 text-3xl font-bold text-raff-primary">
-                          {stats.totalOrders.toLocaleString(
-                            locale === "ar" ? "ar-SA" : "en-US"
-                          )}
+                          {formatNumber(stats.totalOrders)}
                         </p>
                       </div>
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-raff-success/10">
@@ -430,12 +447,11 @@ export function MerchantDashboardContent() {
                     <div className="space-y-4">
                       <div className="flex items-baseline gap-2">
                         <span className="text-4xl font-bold text-raff-primary">
-                          {stats.conversionRate}%
+                          {formatPercent(stats.conversionRate)}
                         </span>
                         <Badge variant="success" className="gap-1">
                           <TrendingUp className="h-3 w-3" />
-                          {stats.ordersGrowth >= 0 ? "+" : ""}
-                          {stats.ordersGrowth.toFixed(1)}%
+                          {formatSignedPercent(stats.ordersGrowth)}
                         </Badge>
                       </div>
                       <div className="space-y-2">
@@ -444,9 +460,7 @@ export function MerchantDashboardContent() {
                             {t("metrics.clicks")}
                           </span>
                           <span className="font-medium text-raff-primary">
-                            {stats.totalClicks.toLocaleString(
-                              locale === "ar" ? "ar-SA" : "en-US"
-                            )}
+                            {formatNumber(stats.totalClicks)}
                           </span>
                         </div>
                         <div className="flex justify-between text-sm">
@@ -454,9 +468,7 @@ export function MerchantDashboardContent() {
                             {t("metrics.orders")}
                           </span>
                           <span className="font-medium text-raff-primary">
-                            {stats.totalOrders.toLocaleString(
-                              locale === "ar" ? "ar-SA" : "en-US"
-                            )}
+                            {formatNumber(stats.totalOrders)}
                           </span>
                         </div>
                       </div>
@@ -488,7 +500,7 @@ export function MerchantDashboardContent() {
                             className="flex items-center gap-3 rounded-lg border border-raff-neutral-200 p-3 transition-colors hover:bg-raff-neutral-50"
                           >
                             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-raff-primary/10 text-sm font-bold text-raff-primary">
-                              {index + 1}
+                              {formatNumber(index + 1)}
                             </div>
                             <div className="min-w-0 flex-1">
                               <p className="truncate font-semibold text-raff-primary">
@@ -496,16 +508,12 @@ export function MerchantDashboardContent() {
                               </p>
                               <div className="flex gap-3 text-xs text-raff-neutral-600">
                                 <span>
-                                  {product.views.toLocaleString(
-                                    locale === "ar" ? "ar-SA" : "en-US"
-                                  )}{" "}
+                                  {formatNumber(product.views)}{" "}
                                   {t("topProducts.views")}
                                 </span>
                                 <span>|</span>
                                 <span>
-                                  {product.orders.toLocaleString(
-                                    locale === "ar" ? "ar-SA" : "en-US"
-                                  )}{" "}
+                                  {formatNumber(product.orders)}{" "}
                                   {t("topProducts.orders")}
                                 </span>
                               </div>

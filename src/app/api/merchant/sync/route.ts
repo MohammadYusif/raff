@@ -5,6 +5,16 @@ import { syncZidProducts } from "@/lib/services/zid.service";
 import { syncSallaProducts } from "@/lib/services/salla.service";
 import { requireMerchant } from "@/lib/auth/guards";
 
+const shouldDebugSync = process.env.RAFF_SYNC_DEBUG === "true";
+const debugSyncLog = (message: string, details?: Record<string, unknown>) => {
+  if (!shouldDebugSync) return;
+  if (details) {
+    console.log("[merchant-sync]", message, details);
+    return;
+  }
+  console.log("[merchant-sync]", message);
+};
+
 export async function POST(request: NextRequest) {
   try {
     const auth = await requireMerchant("api");
@@ -20,6 +30,10 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json().catch(() => ({}));
     const requestedPlatform = body?.platform;
+    debugSyncLog("sync-request", {
+      merchantId,
+      requestedPlatform,
+    });
 
     const merchant = await prisma.merchant.findFirst({
       where: {
@@ -55,6 +69,17 @@ export async function POST(request: NextRequest) {
 
     const isZidConnected = !!merchant.zidAccessToken;
     const isSallaConnected = !!merchant.sallaAccessToken;
+
+    debugSyncLog("connection-status", {
+      isZidConnected,
+      isSallaConnected,
+      hasZidStoreId: Boolean(merchant.zidStoreId),
+      hasZidStoreUrl: Boolean(merchant.zidStoreUrl),
+      hasSallaStoreId: Boolean(merchant.sallaStoreId),
+      hasSallaStoreUrl: Boolean(merchant.sallaStoreUrl),
+      hasZidToken: Boolean(merchant.zidAccessToken),
+      hasSallaToken: Boolean(merchant.sallaAccessToken),
+    });
 
     if (!isZidConnected && !isSallaConnected) {
       return NextResponse.json(
@@ -95,6 +120,11 @@ export async function POST(request: NextRequest) {
         const waitTime = Math.ceil(
           (fiveMinutesInMs - timeSinceLastSync) / 1000 / 60
         );
+        debugSyncLog("sync-lock-rejected", {
+          merchantId,
+          lastSyncAt: currentMerchant.lastSyncAt.toISOString(),
+          waitTimeMinutes: waitTime,
+        });
         return NextResponse.json(
           {
             error: "Sync in progress or rate limited",
@@ -112,12 +142,22 @@ export async function POST(request: NextRequest) {
         : isZidConnected
         ? "zid"
         : "salla";
+    debugSyncLog("platform-selected", {
+      platform,
+      requestedPlatform,
+      isZidConnected,
+      isSallaConnected,
+    });
 
     if (platform === "zid" && !isZidConnected) {
       // Release lock by reverting lastSyncAt
       await prisma.merchant.update({
         where: { id: merchantId },
         data: { lastSyncAt: merchant.lastSyncAt },
+      });
+      debugSyncLog("sync-aborted", {
+        reason: "zid-not-connected",
+        merchantId,
       });
       return NextResponse.json(
         { error: "Zid store not connected" },
@@ -130,6 +170,10 @@ export async function POST(request: NextRequest) {
       await prisma.merchant.update({
         where: { id: merchantId },
         data: { lastSyncAt: merchant.lastSyncAt },
+      });
+      debugSyncLog("sync-aborted", {
+        reason: "salla-not-connected",
+        merchantId,
       });
       return NextResponse.json(
         { error: "Salla store not connected" },
@@ -156,6 +200,11 @@ export async function POST(request: NextRequest) {
     try {
       // Lock already acquired above via updateMany
 
+      debugSyncLog("sync-start", {
+        merchantId,
+        platform,
+        storeUrl: storeUrl || null,
+      });
       syncSummary =
         platform === "zid"
           ? await syncZidProducts({
@@ -180,10 +229,20 @@ export async function POST(request: NextRequest) {
         where: { id: merchantId },
         data: { lastSyncAt: new Date() },
       });
+      debugSyncLog("sync-complete", {
+        merchantId,
+        platform,
+        summary: syncSummary || null,
+      });
     } catch (error) {
       await prisma.merchant.update({
         where: { id: merchantId },
         data: { lastSyncAt: previousLastSyncAt },
+      });
+      debugSyncLog("sync-error", {
+        merchantId,
+        platform,
+        error: error instanceof Error ? error.message : "Unknown error",
       });
       throw error;
     }

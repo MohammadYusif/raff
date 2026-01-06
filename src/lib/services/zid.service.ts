@@ -8,6 +8,16 @@ import { buildExternalProductUrl } from "@/lib/platform/products";
 import { normalizeStoreUrl } from "@/lib/platform/store";
 import { fetchWithTimeout } from "@/lib/platform/fetch";
 
+const shouldDebugSync = process.env.RAFF_SYNC_DEBUG === "true";
+const debugSyncLog = (message: string, details?: Record<string, unknown>) => {
+  if (!shouldDebugSync) return;
+  if (details) {
+    console.log("[zid-sync]", message, details);
+    return;
+  }
+  console.log("[zid-sync]", message);
+};
+
 interface ZidConfig {
   accessToken: string;
   storeId?: string | null;
@@ -84,6 +94,7 @@ export class ZidService {
     perPage: number = 50
   ): Promise<ZidPaginatedResponse<ZidProduct>> {
     try {
+      debugSyncLog("fetch-products", { page, perPage });
       const response = await fetchWithTimeout(
         `${this.baseUrl}/managers/store/products?page=${page}&per_page=${perPage}`,
         {
@@ -92,13 +103,20 @@ export class ZidService {
       );
 
       if (!response.ok) {
+        debugSyncLog("fetch-products-error", { status: response.status });
         throw new Error(`Zid API error: ${response.status}`);
       }
 
       const data = await response.json();
+      const products = data.products || [];
+      debugSyncLog("fetch-products-result", {
+        page,
+        count: Array.isArray(products) ? products.length : 0,
+        pagination: data.pagination || null,
+      });
 
       return {
-        products: data.products || [],
+        products,
         pagination: data.pagination || {
           count: 0,
           total: 0,
@@ -118,6 +136,7 @@ export class ZidService {
    */
   async fetchProduct(productId: string): Promise<ZidProduct | null> {
     try {
+      debugSyncLog("fetch-product", { productId });
       const response = await fetchWithTimeout(
         `${this.baseUrl}/managers/store/products/${productId}`,
         {
@@ -129,6 +148,10 @@ export class ZidService {
         if (response.status === 404) {
           return null;
         }
+        debugSyncLog("fetch-product-error", {
+          productId,
+          status: response.status,
+        });
         throw new Error(`Zid API error: ${response.status}`);
       }
 
@@ -145,6 +168,7 @@ export class ZidService {
    */
   async fetchCategories(): Promise<ZidCategory[]> {
     try {
+      debugSyncLog("fetch-categories", {});
       const response = await fetchWithTimeout(
         `${this.baseUrl}/managers/store/categories`,
         {
@@ -153,11 +177,16 @@ export class ZidService {
       );
 
       if (!response.ok) {
+        debugSyncLog("fetch-categories-error", { status: response.status });
         throw new Error(`Zid API error: ${response.status}`);
       }
 
       const data = await response.json();
-      return data.categories || [];
+      const categories = data.categories || [];
+      debugSyncLog("fetch-categories-result", {
+        count: Array.isArray(categories) ? categories.length : 0,
+      });
+      return categories;
     } catch (error) {
       console.error("Error fetching Zid categories:", error);
       throw error;
@@ -400,6 +429,12 @@ export async function syncZidProducts(
     throw new Error("Zid access token missing");
   }
 
+  debugSyncLog("sync-start", {
+    merchantId: merchant.id,
+    storeId: merchant.zidStoreId,
+    storeUrl: merchant.zidStoreUrl,
+  });
+
   const tokens = await ensureZidAccessToken(merchant);
   const service = new ZidService({
     accessToken: tokens.accessToken || merchant.zidAccessToken,
@@ -429,6 +464,10 @@ export async function syncZidProducts(
 
   categoriesCreated = categoryCounters.created;
   categoriesUpdated = categoryCounters.updated;
+  debugSyncLog("categories-synced", {
+    created: categoriesCreated,
+    updated: categoriesUpdated,
+  });
 
   let page = 1;
   const perPage = 50;
@@ -441,6 +480,12 @@ export async function syncZidProducts(
     if (response.pagination?.total_pages) {
       totalPages = response.pagination.total_pages;
     }
+    debugSyncLog("page-loaded", {
+      page,
+      perPage,
+      count: zidProducts.length,
+      totalPages,
+    });
 
     for (const zidProduct of zidProducts) {
       const existing = await prisma.product.findFirst({
@@ -539,6 +584,13 @@ export async function syncZidProducts(
     page += 1;
   }
 
+  debugSyncLog("sync-complete", {
+    merchantId: merchant.id,
+    productsCreated,
+    productsUpdated,
+    categoriesCreated,
+    categoriesUpdated,
+  });
   return {
     productsCreated,
     productsUpdated,
@@ -555,6 +607,10 @@ export async function syncZidProductById(
     throw new Error("Zid access token missing");
   }
 
+  debugSyncLog("sync-single-start", {
+    merchantId: merchant.id,
+    productId,
+  });
   const tokens = await ensureZidAccessToken(merchant);
   const service = new ZidService({
     accessToken: tokens.accessToken || merchant.zidAccessToken,
@@ -639,6 +695,10 @@ export async function syncZidProductById(
         },
       },
     });
+    debugSyncLog("sync-single-updated", {
+      merchantId: merchant.id,
+      productId: zidProduct.id,
+    });
     return { created: false, updated: true };
   }
 
@@ -647,6 +707,10 @@ export async function syncZidProductById(
       ...productData,
       ...(productTags ? { productTags } : {}),
     },
+  });
+  debugSyncLog("sync-single-created", {
+    merchantId: merchant.id,
+    productId: zidProduct.id,
   });
   return { created: true, updated: false };
 }
