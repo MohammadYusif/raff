@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { useLocale } from "next-intl";
 import { useMerchantProfile } from "@/lib/hooks/useMerchantApi";
 import {
   LayoutDashboard,
@@ -17,11 +18,10 @@ import {
   Bell,
   Settings,
   Plug,
-  ChevronRight,
-  Store,
   Menu,
   X,
 } from "lucide-react";
+import { ChevronForward } from "@/core/i18n";
 import { Badge } from "@/shared/components/ui";
 import { useState } from "react";
 
@@ -88,16 +88,28 @@ const navItems: NavItem[] = [
 export function MerchantLayout({ children }: MerchantLayoutProps) {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const locale = useLocale();
+  const isRtl = locale === "ar";
   const merchantId = session?.user?.merchantId ?? null;
   const { profile } = useMerchantProfile(Boolean(merchantId));
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const platform = profile?.storeInfo.platform;
-  const platformName = platform === "zid" ? "Zid" : platform === "salla" ? "Salla" : null;
-  const platformLogo = platform === "zid" ? "/zid-icon.png" : platform === "salla" ? "/salla-icon.png" : null;
+  const platformName =
+    platform === "zid" ? "Zid" : platform === "salla" ? "Salla" : null;
+  const platformLogo =
+    platform === "zid"
+      ? "/images/brands/zid.svg"
+      : platform === "salla"
+        ? "/images/brands/salla.svg"
+        : null;
 
   return (
-    <div className="flex h-screen bg-raff-neutral-50">
+    <div
+      className={`flex h-screen bg-raff-neutral-50 ${
+        isRtl ? "lg:flex-row-reverse" : ""
+      }`}
+    >
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div
@@ -108,17 +120,44 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 transform bg-white shadow-lg transition-transform duration-300 lg:static lg:translate-x-0 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed inset-y-0 start-0 z-50 w-64 transform bg-white shadow-lg transition-transform duration-300 lg:static lg:translate-x-0 ${
+          sidebarOpen
+            ? "translate-x-0"
+            : isRtl
+              ? "translate-x-full"
+              : "-translate-x-full"
         }`}
       >
         <div className="flex h-full flex-col">
           {/* Header */}
           <div className="border-b border-raff-neutral-200 p-4">
             <div className="mb-3 flex items-center justify-between">
-              <Link href="/merchant/dashboard" className="flex items-center gap-2">
-                <Store className="h-6 w-6 text-raff-primary" />
-                <span className="text-lg font-bold text-raff-primary">Raff</span>
+              <Link
+                href="/merchant/dashboard"
+                className="flex items-center gap-3"
+              >
+                <Image
+                  src="/logo.svg"
+                  alt="Raff"
+                  width={96}
+                  height={28}
+                  className="h-7 w-auto object-contain"
+                />
+                {platformLogo && platformName && (
+                  <>
+                    <span
+                      className="h-6 w-px bg-raff-neutral-200"
+                      aria-hidden="true"
+                    />
+                    <Image
+                      src={platformLogo}
+                      alt={platformName}
+                      width={28}
+                      height={28}
+                      className="h-7 w-7 object-contain"
+                    />
+                  </>
+                )}
               </Link>
               <button
                 onClick={() => setSidebarOpen(false)}
@@ -180,7 +219,7 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
                         </Badge>
                       )}
                       {isActive && (
-                        <ChevronRight className="h-4 w-4" />
+                        <ChevronForward className="h-4 w-4" />
                       )}
                     </Link>
                   </li>

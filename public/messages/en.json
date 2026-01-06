@@ -305,6 +305,8 @@
     "quickActions": {
       "title": "Quick Actions",
       "syncProducts": "Sync Products",
+      "syncSuccess": "Products synced successfully",
+      "syncError": "Sync failed. Please try again.",
       "viewAnalytics": "View Analytics",
       "settings": "Settings",
       "viewStore": "View Store"
@@ -326,6 +328,7 @@
     "syncNow": "Sync Now",
     "syncing": "Syncing...",
     "syncSuccess": "Synced successfully",
+    "syncError": "Sync failed. Please try again.",
     "fetchError": "Failed to load products",
     "loading": "Loading...",
     "noProducts": "No Products",
@@ -524,6 +527,63 @@
       "goToDashboard": "Go to dashboard"
     }
   },
+    "completeRegistration": {
+    "title": "Complete your registration",
+    "subtitle": "You're almost there. Set up your Raff account credentials.",
+    "steps": {
+      "storeConnectedTitle": "Store connected",
+      "storeConnectedDescription": "Your store is successfully connected to Raff",
+      "productsSyncingTitle": "Products syncing",
+      "productsSyncingDescription": "Your products will appear on Raff shortly"
+    },
+    "form": {
+      "title": "Set your account credentials",
+      "description": "Create your Raff login to access your merchant dashboard",
+      "nameLabel": "Full name (optional)",
+      "namePlaceholder": "Enter your full name",
+      "emailLabel": "Email address",
+      "emailPlaceholder": "Enter your email",
+      "emailHelp": "Use an email you can access for account recovery",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Create a strong password",
+      "confirmPasswordLabel": "Confirm password",
+      "confirmPasswordPlaceholder": "Re-enter your password",
+      "submit": "Complete registration",
+      "submitting": "Completing registration"
+    },
+    "status": {
+      "emailChecking": "Checking email availability",
+      "emailAvailable": "Email is available"
+    },
+    "invalidLink": {
+      "title": "Invalid registration link",
+      "description": "This registration link is invalid or has expired"
+    },
+    "actions": {
+      "startOver": "Start over"
+    },
+    "info": {
+      "title": "Why do I need this?",
+      "description": "Your Raff account is separate from your store platform. These credentials let you log in, sync products, and track performance."
+    },
+    "errors": {
+      "invalidLink": "Invalid registration link",
+      "invalidToken": "Invalid registration token",
+      "alreadyCompleted": "Registration already completed",
+      "registrationFailed": "Failed to complete registration",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Invalid email address",
+      "emailExists": "This email is already in use",
+      "passwordRequired": "Password is required",
+      "confirmPasswordRequired": "Please confirm your password",
+      "passwordMismatch": "Passwords do not match"
+    },
+    "success": {
+      "title": "Registration completed!",
+      "description": "You can now log in with your credentials."
+    }
+  },
+
   "auth": {
     "validation": {
       "minLength": "At least 8 characters",

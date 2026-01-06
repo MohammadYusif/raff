@@ -6,9 +6,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { useLocale as useLocaleHook } from "@/core/i18n";
+import { useSession } from "next-auth/react";
 
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { useMerchantProfile } from "@/lib/hooks/useMerchantApi";
 import {
   LayoutDashboard,
   Package,
@@ -56,7 +58,20 @@ export function MerchantSidebar() {
   const t = useTranslations("merchantSidebar");
   const currentLocale = useLocale();
   const { switchLocale } = useLocaleHook();
+  const { data: session } = useSession();
+  const merchantId = session?.user?.merchantId ?? null;
+  const { profile } = useMerchantProfile(Boolean(merchantId));
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const platform = profile?.storeInfo.platform;
+  const platformName =
+    platform === "zid" ? "Zid" : platform === "salla" ? "Salla" : null;
+  const platformLogo =
+    platform === "zid"
+      ? "/images/brands/zid.svg"
+      : platform === "salla"
+        ? "/images/brands/salla.svg"
+        : null;
 
   return (
     <>
@@ -90,7 +105,7 @@ export function MerchantSidebar() {
       >
         {/* Logo */}
         <div className="flex h-16 items-center justify-center border-b border-raff-neutral-200 px-6">
-          <Link href="/" className="flex items-center">
+          <Link href="/" className="flex items-center gap-3">
             <Image
               src="/logo.svg"
               alt="Raff Logo"
@@ -98,6 +113,21 @@ export function MerchantSidebar() {
               height={32}
               className="h-auto w-32 object-contain"
             />
+            {platformLogo && platformName && (
+              <>
+                <span
+                  className="h-6 w-px bg-raff-neutral-200"
+                  aria-hidden="true"
+                />
+                <Image
+                  src={platformLogo}
+                  alt={platformName}
+                  width={28}
+                  height={28}
+                  className="h-7 w-7 object-contain"
+                />
+              </>
+            )}
           </Link>
         </div>
 

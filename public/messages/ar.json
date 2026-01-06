@@ -305,6 +305,8 @@
     "quickActions": {
       "title": "إجراءات سريعة",
       "syncProducts": "مزامنة المنتجات",
+      "syncSuccess": "تمت مزامنة المنتجات بنجاح",
+      "syncError": "فشلت المزامنة. حاول مرة أخرى.",
       "viewAnalytics": "عرض التحليلات",
       "settings": "الإعدادات",
       "viewStore": "عرض المتجر"
@@ -326,6 +328,7 @@
     "syncNow": "مزامنة الآن",
     "syncing": "جاري المزامنة...",
     "syncSuccess": "تمت المزامنة بنجاح",
+    "syncError": "فشلت المزامنة. حاول مرة أخرى.",
     "fetchError": "فشل تحميل المنتجات",
     "loading": "جاري التحميل...",
     "noProducts": "لا توجد منتجات",
@@ -524,23 +527,80 @@
       "goToDashboard": "الذهاب للوحة التحكم"
     }
   },
+  "completeRegistration": {
+    "title": "أكمل تسجيلك",
+    "subtitle": "بقيت خطوة بسيطة لإنشاء بيانات الدخول إلى راف",
+    "steps": {
+      "storeConnectedTitle": "تم ربط المتجر",
+      "storeConnectedDescription": "تم ربط متجرك براف بنجاح",
+      "productsSyncingTitle": "جار مزامنة المنتجات",
+      "productsSyncingDescription": "ستظهر منتجاتك على راف قريبًا"
+    },
+    "form": {
+      "title": "إنشاء بيانات الدخول",
+      "description": "أنشئ بيانات الدخول لراف للوصول إلى لوحة التاجر",
+      "nameLabel": "الاسم الكامل اختياري",
+      "namePlaceholder": "اكتب اسمك الكامل",
+      "emailLabel": "البريد الإلكتروني",
+      "emailPlaceholder": "اكتب بريدك الإلكتروني",
+      "emailHelp": "استخدم بريدًا يمكنك الوصول إليه لاستعادة الحساب",
+      "passwordLabel": "كلمة المرور",
+      "passwordPlaceholder": "أنشئ كلمة مرور قوية",
+      "confirmPasswordLabel": "تأكيد كلمة المرور",
+      "confirmPasswordPlaceholder": "أعد كتابة كلمة المرور",
+      "submit": "إكمال التسجيل",
+      "submitting": "جار إكمال التسجيل"
+    },
+    "status": {
+      "emailChecking": "جار التحقق من توفر البريد",
+      "emailAvailable": "البريد متاح"
+    },
+    "invalidLink": {
+      "title": "رابط التسجيل غير صالح",
+      "description": "هذا الرابط غير صالح أو انتهت صلاحيته"
+    },
+    "actions": {
+      "startOver": "ابدأ من جديد"
+    },
+    "info": {
+      "title": "لماذا أحتاج ذلك؟",
+      "description": "حساب راف منفصل عن منصة المتجر. هذه البيانات تسمح لك بتسجيل الدخول ومزامنة المنتجات ومتابعة الأداء."
+    },
+    "errors": {
+      "invalidLink": "رابط التسجيل غير صالح",
+      "invalidToken": "رمز التسجيل غير صالح",
+      "alreadyCompleted": "تم إكمال التسجيل مسبقًا",
+      "registrationFailed": "تعذر إكمال التسجيل",
+      "emailRequired": "البريد الإلكتروني مطلوب",
+      "emailInvalid": "البريد الإلكتروني غير صالح",
+      "emailExists": "البريد الإلكتروني مستخدم بالفعل",
+      "passwordRequired": "كلمة المرور مطلوبة",
+      "confirmPasswordRequired": "يرجى تأكيد كلمة المرور",
+      "passwordMismatch": "كلمتا المرور غير متطابقتين"
+    },
+    "success": {
+      "title": "تم إكمال التسجيل",
+      "description": "يمكنك الآن تسجيل الدخول ببياناتك"
+    }
+  },
+
   "auth": {
     "validation": {
-      "minLength": "8 أحرف على الأقل",
-      "uppercase": "حرف كبير واحد على الأقل (A-Z)",
-      "lowercase": "حرف صغير واحد على الأقل (a-z)",
-      "number": "رقم واحد على الأقل (0-9)",
-      "special": "رمز خاص واحد على الأقل (!@#$%...)",
+      "minLength": "ثمانية أحرف على الأقل",
+      "uppercase": "حرف كبير واحد على الأقل",
+      "lowercase": "حرف صغير واحد على الأقل",
+      "number": "رقم واحد على الأقل",
+      "special": "رمز خاص واحد على الأقل",
       "notCommon": "ليست كلمة مرور شائعة",
-      "strengthWeak": "كلمة مرور ضعيفة",
-      "strengthMedium": "قوة متوسطة",
-      "strengthStrong": "كلمة مرور قوية",
-      "nameMinLength": "6 أحرف على الأقل",
-      "nameLettersOnly": "أحرف ومسافات فقط",
-      "nameFullName": "الاسم الأول والأخير مطلوب",
-      "emailHasAt": "يحتوي على رمز @",
-      "emailHasDomain": "له نطاق صالح (.com، .net، إلخ)",
-      "emailValidFormat": "تنسيق بريد إلكتروني صالح"
+      "strengthWeak": "كلمة المرور ضعيفة",
+      "strengthMedium": "كلمة المرور متوسطة",
+      "strengthStrong": "كلمة المرور قوية",
+      "nameMinLength": "ستة أحرف على الأقل",
+      "nameLettersOnly": "حروف ومسافات فقط",
+      "nameFullName": "الاسم الأول واسم العائلة مطلوبان",
+      "emailHasAt": "يحتوي على علامة آت",
+      "emailHasDomain": "يحتوي على نطاق صالح",
+      "emailValidFormat": "صيغة بريد إلكتروني صحيحة"
     },
     "login": {
       "title": "تسجيل الدخول",

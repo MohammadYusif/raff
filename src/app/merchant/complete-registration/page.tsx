@@ -6,11 +6,11 @@ import { PageTransition } from "@/shared/components/PageTransition";
 
 const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 const TITLES = {
-  ar: "إكمال التسجيل - رف",
+  ar: "إكمال التسجيل - راف",
   en: "Complete Registration - Raff",
 } as const;
 const DESCRIPTIONS = {
-  ar: "أكمل تسجيلك كتاجر على رف",
+  ar: "أكمل تسجيل التاجر على راف",
   en: "Complete your merchant registration on Raff",
 } as const;
 

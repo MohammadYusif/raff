@@ -28,15 +28,16 @@ import {
   CheckCircle,
   AlertCircle,
   Clock,
-  ArrowRight,
   Zap,
 } from "lucide-react";
+import { ArrowForward } from "@/core/i18n";
 import { formatPrice } from "@/lib/utils";
 import {
   useMerchantProfile,
   useMerchantSync,
 } from "@/lib/hooks/useMerchantApi";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
+import { toast } from "sonner";
 
 interface MerchantStats {
   totalProducts: number;
@@ -154,6 +155,15 @@ export function MerchantDashboardContent() {
     window.location.href = `/api/${platform}/oauth/start`;
   };
 
+  const handleSync = async () => {
+    const result = await triggerSync();
+    if (result?.success) {
+      toast.success(t("quickActions.syncSuccess"));
+      return;
+    }
+    toast.error(result?.error || t("quickActions.syncError"));
+  };
+
   return (
     <div className="h-full bg-raff-neutral-50">
       {/* Header */}
@@ -204,7 +214,7 @@ export function MerchantDashboardContent() {
                         className="gap-2"
                       >
                         <Image
-                          src="/salla-icon.png"
+                          src="/images/brands/salla.svg"
                           alt="Salla"
                           width={20}
                           height={20}
@@ -221,7 +231,7 @@ export function MerchantDashboardContent() {
                         ) : (
                           <>
                             {t("connectStore.connectSalla")}
-                            <ArrowRight className="h-4 w-4" />
+                            <ArrowForward className="h-4 w-4" />
                           </>
                         )}
                       </AnimatedButton>
@@ -233,7 +243,7 @@ export function MerchantDashboardContent() {
                         className="gap-2"
                       >
                         <Image
-                          src="/zid-icon.png"
+                          src="/images/brands/zid.svg"
                           alt="Zid"
                           width={20}
                           height={20}
@@ -250,7 +260,7 @@ export function MerchantDashboardContent() {
                         ) : (
                           <>
                             {t("connectStore.connectZid")}
-                            <ArrowRight className="h-4 w-4" />
+                            <ArrowForward className="h-4 w-4" />
                           </>
                         )}
                       </AnimatedButton>
@@ -495,7 +505,7 @@ export function MerchantDashboardContent() {
                     <AnimatedButton
                       variant="outline"
                       className="justify-start gap-2"
-                      onClick={() => triggerSync()}
+                      onClick={handleSync}
                       disabled={!merchantId || syncing}
                     >
                       <Package className="h-4 w-4" />

@@ -19,13 +19,12 @@ import {
   Store,
   CheckCircle,
   Clock,
-  ArrowRight,
   Shield,
   ExternalLink,
   RefreshCw,
   AlertCircle,
-  ChevronRight,
 } from "lucide-react";
+import { ArrowForward, ChevronBackward } from "@/core/i18n";
 import { useMerchantProfile } from "@/lib/hooks/useMerchantApi";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
 import { toast } from "sonner";
@@ -90,7 +89,7 @@ export function MerchantIntegrationsContent() {
             </div>
             <Link href="/merchant/dashboard">
               <AnimatedButton variant="ghost" className="gap-2">
-                <ChevronRight className="h-4 w-4 rotate-180" />
+                <ChevronBackward className="h-4 w-4" />
                 Back to Dashboard
               </AnimatedButton>
             </Link>
@@ -153,7 +152,7 @@ export function MerchantIntegrationsContent() {
                     <div className="flex items-center gap-3">
                       <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#00C48C]/10">
                         <Image
-                          src="/salla-icon.png"
+                          src="/images/brands/salla.svg"
                           alt="Salla"
                           width={32}
                           height={32}
@@ -232,7 +231,7 @@ export function MerchantIntegrationsContent() {
                         <>
                           <Store className="h-4 w-4" />
                           Connect Salla Store
-                          <ArrowRight className="h-4 w-4" />
+                          <ArrowForward className="h-4 w-4" />
                         </>
                       )}
                     </AnimatedButton>
@@ -247,7 +246,7 @@ export function MerchantIntegrationsContent() {
                     <div className="flex items-center gap-3">
                       <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-raff-accent/10">
                         <Image
-                          src="/zid-icon.png"
+                          src="/images/brands/zid.svg"
                           alt="Zid"
                           width={32}
                           height={32}
@@ -326,7 +325,7 @@ export function MerchantIntegrationsContent() {
                         <>
                           <Store className="h-4 w-4" />
                           Connect Zid Store
-                          <ArrowRight className="h-4 w-4" />
+                          <ArrowForward className="h-4 w-4" />
                         </>
                       )}
                     </AnimatedButton>

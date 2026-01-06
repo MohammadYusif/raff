@@ -92,7 +92,9 @@ export function MerchantProductsContent() {
     if (result?.success) {
       toast.success(t("syncSuccess"));
       await fetchProducts();
+      return;
     }
+    toast.error(result?.error || t("syncError"));
   };
 
   const filteredProducts = products

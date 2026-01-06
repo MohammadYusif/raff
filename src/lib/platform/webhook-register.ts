@@ -37,6 +37,35 @@ async function postJson(
   return response.json();
 }
 
+const SALLA_SUPPORTED_EVENTS = new Set([
+  "product.created",
+  "product.updated",
+  "product.deleted",
+  "order.created",
+  "order.updated",
+  "order.status.updated",
+  "order.cancelled",
+  "order.refunded",
+]);
+
+function sanitizeSallaEvents(events: string[]): string[] {
+  const uniqueEvents = Array.from(new Set(events));
+  const supportedEvents = uniqueEvents.filter((event) =>
+    SALLA_SUPPORTED_EVENTS.has(event)
+  );
+  const unsupportedEvents = uniqueEvents.filter(
+    (event) => !SALLA_SUPPORTED_EVENTS.has(event)
+  );
+
+  if (unsupportedEvents.length > 0) {
+    console.warn(
+      `Skipping unsupported Salla webhook events: ${unsupportedEvents.join(", ")}`
+    );
+  }
+
+  return supportedEvents;
+}
+
 /**
  * Register Zid webhooks
  * Note: Zid only accepts ONE event per webhook, so we register multiple
@@ -149,6 +178,14 @@ export async function registerSallaWebhooks(params: {
     return { status: "skipped", reason: "Missing SALLA_WEBHOOK_EVENTS" };
   }
 
+  const events = sanitizeSallaEvents(config.webhook.events);
+  if (!events.length) {
+    return {
+      status: "skipped",
+      reason: "No supported Salla webhook events configured",
+    };
+  }
+
   const headers: Record<string, string> = {
     Authorization: `Bearer ${params.accessToken}`,
     Accept: "application/json",
@@ -160,7 +197,7 @@ export async function registerSallaWebhooks(params: {
   const results: Array<{ event: string; success: boolean; error?: string }> =
     [];
 
-  for (const event of config.webhook.events) {
+  for (const event of events) {
     const payload = {
       name: `Raff - ${event}`,
       event, // Single event
