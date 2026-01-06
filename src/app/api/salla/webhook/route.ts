@@ -3,6 +3,7 @@ import { CommissionStatus, type Merchant } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getSallaWebhookConfig } from "@/lib/platform/config";
 import { syncSallaProductById } from "@/lib/services/salla.service";
+import { syncSallaProductsForMerchant } from "@/lib/sync/sallaProducts";
 import {
   normalizeSallaOrderWebhook,
   logProcessedWebhook,
@@ -351,6 +352,38 @@ export async function POST(request: NextRequest) {
       }
 
       await syncSallaProductById(merchant, productId.toString());
+      processedOk = true;
+      return NextResponse.json({ success: true });
+    }
+
+    /* --------------------------------------------------------
+       APP INSTALLED
+    -------------------------------------------------------- */
+    if (eventType === "app.installed") {
+      const storeId =
+        payload.merchant?.id ??
+        payload.data?.merchant?.id ??
+        payload.data?.store?.id ??
+        payload.data?.id ??
+        null;
+      const storeIdString = storeId ? String(storeId) : "";
+
+      if (storeIdString) {
+        const merchant = await prisma.merchant.findUnique({
+          where: { sallaStoreId: storeIdString },
+        });
+
+        if (merchant?.sallaAccessToken) {
+          await syncSallaProductsForMerchant(merchant.id);
+        } else {
+          console.warn("Salla app.installed: missing access token for store", {
+            storeId: storeIdString,
+          });
+        }
+      } else {
+        console.warn("Salla app.installed: missing storeId in payload");
+      }
+
       processedOk = true;
       return NextResponse.json({ success: true });
     }
