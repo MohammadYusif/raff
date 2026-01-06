@@ -28,8 +28,8 @@ interface SallaProduct {
   name_ar?: string;
   description?: string;
   description_ar?: string;
-  price?: number;
-  sale_price?: number;
+  price?: number | { amount?: number | string; currency?: string };
+  sale_price?: number | { amount?: number | string; currency?: string };
   quantity?: number;
   status?: string;
   sku?: string;
@@ -236,6 +236,32 @@ async function ensureSallaAccessToken(merchant: SallaMerchantAuth) {
 
 function resolveSallaProductUrl(product: SallaProduct): string | null {
   return product.url || product.urls?.product || null;
+}
+
+function extractNumericAmount(value: unknown): number | null {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  if (typeof value === "object" && value) {
+    const record = value as Record<string, unknown>;
+    if ("amount" in record) {
+      return extractNumericAmount(record.amount);
+    }
+    if ("value" in record) {
+      return extractNumericAmount(record.value);
+    }
+  }
+  return null;
+}
+
+function extractCurrency(value: unknown): string | null {
+  if (typeof value !== "object" || !value) return null;
+  const record = value as Record<string, unknown>;
+  return typeof record.currency === "string" ? record.currency : null;
 }
 
 type NormalizedTag = { name: string; slug: string };
@@ -468,14 +494,17 @@ export async function syncSallaProducts(merchant: SallaMerchantAuth): Promise<{
         providedUrl: resolveSallaProductUrl(sallaProduct),
       });
       const sallaUrl = resolveSallaProductUrl(sallaProduct) || undefined;
-      const effectivePrice =
-        typeof sallaProduct.sale_price === "number"
-          ? sallaProduct.sale_price
-          : sallaProduct.price ?? 0;
-      const originalPrice =
-        typeof sallaProduct.sale_price === "number"
-          ? sallaProduct.price ?? null
-          : null;
+      const priceAmount = extractNumericAmount(sallaProduct.price);
+      const salePriceAmount = extractNumericAmount(sallaProduct.sale_price);
+      const currency =
+        extractCurrency(sallaProduct.sale_price) ||
+        extractCurrency(sallaProduct.price) ||
+        "SAR";
+      const hasSalePrice = salePriceAmount !== null;
+      const effectivePrice = hasSalePrice
+        ? salePriceAmount
+        : priceAmount ?? 0;
+      const originalPrice = hasSalePrice ? priceAmount ?? null : null;
       const tagNames = sallaProduct.sku ? [sallaProduct.sku] : [];
       const productTags = buildProductTagsInput(tagNames);
 
@@ -486,7 +515,7 @@ export async function syncSallaProducts(merchant: SallaMerchantAuth): Promise<{
         descriptionAr: sallaProduct.description_ar || null,
         price: effectivePrice,
         originalPrice,
-        currency: "SAR",
+        currency,
         images,
         thumbnail: images[0] || null,
         categoryId,
@@ -609,14 +638,15 @@ export async function syncSallaProductById(
     providedUrl: resolveSallaProductUrl(sallaProduct),
   });
   const sallaUrl = resolveSallaProductUrl(sallaProduct) || undefined;
-  const effectivePrice =
-    typeof sallaProduct.sale_price === "number"
-      ? sallaProduct.sale_price
-      : sallaProduct.price ?? 0;
-  const originalPrice =
-    typeof sallaProduct.sale_price === "number"
-      ? sallaProduct.price ?? null
-      : null;
+  const priceAmount = extractNumericAmount(sallaProduct.price);
+  const salePriceAmount = extractNumericAmount(sallaProduct.sale_price);
+  const currency =
+    extractCurrency(sallaProduct.sale_price) ||
+    extractCurrency(sallaProduct.price) ||
+    "SAR";
+  const hasSalePrice = salePriceAmount !== null;
+  const effectivePrice = hasSalePrice ? salePriceAmount : priceAmount ?? 0;
+  const originalPrice = hasSalePrice ? priceAmount ?? null : null;
   const tagNames = sallaProduct.sku ? [sallaProduct.sku] : [];
   const productTags = buildProductTagsInput(tagNames);
 
@@ -627,7 +657,7 @@ export async function syncSallaProductById(
     descriptionAr: sallaProduct.description_ar || null,
     price: effectivePrice,
     originalPrice,
-    currency: "SAR",
+    currency,
     images,
     thumbnail: images[0] || null,
     sallaProductId,

@@ -457,8 +457,12 @@ export async function syncZidProducts(
 
   for (const category of categories) {
     const categoryId = await upsertCategory(category, categoryCounters);
-    if (categoryId) {
-      categoryMap.set(category.id, categoryId);
+    const categoryKey =
+      category.id !== null && category.id !== undefined
+        ? String(category.id)
+        : "";
+    if (categoryId && categoryKey) {
+      categoryMap.set(categoryKey, categoryId);
     }
   }
 
@@ -488,23 +492,48 @@ export async function syncZidProducts(
     });
 
     for (const zidProduct of zidProducts) {
+      const name = zidProduct.name || "";
+      const rawZidProductId = zidProduct.id;
+      const zidProductId =
+        rawZidProductId !== null && rawZidProductId !== undefined
+          ? String(rawZidProductId)
+          : "";
+
+      if (!name || !zidProductId) {
+        debugSyncLog("skip-product", {
+          reason: !name ? "missing-name" : "missing-id",
+          rawId: rawZidProductId ?? null,
+        });
+        continue;
+      }
+      if (typeof rawZidProductId === "number") {
+        debugSyncLog("normalized-product-id", {
+          rawId: rawZidProductId,
+          normalizedId: zidProductId,
+        });
+      }
+
       const existing = await prisma.product.findFirst({
         where: {
           merchantId: merchant.id,
-          zidProductId: zidProduct.id,
+          zidProductId,
         },
       });
 
       const slug = await resolveProductSlug(
-        zidProduct.name,
-        zidProduct.id,
+        name,
+        zidProductId,
         existing?.slug
       );
 
-      const categoryId =
-        zidProduct.categories && zidProduct.categories.length > 0
-          ? categoryMap.get(zidProduct.categories[0].id) || null
+      const categoryKey =
+        zidProduct.categories &&
+        zidProduct.categories.length > 0 &&
+        zidProduct.categories[0].id !== null &&
+        zidProduct.categories[0].id !== undefined
+          ? String(zidProduct.categories[0].id)
           : null;
+      const categoryId = categoryKey ? categoryMap.get(categoryKey) || null : null;
 
       const images =
         zidProduct.images?.map((image) => image.url).filter(Boolean) || [];
@@ -525,7 +554,7 @@ export async function syncZidProducts(
         platform: "zid",
         product: {
           slug,
-          zidProductId: zidProduct.id,
+          zidProductId,
         },
         storeUrl,
         providedUrl: resolveZidProductUrl(zidProduct),
@@ -547,7 +576,7 @@ export async function syncZidProducts(
         images,
         thumbnail: images[0] || null,
         categoryId,
-        zidProductId: zidProduct.id,
+        zidProductId,
         sallaProductId,
         sallaUrl,
         externalProductUrl: externalProductUrl || undefined,
@@ -623,16 +652,37 @@ export async function syncZidProductById(
     return { created: false, updated: false };
   }
 
+  const name = zidProduct.name || "";
+  const rawZidProductId = zidProduct.id;
+  const zidProductId =
+    rawZidProductId !== null && rawZidProductId !== undefined
+      ? String(rawZidProductId)
+      : "";
+
+  if (!name || !zidProductId) {
+    debugSyncLog("skip-product", {
+      reason: !name ? "missing-name" : "missing-id",
+      rawId: rawZidProductId ?? null,
+    });
+    return { created: false, updated: false };
+  }
+  if (typeof rawZidProductId === "number") {
+    debugSyncLog("normalized-product-id", {
+      rawId: rawZidProductId,
+      normalizedId: zidProductId,
+    });
+  }
+
   const existing = await prisma.product.findFirst({
     where: {
       merchantId: merchant.id,
-      zidProductId: zidProduct.id,
+      zidProductId,
     },
   });
 
   const slug = await resolveProductSlug(
-    zidProduct.name,
-    zidProduct.id,
+    name,
+    zidProductId,
     existing?.slug
   );
 
@@ -653,7 +703,7 @@ export async function syncZidProductById(
     platform: "zid",
     product: {
       slug,
-      zidProductId: zidProduct.id,
+      zidProductId,
     },
     storeUrl,
     providedUrl: resolveZidProductUrl(zidProduct),
@@ -673,7 +723,7 @@ export async function syncZidProductById(
     currency: "SAR",
     images,
     thumbnail: images[0] || null,
-    zidProductId: zidProduct.id,
+    zidProductId,
     sallaProductId,
     sallaUrl,
     externalProductUrl: externalProductUrl || undefined,
@@ -697,7 +747,7 @@ export async function syncZidProductById(
     });
     debugSyncLog("sync-single-updated", {
       merchantId: merchant.id,
-      productId: zidProduct.id,
+      productId: zidProductId,
     });
     return { created: false, updated: true };
   }
@@ -710,7 +760,7 @@ export async function syncZidProductById(
   });
   debugSyncLog("sync-single-created", {
     merchantId: merchant.id,
-    productId: zidProduct.id,
+    productId: zidProductId,
   });
   return { created: true, updated: false };
 }
