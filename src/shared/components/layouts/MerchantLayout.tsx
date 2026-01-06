@@ -164,18 +164,20 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
             {platformName && platformLogo && (
               <div className="rounded-lg border border-raff-neutral-200 bg-raff-neutral-50 p-3">
                 <div className="mb-2 flex items-center gap-2">
-                  <Image
-                    src={platformLogo}
-                    alt={platformName}
-                    width={20}
-                    height={20}
-                    className="h-5 w-5"
-                    priority
-                    unoptimized
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                    }}
-                  />
+                  <div className="h-5 w-5 flex items-center justify-center">
+                    <Image
+                      src={platformLogo}
+                      alt={platformName}
+                      width={20}
+                      height={20}
+                      className="h-full w-full object-contain"
+                      priority
+                      unoptimized
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                      }}
+                    />
+                  </div>
                   <span className="font-semibold text-raff-primary">
                     {profile?.name || layoutT("storeFallback")}
                   </span>

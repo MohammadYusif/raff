@@ -265,8 +265,17 @@
     "analytics": "التحليلات",
     "orders": "الطلبات",
     "settings": "الإعدادات",
+    "integrations": "الربط",
     "viewStorefront": "عرض المتجر",
     "logout": "تسجيل الخروج"
+  },
+  "merchantLayout": {
+    "loggedInAs": "مسجل الدخول كـ",
+    "connected": "متصل",
+    "storeFallback": "متجر",
+    "languageEnglish": "English",
+    "languageArabic": "العربية",
+    "brandAlt": "شعار رَفّ"
   },
   "merchantDashboard": {
     "title": "لوحة تحكم التاجر",
@@ -275,6 +284,7 @@
     "connectStore": {
       "title": "اربط متجرك برَفّ",
       "description": "اربط متجر سلة أو زد الخاص بك لبدء عرض منتجاتك على رَفّ وتتبع التحويلات",
+      "note": "سيتم توجيهك إلى زد أو سلة للتفويض. لن نرى كلمة المرور الخاصة بك مطلقاً.",
       "connectSalla": "ربط متجر سلة",
       "connectZid": "ربط متجر زد",
       "connecting": "جارٍ الربط..."
@@ -320,6 +330,78 @@
       "step3Desc": "تتبع المشاهدات والنقرات والتحويلات في لوحة التحكم"
     }
   },
+  "merchantIntegrations": {
+    "title": "ربط المتاجر",
+    "subtitle": "اربط متجرك الإلكتروني لمزامنة المنتجات مع رَفّ",
+    "backToDashboard": "العودة للوحة التحكم",
+    "toasts": {
+      "connectedTitle": "تم الاتصال بنجاح بـ {platform}!",
+      "connectedDescription": "متجرك الآن متزامن مع رَفّ.",
+      "registeredTitle": "مرحباً بك في رَفّ!",
+      "registeredDescription": "تم ربط متجرك على {platform}. حسابك قيد المراجعة."
+    },
+    "security": {
+      "title": "اتصال OAuth آمن",
+      "description": "عند ربط متجرك، سيتم توجيهك إلى {platforms} للتفويض. لن نرى أو نخزن كلمة مرور متجرك مطلقاً.",
+      "items": {
+        "authenticate": "تقوم بالمصادقة مباشرة على موقع المنصة",
+        "token": "يتلقى رَفّ رمز وصول آمن فقط",
+        "revoke": "يمكنك إلغاء الوصول في أي وقت من إعدادات متجرك"
+      }
+    },
+    "platforms": {
+      "title": "المنصات المتاحة",
+      "salla": {
+        "name": "سلة",
+        "description": "منصة التجارة الإلكترونية الرائدة في السعودية",
+        "storeUrlLabel": "رابط المتجر",
+        "connected": "متصل",
+        "benefits": {
+          "sync": "مزامنة المنتجات تلقائياً",
+          "inventory": "تحديثات المخزون الفورية",
+          "orders": "تتبع الطلبات والتحليلات"
+        },
+        "button": {
+          "connect": "ربط متجر سلة",
+          "reconnect": "إعادة ربط سلة",
+          "connecting": "جارٍ الربط..."
+        }
+      },
+      "zid": {
+        "name": "زد",
+        "description": "أنشئ وطوّر متجرك الإلكتروني",
+        "storeUrlLabel": "رابط المتجر",
+        "connected": "متصل",
+        "benefits": {
+          "sync": "مزامنة المنتجات تلقائياً",
+          "inventory": "تحديثات المخزون الفورية",
+          "orders": "تتبع الطلبات والتحليلات"
+        },
+        "button": {
+          "connect": "ربط متجر زد",
+          "reconnect": "إعادة ربط زد",
+          "connecting": "جارٍ الربط..."
+        }
+      }
+    },
+    "help": {
+      "title": "هل تحتاج مساعدة؟",
+      "questions": {
+        "connect": {
+          "title": "كيف أربط متجري؟",
+          "description": "انقر على زر الربط أعلاه. سيتم توجيهك إلى موقع منصتك للتفويض. بعد التفويض، ستعود إلى رَفّ."
+        },
+        "security": {
+          "title": "هل بياناتي آمنة؟",
+          "description": "نعم. نستخدم OAuth 2.0، المعيار الصناعي للتفويض الآمن. لن نرى أو نخزن كلمة مرور متجرك. فقط بيانات المنتجات والطلبات يتم مزامنتها."
+        },
+        "disconnect": {
+          "title": "هل يمكنني فصل متجري؟",
+          "description": "نعم. يمكنك إلغاء الوصول في أي وقت من إعدادات متجرك أو بالتواصل مع دعم رَفّ."
+        }
+      }
+    }
+  },
   "merchantProducts": {
     "title": "إدارة المنتجات",
     "subtitle": "عرض ومزامنة منتجات متجرك",
@@ -344,7 +426,9 @@
       "totalClicks": "إجمالي النقرات",
       "totalOrders": "إجمالي الطلبات",
       "revenue": "الإيرادات",
-      "viewsGrowth": "نمو المشاهدات"
+      "viewsGrowth": "نمو المشاهدات",
+      "summary": "{active} نشط | {inactive} غير نشط",
+      "ctrValue": "{value} معدل النقر"
     },
     "filters": {
       "all": "الكل",
@@ -507,6 +591,7 @@
     "subtitle": "اربط متجرك وابدأ في الوصول لآلاف العملاء في أنحاء السعودية",
     "heading": "اختر منصتك",
     "description": "اربط متجرك الحالي على سلة أو زد بنقرة واحدة. لا حاجة للإعداد اليدوي.",
+    "securityNote": "سيتم توجيهك للتفويض. لن نرى كلمة المرور الخاصة بك.",
     "benefits": {
       "title": "لماذا الانضمام لرَفّ؟",
       "visibility": {
@@ -528,7 +613,9 @@
     },
     "buttons": {
       "connectSalla": "ربط متجر سلة",
+      "sallaSubtitle": "منصة سلة للتجارة الإلكترونية",
       "connectZid": "ربط متجر زد",
+      "zidSubtitle": "منصة زد للتجارة الإلكترونية",
       "connecting": "جارٍ الربط..."
     },
     "howItWorks": {
@@ -559,6 +646,62 @@
       "alreadyMerchant": "تاجر بالفعل؟",
       "signIn": "تسجيل الدخول للوحة التحكم",
       "goToDashboard": "الذهاب للوحة التحكم"
+    }
+  },
+  "completeRegistration": {
+    "title": "أكمل تسجيلك",
+    "subtitle": "أنت على وشك الانتهاء. قم بإعداد بيانات اعتماد حساب رَفّ الخاص بك.",
+    "steps": {
+      "storeConnectedTitle": "تم ربط المتجر",
+      "storeConnectedDescription": "تم ربط متجرك بنجاح برَفّ",
+      "productsSyncingTitle": "جارٍ مزامنة المنتجات",
+      "productsSyncingDescription": "ستظهر منتجاتك على رَفّ قريباً"
+    },
+    "form": {
+      "title": "حدد بيانات اعتماد حسابك",
+      "description": "أنشئ تسجيل دخول رَفّ الخاص بك للوصول إلى لوحة تحكم التاجر",
+      "nameLabel": "الاسم الكامل (اختياري)",
+      "namePlaceholder": "أدخل اسمك الكامل",
+      "emailLabel": "عنوان البريد الإلكتروني",
+      "emailPlaceholder": "أدخل بريدك الإلكتروني",
+      "emailHelp": "استخدم بريداً إلكترونياً يمكنك الوصول إليه لاستعادة الحساب",
+      "passwordLabel": "كلمة المرور",
+      "passwordPlaceholder": "أنشئ كلمة مرور قوية",
+      "confirmPasswordLabel": "تأكيد كلمة المرور",
+      "confirmPasswordPlaceholder": "أعد إدخال كلمة المرور",
+      "submit": "إكمال التسجيل",
+      "submitting": "جارٍ إكمال التسجيل"
+    },
+    "status": {
+      "emailChecking": "جارٍ التحقق من توفر البريد الإلكتروني",
+      "emailAvailable": "البريد الإلكتروني متاح"
+    },
+    "invalidLink": {
+      "title": "رابط تسجيل غير صالح",
+      "description": "رابط التسجيل هذا غير صالح أو منتهي الصلاحية"
+    },
+    "actions": {
+      "startOver": "ابدأ من جديد"
+    },
+    "info": {
+      "title": "لماذا أحتاج هذا؟",
+      "description": "حساب رَفّ الخاص بك منفصل عن منصة متجرك. تتيح لك هذه البيانات تسجيل الدخول ومزامنة المنتجات وتتبع الأداء."
+    },
+    "errors": {
+      "invalidLink": "رابط تسجيل غير صالح",
+      "invalidToken": "رمز تسجيل غير صالح",
+      "alreadyCompleted": "تم إكمال التسجيل بالفعل",
+      "registrationFailed": "فشل إكمال التسجيل",
+      "emailRequired": "البريد الإلكتروني مطلوب",
+      "emailInvalid": "عنوان بريد إلكتروني غير صالح",
+      "emailExists": "هذا البريد الإلكتروني مستخدم بالفعل",
+      "passwordRequired": "كلمة المرور مطلوبة",
+      "confirmPasswordRequired": "يرجى تأكيد كلمة المرور",
+      "passwordMismatch": "كلمات المرور غير متطابقة"
+    },
+    "success": {
+      "title": "تم إكمال التسجيل!",
+      "description": "يمكنك الآن تسجيل الدخول باستخدام بيانات الاعتماد الخاصة بك."
     }
   },
   "auth": {
@@ -592,8 +735,21 @@
       "registerCta": "سجّل الآن",
       "success": "تم تسجيل الدخول بنجاح!",
       "successDescription": "مرحباً بعودتك، {name}!",
+      "successFallbackName": "هناك",
       "error": "فشل تسجيل الدخول",
-      "errorDescription": "يرجى التحقق من بيانات الدخول والمحاولة مرة أخرى"
+      "errorDescription": "يرجى التحقق من بيانات الدخول والمحاولة مرة أخرى",
+      "errors": {
+        "emailRequired": "البريد الإلكتروني مطلوب",
+        "emailInvalid": "عنوان بريد إلكتروني غير صالح",
+        "passwordRequired": "كلمة المرور مطلوبة",
+        "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+        "tooManyAttempts": "محاولات كثيرة لتسجيل الدخول. يرجى المحاولة مرة أخرى لاحقاً.",
+        "pendingApproval": "حسابك قيد المراجعة. يرجى انتظار موافقة المسؤول.",
+        "deactivated": "تم تعطيل حسابك. يرجى الاتصال بالدعم.",
+        "incompleteRegistration": "يرجى إكمال تسجيلك للمتابعة.",
+        "merchantNotFound": "لم يتم العثور على ملف التاجر",
+        "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+      }
     },
     "register": {
       "title": "إنشاء حساب",

@@ -362,10 +362,10 @@ export function MerchantDashboardContent() {
                     <p className="mb-2 text-raff-neutral-600">
                       {t("connectStore.description")}
                     </p>
-                    <p className="mb-4 text-sm text-raff-neutral-500 italic">
+                    <p className="mb-4 text-sm italic text-raff-neutral-500">
                       {t("connectStore.note")}
                     </p>
-                    <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+                    <div className="flex flex-wrap justify-center gap-3 md:justify-start">
                       <AnimatedButton
                         size="lg"
                         onClick={() => handleConnectStore("salla")}

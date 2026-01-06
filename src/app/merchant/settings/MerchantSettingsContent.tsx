@@ -94,6 +94,7 @@ export function MerchantSettingsContent() {
   >("account");
   const [saving, setSaving] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
+  const isScrollingRef = useRef(false);
   const [accountData, setAccountData] = useState({
     name: session?.user?.name || "",
     email: session?.user?.email || "",
@@ -122,6 +123,9 @@ export function MerchantSettingsContent() {
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
+        // Don't update from observer during programmatic scroll
+        if (isScrollingRef.current) return;
+
         // Find the section with the highest intersection ratio
         const visibleSections = entries
           .filter((entry) => entry.isIntersecting)
@@ -165,9 +169,17 @@ export function MerchantSettingsContent() {
     // Immediately set active section for responsive UI feedback
     setActiveSection(sectionId);
 
+    // Disable observer updates during programmatic scroll
+    isScrollingRef.current = true;
+
     const section = document.getElementById(sectionId);
     if (section) {
       section.scrollIntoView({ behavior: "smooth", block: "start" });
+
+      // Re-enable observer after scroll completes
+      setTimeout(() => {
+        isScrollingRef.current = false;
+      }, 1000); // Wait for smooth scroll animation to complete
     }
   };
 
