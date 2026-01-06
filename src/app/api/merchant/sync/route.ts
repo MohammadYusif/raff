@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { syncZidProducts } from "@/lib/services/zid.service";
 import { syncSallaProductsForMerchant } from "@/lib/sync/sallaProducts";
+import { syncSallaOrdersForMerchant } from "@/lib/sync/sallaOrders";
 import { syncSallaStoreInfo } from "@/lib/sync/sallaStore";
 import { requireMerchant } from "@/lib/auth/guards";
 
@@ -31,6 +32,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json().catch(() => ({}));
     const requestedPlatform = body?.platform;
+    const syncOrders = Boolean(body?.syncOrders);
     debugSyncLog("sync-request", {
       merchantId,
       requestedPlatform,
@@ -197,6 +199,10 @@ export async function POST(request: NextRequest) {
           categoriesUpdated?: number;
           syncedCount?: number;
           pagesFetched?: number;
+          ordersSeen?: number;
+          ordersUpserted?: number;
+          ordersWithProductMatch?: number;
+          ordersPagesFetched?: number;
         }
       | undefined;
 
@@ -221,6 +227,12 @@ export async function POST(request: NextRequest) {
       } else {
         await syncSallaStoreInfo(merchant.id);
         const sallaResult = await syncSallaProductsForMerchant(merchant.id);
+        const ordersResult = syncOrders
+          ? await syncSallaOrdersForMerchant(merchant.id, {
+              fromDate: body?.fromDate,
+              toDate: body?.toDate,
+            })
+          : null;
         syncSummary = {
           productsCreated: sallaResult.createdCount,
           productsUpdated: sallaResult.updatedCount,
@@ -228,6 +240,10 @@ export async function POST(request: NextRequest) {
           categoriesUpdated: 0,
           syncedCount: sallaResult.syncedCount,
           pagesFetched: sallaResult.pagesFetched,
+          ordersSeen: ordersResult?.ordersSeen,
+          ordersUpserted: ordersResult?.ordersUpserted,
+          ordersWithProductMatch: ordersResult?.ordersWithProductMatch,
+          ordersPagesFetched: ordersResult?.pagesFetched,
         };
       }
 
@@ -260,6 +276,10 @@ export async function POST(request: NextRequest) {
       categoriesUpdated: safeNumber(syncSummary?.categoriesUpdated),
       syncedCount: safeNumber(syncSummary?.syncedCount),
       pagesFetched: safeNumber(syncSummary?.pagesFetched),
+      ordersSeen: safeNumber(syncSummary?.ordersSeen),
+      ordersUpserted: safeNumber(syncSummary?.ordersUpserted),
+      ordersWithProductMatch: safeNumber(syncSummary?.ordersWithProductMatch),
+      ordersPagesFetched: safeNumber(syncSummary?.ordersPagesFetched),
     };
 
     const syncResult = {
@@ -279,6 +299,10 @@ export async function POST(request: NextRequest) {
         categoriesUpdated: summary.categoriesUpdated,
         syncedCount: summary.syncedCount,
         pagesFetched: summary.pagesFetched,
+        ordersSeen: summary.ordersSeen,
+        ordersUpserted: summary.ordersUpserted,
+        ordersWithProductMatch: summary.ordersWithProductMatch,
+        ordersPagesFetched: summary.ordersPagesFetched,
       },
     };
 

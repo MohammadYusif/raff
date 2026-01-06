@@ -57,11 +57,8 @@ const toIntOrNull = (value: unknown): number | null => {
 
 const normalizeQuantity = (product: SallaProduct): number | null => {
   const productQty = toIntOrNull(product.quantity);
-  if (productQty !== null) return productQty;
-
+  const stockQty = toIntOrNull(product.stock_quantity);
   const skus = Array.isArray(product.skus) ? product.skus : [];
-  if (skus.length === 0) return null;
-
   let hasSkuQuantity = false;
   const skuQtySum = skus.reduce((sum, sku) => {
     const qty = toIntOrNull(sku.stock_quantity);
@@ -70,6 +67,12 @@ const normalizeQuantity = (product: SallaProduct): number | null => {
     return sum + qty;
   }, 0);
 
+  if (productQty !== null && productQty > 0) return productQty;
+  if (stockQty !== null && stockQty > 0) return stockQty;
+  if (hasSkuQuantity && skuQtySum > 0) return skuQtySum;
+
+  if (productQty !== null) return productQty;
+  if (stockQty !== null) return stockQty;
   return hasSkuQuantity ? skuQtySum : null;
 };
 
