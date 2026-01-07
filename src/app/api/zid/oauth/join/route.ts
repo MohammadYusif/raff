@@ -12,11 +12,12 @@
  * 4. Zid redirects back to /api/zid/oauth/callback with code
  */
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getZidConfig } from "@/lib/platform/config";
+import { getZidRedirectUri } from "@/lib/zid/getZidRedirectUri";
 import crypto from "crypto";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const config = getZidConfig();
 
   // Generate a random state for CSRF protection
@@ -25,10 +26,7 @@ export async function GET() {
   const url = new URL(config.authUrl);
   url.searchParams.set("response_type", "code");
   url.searchParams.set("client_id", config.clientId);
-  url.searchParams.set(
-    "redirect_uri",
-    `${config.appBaseUrl}/api/zid/oauth/callback`
-  );
+  url.searchParams.set("redirect_uri", getZidRedirectUri(request));
   if (config.scopes.length) {
     url.searchParams.set("scope", config.scopes.join(" "));
   }

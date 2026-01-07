@@ -91,6 +91,22 @@ const buildZidHeaders = (
     headers["Accept-Language"] = options.acceptLanguage;
   }
 
+  if (headers["Content-Type"] !== "application/json") {
+    throw new Error("Zid Content-Type header missing");
+  }
+
+  if (options?.role === "Manager") {
+    if (!headers.Authorization?.startsWith("Bearer ")) {
+      throw new Error("Zid Authorization header missing Bearer token");
+    }
+    if (!headers["X-Manager-Token"]) {
+      throw new Error("Zid manager token missing");
+    }
+    if (headers.Role !== "Manager") {
+      throw new Error("Zid Role header missing");
+    }
+  }
+
   debugLog("headers", {
     role: options?.role ?? null,
     hasAccessToken: Boolean(merchant.zidAccessToken),

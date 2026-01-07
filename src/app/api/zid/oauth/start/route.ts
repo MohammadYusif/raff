@@ -4,9 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { getZidConfig } from "@/lib/platform/config";
 import { createOAuthState } from "@/lib/platform/oauth";
 import { requireMerchant } from "@/lib/auth/guards";
+import { getZidRedirectUri } from "@/lib/zid/getZidRedirectUri";
 
-export async function GET(_request: NextRequest) {
-  void _request;
+export async function GET(request: NextRequest) {
   const auth = await requireMerchant("api");
   if ("response" in auth) return auth.response;
   const { session } = auth;
@@ -45,7 +45,7 @@ export async function GET(_request: NextRequest) {
   const url = new URL(config.authUrl);
   url.searchParams.set("response_type", "code");
   url.searchParams.set("client_id", config.clientId);
-  url.searchParams.set("redirect_uri", config.redirectUri);
+  url.searchParams.set("redirect_uri", getZidRedirectUri(request));
   if (config.scopes.length) {
     url.searchParams.set("scope", config.scopes.join(" "));
   }

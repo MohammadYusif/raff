@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireMerchant } from "@/lib/auth/guards";
+import { isZidConnected } from "@/lib/zid/isZidConnected";
 
 export async function GET(_request: NextRequest) {
   void _request;
@@ -36,6 +37,7 @@ export async function GET(_request: NextRequest) {
         zidStoreId: true,
         zidStoreUrl: true,
         zidAccessToken: true,
+        zidManagerToken: true,
         sallaStoreId: true,
         sallaStoreUrl: true,
         sallaAccessToken: true,
@@ -72,23 +74,22 @@ export async function GET(_request: NextRequest) {
     let storeUrl: string | null = null;
     let isConnected = false;
 
-    const hasZidConnection = Boolean(
-      merchant.zidAccessToken || merchant.zidStoreId || merchant.zidStoreUrl
-    );
+    const zidConnected = isZidConnected(merchant);
     const hasSallaConnection = Boolean(
       merchant.sallaAccessToken || merchant.sallaStoreId || merchant.sallaStoreUrl
     );
+    const sallaConnected = hasSallaConnection;
 
-    if (hasZidConnection) {
+    if (zidConnected) {
       platform = "zid";
       storeId = merchant.zidStoreId;
       storeUrl = merchant.zidStoreUrl;
-      isConnected = true;
+      isConnected = zidConnected;
     } else if (hasSallaConnection) {
       platform = "salla";
       storeId = merchant.sallaStoreId;
       storeUrl = merchant.sallaStoreUrl;
-      isConnected = true;
+      isConnected = sallaConnected;
     }
 
     return NextResponse.json({
@@ -113,8 +114,10 @@ export async function GET(_request: NextRequest) {
         // Individual platform connection status
         zidStoreId: merchant.zidStoreId,
         zidStoreUrl: merchant.zidStoreUrl,
+        zidConnected,
         sallaStoreId: merchant.sallaStoreId,
         sallaStoreUrl: merchant.sallaStoreUrl,
+        sallaConnected,
         totalProducts: merchant._count.products,
         status: merchant.status,
         approvedAt: merchant.approvedAt,

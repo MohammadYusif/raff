@@ -8,6 +8,7 @@ import { syncSallaProductsForMerchant } from "@/lib/sync/sallaProducts";
 import { syncSallaOrdersForMerchant } from "@/lib/sync/sallaOrders";
 import { syncSallaStoreInfo } from "@/lib/sync/sallaStore";
 import { syncZidCategories, syncZidProducts } from "@/lib/sync/zidProducts";
+import { isZidConnected } from "@/lib/zid/isZidConnected";
 
 type ResyncBody = {
   merchantId?: string;
@@ -88,11 +89,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (
-      merchant.zidAccessToken &&
-      merchant.zidStoreId &&
-      merchant.zidManagerToken
-    ) {
+    if (isZidConnected(merchant)) {
       const zidCategories = await syncZidCategories(merchant.id);
       const zidProducts = await syncZidProducts(merchant.id, {
         ordering: "updated_at",

@@ -6,6 +6,10 @@ import { syncSallaProductsForMerchant } from "@/lib/sync/sallaProducts";
 import { syncSallaOrdersForMerchant } from "@/lib/sync/sallaOrders";
 import { syncSallaStoreInfo } from "@/lib/sync/sallaStore";
 import { requireMerchant } from "@/lib/auth/guards";
+import {
+  getMissingZidConnectionFields,
+  isZidConnected,
+} from "@/lib/zid/isZidConnected";
 
 const shouldDebugSync = process.env.RAFF_SYNC_DEBUG === "true";
 const debugSyncLog = (message: string, details?: Record<string, unknown>) => {
@@ -70,14 +74,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const isZidConnected =
-      !!merchant.zidAccessToken &&
-      !!merchant.zidStoreId &&
-      !!merchant.zidManagerToken;
+    const zidConnected = isZidConnected(merchant);
     const isSallaConnected = !!merchant.sallaAccessToken;
 
     debugSyncLog("connection-status", {
-      isZidConnected,
+      isZidConnected: zidConnected,
       isSallaConnected,
       hasZidStoreId: Boolean(merchant.zidStoreId),
       hasZidStoreUrl: Boolean(merchant.zidStoreUrl),
@@ -88,7 +89,7 @@ export async function POST(request: NextRequest) {
       hasSallaToken: Boolean(merchant.sallaAccessToken),
     });
 
-    if (!isZidConnected && !isSallaConnected) {
+    if (!zidConnected && !isSallaConnected) {
       return NextResponse.json(
         {
           error: "Store not connected",
@@ -146,17 +147,22 @@ export async function POST(request: NextRequest) {
     const platform =
       requestedPlatform === "salla" || requestedPlatform === "zid"
         ? requestedPlatform
-        : isZidConnected
+        : zidConnected
         ? "zid"
         : "salla";
     debugSyncLog("platform-selected", {
       platform,
       requestedPlatform,
-      isZidConnected,
+      isZidConnected: zidConnected,
       isSallaConnected,
     });
 
-    if (platform === "zid" && !isZidConnected) {
+    if (platform === "zid" && !zidConnected) {
+      const missingFields = getMissingZidConnectionFields(merchant);
+      debugSyncLog("zid-connection-missing", {
+        merchantId,
+        missingFields,
+      });
       // Release lock by reverting lastSyncAt
       await prisma.merchant.update({
         where: { id: merchantId },
@@ -166,8 +172,14 @@ export async function POST(request: NextRequest) {
         reason: "zid-not-connected",
         merchantId,
       });
+      const missingLabel = missingFields.length
+        ? `: missing ${missingFields.join(", ")}`
+        : "";
       return NextResponse.json(
-        { error: "Zid store not connected" },
+        {
+          error: `Zid is not fully connected${missingLabel}`,
+          missingFields,
+        },
         { status: 400 }
       );
     }

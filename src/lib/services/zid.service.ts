@@ -130,12 +130,16 @@ export class ZidService {
 
     return {
       authorizationToken:
-        data.authorization ||
         data.Authorization ||
+        data.authorization ||
         data.authorization_token ||
         data.authorizationToken ||
         null,
-      managerToken: data.access_token || data.accessToken || null,
+      managerToken:
+        data.access_token ||
+        data.manager_token ||
+        data.accessToken ||
+        null,
       refreshToken: data.refresh_token || data.refreshToken || null,
       expiresIn: expiresInValue,
     };

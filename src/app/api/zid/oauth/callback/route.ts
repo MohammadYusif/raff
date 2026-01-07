@@ -18,6 +18,7 @@ import { registerZidWebhooks } from "@/lib/platform/webhook-register";
 import { verifyOAuthState } from "@/lib/platform/oauth";
 import { ZidService } from "@/lib/services/zid.service";
 import { createRegistrationToken } from "@/lib/registrationToken";
+import { getZidRedirectUri } from "@/lib/zid/getZidRedirectUri";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
@@ -37,12 +38,13 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 
 const extractZidTokens = (tokenData: Record<string, unknown>) => {
   const authorizationToken =
-    tokenString(tokenData.authorization) ??
     tokenString(tokenData.Authorization) ??
+    tokenString(tokenData.authorization) ??
     tokenString(tokenData.authorization_token) ??
     tokenString(tokenData.authorizationToken);
   const managerToken =
     tokenString(tokenData.access_token) ??
+    tokenString(tokenData.manager_token) ??
     tokenString(tokenData.accessToken);
   const refreshToken =
     tokenString(tokenData.refresh_token) ??
@@ -65,10 +67,14 @@ const extractZidTokens = (tokenData: Record<string, unknown>) => {
 
 const redirectWithStatus = (
   config: ReturnType<typeof getZidConfig>,
-  status: "connected" | "error"
+  status: "connected" | "error",
+  errorCode?: string
 ) => {
   const url = new URL("/merchant/integrations", config.appBaseUrl);
   url.searchParams.set("zid", status);
+  if (errorCode) {
+    url.searchParams.set("error", errorCode);
+  }
   return NextResponse.redirect(url);
 };
 
@@ -91,7 +97,11 @@ export async function GET(request: NextRequest) {
       return await handleJoinFlow(request, code, state, config);
     } catch (error) {
       console.error("Zid join flow failed:", error);
-      return redirectWithStatus(config, "error");
+      const errorCode =
+        error instanceof Error && error.message === "zid_missing_tokens"
+          ? "missing_tokens"
+          : undefined;
+      return redirectWithStatus(config, "error", errorCode);
     }
   }
 
@@ -100,7 +110,11 @@ export async function GET(request: NextRequest) {
     return await handleRegularFlow(request, code, state, config);
   } catch (error) {
     console.error("Zid OAuth callback failed:", error);
-    return redirectWithStatus(config, "error");
+    const errorCode =
+      error instanceof Error && error.message === "zid_missing_tokens"
+        ? "missing_tokens"
+        : undefined;
+    return redirectWithStatus(config, "error", errorCode);
   }
 }
 
@@ -125,7 +139,7 @@ async function handleJoinFlow(
     code,
     client_id: config.clientId,
     client_secret: config.clientSecret,
-    redirect_uri: `${config.appBaseUrl}/api/zid/oauth/callback`,
+    redirect_uri: getZidRedirectUri(request),
   });
 
   const tokenResponse = await fetch(config.tokenUrl, {
@@ -156,7 +170,7 @@ async function handleJoinFlow(
     null;
 
   if (!authorizationToken || !managerToken) {
-    return redirectWithStatus(config, "error");
+    throw new Error("zid_missing_tokens");
   }
 
   // Fetch store information from Zid API
@@ -325,7 +339,7 @@ async function handleRegularFlow(
     code,
     client_id: config.clientId,
     client_secret: config.clientSecret,
-    redirect_uri: config.redirectUri,
+    redirect_uri: getZidRedirectUri(request),
   });
 
   const tokenResponse = await fetch(config.tokenUrl, {
@@ -356,7 +370,7 @@ async function handleRegularFlow(
     null;
 
   if (!authorizationToken || !managerToken) {
-    return redirectWithStatus(config, "error");
+    throw new Error("zid_missing_tokens");
   }
 
   const merchant = await prisma.merchant.findUnique({
