@@ -103,7 +103,8 @@ export async function registerZidWebhooks(params: {
   };
 
   if (params.managerToken) {
-    headers["X-MANAGER-TOKEN"] = params.managerToken;
+    headers["X-Manager-Token"] = params.managerToken;
+    headers.Role = "Manager";
   }
 
   // Register one webhook per event

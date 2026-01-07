@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { syncSallaProductsForMerchant } from "@/lib/sync/sallaProducts";
 import { syncSallaOrdersForMerchant } from "@/lib/sync/sallaOrders";
 import { syncSallaStoreInfo } from "@/lib/sync/sallaStore";
-import { syncZidProducts } from "@/lib/services/zid.service";
+import { syncZidCategories, syncZidProducts } from "@/lib/sync/zidProducts";
 
 type ResyncBody = {
   merchantId?: string;
@@ -88,17 +88,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (merchant.zidAccessToken) {
-      const zidResult = await syncZidProducts({
-        id: merchant.id,
-        zidAccessToken: merchant.zidAccessToken,
-        zidRefreshToken: merchant.zidRefreshToken,
-        zidTokenExpiry: merchant.zidTokenExpiry,
-        zidStoreId: merchant.zidStoreId,
-        zidStoreUrl: merchant.zidStoreUrl,
-        zidManagerToken: merchant.zidManagerToken,
+    if (
+      merchant.zidAccessToken &&
+      merchant.zidStoreId &&
+      merchant.zidManagerToken
+    ) {
+      const zidCategories = await syncZidCategories(merchant.id);
+      const zidProducts = await syncZidProducts(merchant.id, {
+        ordering: "updated_at",
       });
-      results.zidProducts = zidResult;
+      results.zidCategories = zidCategories;
+      results.zidProducts = zidProducts;
     }
 
     return NextResponse.json({

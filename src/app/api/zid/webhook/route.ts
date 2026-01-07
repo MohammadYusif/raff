@@ -3,10 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { CommissionStatus, Prisma, type Merchant } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getZidWebhookConfig } from "@/lib/platform/config";
-import {
-  syncZidProductById,
-  deactivateZidProduct,
-} from "@/lib/services/zid.service";
+import { deactivateZidProduct } from "@/lib/services/zid.service";
+import { syncZidProductById } from "@/lib/sync/zidProducts";
 import {
   normalizeZidOrderWebhook,
   logProcessedWebhook,
@@ -470,6 +468,8 @@ export async function POST(request: NextRequest) {
         !isProd && process.env.SKIP_PLATFORM_SYNC === "true";
       const missingConfig =
         !merchant.zidAccessToken ||
+        !merchant.zidManagerToken ||
+        !merchant.zidStoreId ||
         !process.env.ZID_CLIENT_ID ||
         !process.env.ZID_CLIENT_SECRET ||
         !process.env.ZID_API_BASE_URL;

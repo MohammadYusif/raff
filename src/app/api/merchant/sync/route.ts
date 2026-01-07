@@ -1,7 +1,7 @@
 // src/app/api/merchant/sync/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { syncZidProducts } from "@/lib/services/zid.service";
+import { syncZidCategories, syncZidProducts } from "@/lib/sync/zidProducts";
 import { syncSallaProductsForMerchant } from "@/lib/sync/sallaProducts";
 import { syncSallaOrdersForMerchant } from "@/lib/sync/sallaOrders";
 import { syncSallaStoreInfo } from "@/lib/sync/sallaStore";
@@ -70,7 +70,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const isZidConnected = !!merchant.zidAccessToken;
+    const isZidConnected =
+      !!merchant.zidAccessToken &&
+      !!merchant.zidStoreId &&
+      !!merchant.zidManagerToken;
     const isSallaConnected = !!merchant.sallaAccessToken;
 
     debugSyncLog("connection-status", {
@@ -78,6 +81,7 @@ export async function POST(request: NextRequest) {
       isSallaConnected,
       hasZidStoreId: Boolean(merchant.zidStoreId),
       hasZidStoreUrl: Boolean(merchant.zidStoreUrl),
+      hasZidManagerToken: Boolean(merchant.zidManagerToken),
       hasSallaStoreId: Boolean(merchant.sallaStoreId),
       hasSallaStoreUrl: Boolean(merchant.sallaStoreUrl),
       hasZidToken: Boolean(merchant.zidAccessToken),
@@ -215,15 +219,22 @@ export async function POST(request: NextRequest) {
         storeUrl: storeUrl || null,
       });
       if (platform === "zid") {
-        syncSummary = await syncZidProducts({
-          id: merchant.id,
-          zidAccessToken: merchant.zidAccessToken,
-          zidRefreshToken: merchant.zidRefreshToken,
-          zidTokenExpiry: merchant.zidTokenExpiry,
-          zidManagerToken: merchant.zidManagerToken,
-          zidStoreId: merchant.zidStoreId,
-          zidStoreUrl: merchant.zidStoreUrl,
+        const ordering =
+          body?.ordering === "created_at" || body?.ordering === "updated_at"
+            ? body.ordering
+            : undefined;
+        const categorySummary = await syncZidCategories(merchant.id);
+        const productSummary = await syncZidProducts(merchant.id, {
+          ordering,
         });
+        syncSummary = {
+          productsCreated: productSummary.createdCount,
+          productsUpdated: productSummary.updatedCount,
+          categoriesCreated: categorySummary.createdCount,
+          categoriesUpdated: categorySummary.updatedCount,
+          syncedCount: productSummary.syncedCount,
+          pagesFetched: productSummary.pagesFetched,
+        };
       } else {
         await syncSallaStoreInfo(merchant.id);
         const sallaResult = await syncSallaProductsForMerchant(merchant.id);
@@ -309,8 +320,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(syncResult);
   } catch (error) {
     console.error("Error triggering product sync:", error);
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to trigger product sync";
     return NextResponse.json(
-      { error: "Failed to trigger product sync" },
+      { error: message },
       { status: 500 }
     );
   }
