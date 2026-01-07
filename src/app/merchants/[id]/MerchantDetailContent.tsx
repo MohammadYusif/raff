@@ -17,23 +17,9 @@ import { ProductCard } from "@/shared/components/ProductCard";
 import { Search, ExternalLink, Store, Package } from "lucide-react";
 import { ArrowBackward } from "@/core/i18n";
 import { getMerchantStoreUrlFromObject } from "@/lib/platform/store";
-import type { MerchantWithCount } from "@/types";
+import type { MerchantWithCount, ProductWithCartFields } from "@/types";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
-import { getLocalizedText, type NumberLike } from "@/lib/utils";
-
-interface Product {
-  id: string;
-  title: string;
-  titleAr: string | null;
-  slug: string;
-  price: NumberLike;
-  originalPrice: NumberLike | null;
-  trendingScore: number;
-  category: {
-    name: string;
-    nameAr: string | null;
-  } | null;
-}
+import { getLocalizedText } from "@/lib/utils";
 
 interface Pagination {
   page: number;
@@ -46,7 +32,7 @@ interface Pagination {
 
 interface MerchantDetailContentProps {
   merchant: MerchantWithCount;
-  initialProducts: Product[];
+  initialProducts: ProductWithCartFields[];
   pagination: Pagination;
 }
 
@@ -271,6 +257,11 @@ export function MerchantDetailContent({
                     price: product.price,
                     originalPrice: product.originalPrice,
                     trendingScore: product.trendingScore,
+                    currency: product.currency,
+                    imageUrl: product.imageUrl,
+                    thumbnail: product.thumbnail,
+                    images: product.images,
+                    externalUrl: product.externalUrl,
                     merchant: {
                       name: merchant.name,
                       nameAr: merchant.nameAr,

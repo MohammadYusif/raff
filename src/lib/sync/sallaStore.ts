@@ -1,4 +1,5 @@
 // src/lib/sync/sallaStore.ts
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { fetchSallaStoreInfo } from "@/lib/integrations/salla/store";
 
@@ -53,12 +54,30 @@ export async function syncSallaStoreInfo(
     updateData.email = storeInfo.email;
   }
 
-  await prisma.merchant.update({
-    where: { id: merchantId },
+  const diffConditions: Prisma.MerchantWhereInput[] = [
+    { sallaStoreId: { not: sallaStoreId } },
+    { sallaStoreUrl: { not: updateData.sallaStoreUrl } },
+    { logo: { not: updateData.logo } },
+    { descriptionAr: { not: updateData.descriptionAr } },
+    { isActive: { not: updateData.isActive } },
+  ];
+
+  if (updateData.name !== undefined) {
+    diffConditions.push({ name: { not: updateData.name } });
+  }
+
+  if (updateData.email !== undefined) {
+    diffConditions.push({ email: { not: updateData.email } });
+  }
+
+  const updated = await prisma.merchant.updateMany({
+    where: { id: merchantId, OR: diffConditions },
     data: updateData,
   });
 
-  console.log("Salla store info synced", { merchantId, sallaStoreId });
+  if (updated.count > 0) {
+    console.log("Salla store info synced", { merchantId, sallaStoreId });
+  }
 
   return { merchantId, sallaStoreId };
 }

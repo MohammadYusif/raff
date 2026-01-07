@@ -90,7 +90,9 @@ function readGuestCart(): CartItem[] {
     return parsed.filter(Boolean).map((item) => {
       const slug =
         item && typeof item.slug === "string" ? item.slug : undefined;
-      const fallbackUrl = slug ? `/products/${slug}` : "/products";
+      const fallbackUrl = slug
+        ? `/products/${encodeURIComponent(slug)}`
+        : "/products";
       const externalUrl =
         item && typeof item.externalUrl === "string" && item.externalUrl
           ? item.externalUrl

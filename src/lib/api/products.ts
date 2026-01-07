@@ -64,7 +64,7 @@ export async function fetchTrendingProducts(
 }
 
 export async function fetchProduct(slug: string): Promise<ProductResponse> {
-  const url = `${API_BASE_URL}/api/products/${slug}`;
+  const url = `${API_BASE_URL}/api/products/${encodeURIComponent(slug)}`;
 
   const response = await fetch(url, {
     cache: "no-store",

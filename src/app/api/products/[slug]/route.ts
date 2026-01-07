@@ -8,8 +8,16 @@ export async function GET(
 ) {
   try {
     const { slug: rawSlug } = await params;
-    const slug = safeDecodeURIComponent(rawSlug);
+    const slug = normalizeSlug(rawSlug);
     const isDev = process.env.NODE_ENV !== "production";
+    if (isDev) {
+      console.debug("[products] slug-normalize", {
+        rawSlug,
+        decodedSlug: slug,
+        rawLen: rawSlug.length,
+        decodedLen: slug.length,
+      });
+    }
 
     const product = await prisma.product.findUnique({
       where: { slug },
@@ -56,8 +64,8 @@ export async function GET(
           ? fallback.sallaProductId === slug
             ? "sallaProductId"
             : fallback.zidProductId === slug
-            ? "zidProductId"
-            : null
+              ? "zidProductId"
+              : null
           : null;
         console.debug("[products] slug-lookup", {
           requestedSlug: slug,
@@ -112,7 +120,17 @@ export async function GET(
   }
 }
 
-function safeDecodeURIComponent(value: string): string {
+function normalizeSlug(raw: string): string {
+  const cleaned = raw.trim().replaceAll("+", "%20");
+
+  const once = safeDecode(cleaned);
+  const twice = safeDecode(once);
+
+  // normalize unicode (important for Arabic)
+  return twice.trim().normalize("NFC");
+}
+
+function safeDecode(value: string): string {
   try {
     return decodeURIComponent(value);
   } catch {

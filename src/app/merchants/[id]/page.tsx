@@ -7,6 +7,7 @@ import { fetchProductsServer } from "@/lib/server/products";
 import { MerchantDetailContent } from "./MerchantDetailContent";
 import { PageTransition } from "@/shared/components/PageTransition";
 import { getLocalizedText } from "@/lib/utils";
+import { addCartFields } from "@/lib/products/cart";
 
 const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 const NOT_FOUND_TITLES = {
@@ -160,12 +161,13 @@ export default async function MerchantPage({
       ? parseFloat(searchParamsResolved.maxPrice)
       : undefined,
   });
+  const productsWithCartFields = products.map(addCartFields);
 
   return (
     <PageTransition>
       <MerchantDetailContent
         merchant={merchant}
-        initialProducts={products}
+        initialProducts={productsWithCartFields}
         pagination={pagination}
       />
     </PageTransition>

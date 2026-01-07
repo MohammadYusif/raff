@@ -84,6 +84,7 @@ export function ProductCard({
     : null;
   const resolvedImage =
     product.imageUrl || product.thumbnail || product.images?.[0] || null;
+  const productHref = `/products/${encodeURIComponent(product.slug)}`;
 
   const hasDiscount = originalPrice !== null && originalPrice > price;
   const discountPercentage = hasDiscount
@@ -108,7 +109,7 @@ export function ProductCard({
       merchantNameAr: product.merchant.nameAr,
       categoryName: product.category?.name || null,
       categoryNameAr: product.category?.nameAr || null,
-      externalUrl: product.externalUrl || `/products/${product.slug}`,
+      externalUrl: product.externalUrl || productHref,
     });
 
     toast.success(locale === "ar" ? "تمت الإضافة إلى السلة" : "Added to cart", {
@@ -173,7 +174,7 @@ export function ProductCard({
       <Card className="group h-full overflow-hidden transition-all hover:shadow-lg">
         <CardContent className="flex h-full flex-col p-0">
           {/* Product Image */}
-          <Link href={`/products/${product.slug}`}>
+          <Link href={productHref}>
             <motion.div
               className="relative aspect-square overflow-hidden bg-raff-neutral-100"
               initial="rest"
@@ -240,7 +241,7 @@ export function ProductCard({
             )}
 
             {/* Title */}
-            <Link href={`/products/${product.slug}`}>
+            <Link href={productHref}>
               <h3
                 className="line-clamp-2 text-base font-semibold text-raff-primary transition-colors group-hover:text-raff-accent"
                 dir={locale === "ar" ? "rtl" : "ltr"}
@@ -298,7 +299,7 @@ export function ProductCard({
               </AnimatedButton>
 
               {/* View Details Button */}
-              <Link href={`/products/${product.slug}`} className="flex-1">
+              <Link href={productHref} className="flex-1">
                 <AnimatedButton
                   variant="outline"
                   size="sm"
