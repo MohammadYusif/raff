@@ -52,12 +52,28 @@ function isProductPagePath(pathname: string): boolean {
 }
 
 function isValidReferrer(referrer: string | null, appOrigin: string): boolean {
-  if (!referrer) return false;
+  if (!referrer) {
+    console.log("[track-click] No referrer provided");
+    return false;
+  }
   try {
     const url = new URL(referrer);
-    if (url.origin !== appOrigin) return false;
-    return isProductPagePath(url.pathname);
-  } catch {
+    const isValidOrigin = url.origin === appOrigin;
+    const isValidPath = isProductPagePath(url.pathname);
+
+    console.log("[track-click] Referrer validation", {
+      referrer,
+      appOrigin,
+      urlOrigin: url.origin,
+      pathname: url.pathname,
+      isValidOrigin,
+      isValidPath,
+    });
+
+    if (!isValidOrigin) return false;
+    return isValidPath;
+  } catch (error) {
+    console.log("[track-click] Invalid referrer URL", { referrer, error });
     return false;
   }
 }
