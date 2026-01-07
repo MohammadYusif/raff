@@ -363,19 +363,35 @@ async function upsertCategory(
   return updated.id;
 }
 
+async function ensureUniqueSlug(
+  baseSlug: string,
+  existingId?: string | null
+): Promise<string> {
+  for (let counter = 1; counter < 50; counter += 1) {
+    const candidate =
+      counter === 1 ? baseSlug : `${baseSlug}-${counter}`;
+    const conflict = await prisma.product.findUnique({
+      where: { slug: candidate },
+      select: { id: true },
+    });
+
+    if (!conflict || (existingId && conflict.id === existingId)) {
+      return candidate;
+    }
+  }
+  throw new Error("Failed to generate unique slug");
+}
+
 async function resolveProductSlug(
+  merchantId: string,
   name: string,
   sallaProductId: string,
-  existingSlug?: string | null
+  existing?: { id: string; slug: string | null }
 ): Promise<string> {
-  if (existingSlug) return existingSlug;
-  const baseSlug = slugify(name) || sallaProductId;
-  const conflict = await prisma.product.findUnique({
-    where: { slug: baseSlug },
-    select: { id: true },
-  });
-  if (!conflict) return baseSlug;
-  return `${baseSlug}-${sallaProductId}`;
+  if (existing?.slug) return existing.slug;
+  const safeName = slugify(name) || "product";
+  const baseSlug = `salla-${merchantId}-${sallaProductId}-${safeName}`;
+  return ensureUniqueSlug(baseSlug, existing?.id);
 }
 
 export async function syncSallaProducts(merchant: SallaMerchantAuth): Promise<{
@@ -474,9 +490,10 @@ export async function syncSallaProducts(merchant: SallaMerchantAuth): Promise<{
       });
 
       const slug = await resolveProductSlug(
+        merchant.id,
         name,
         sallaProductId,
-        existing?.slug
+        existing ?? undefined
       );
 
       const categorySource =
@@ -624,7 +641,12 @@ export async function syncSallaProductById(
     },
   });
 
-  const slug = await resolveProductSlug(name, sallaProductId, existing?.slug);
+  const slug = await resolveProductSlug(
+    merchant.id,
+    name,
+    sallaProductId,
+    existing ?? undefined
+  );
 
   const images =
     sallaProduct.images?.map((image) => image.url).filter(Boolean) || [];

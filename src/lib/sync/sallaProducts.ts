@@ -89,10 +89,9 @@ async function ensureUniqueSlug(
   baseSlug: string,
   existingId?: string | null
 ): Promise<string> {
-  let candidate = baseSlug;
-  let counter = 2;
-
-  while (true) {
+  for (let counter = 1; counter < 50; counter += 1) {
+    const candidate =
+      counter === 1 ? baseSlug : `${baseSlug}-${counter}`;
     const conflict = await prisma.product.findUnique({
       where: { slug: candidate },
       select: { id: true },
@@ -101,10 +100,8 @@ async function ensureUniqueSlug(
     if (!conflict || (existingId && conflict.id === existingId)) {
       return candidate;
     }
-
-    candidate = `${baseSlug}-${counter}`;
-    counter += 1;
   }
+  throw new Error("Failed to generate unique slug");
 }
 
 async function resolveProductSlug(
@@ -115,7 +112,7 @@ async function resolveProductSlug(
 ): Promise<string> {
   if (existing?.slug) return existing.slug;
   const safeName = slugify(name) || "product";
-  const baseSlug = `${merchantId}-${sallaProductId}-${safeName}`;
+  const baseSlug = `salla-${merchantId}-${sallaProductId}-${safeName}`;
   return ensureUniqueSlug(baseSlug);
 }
 

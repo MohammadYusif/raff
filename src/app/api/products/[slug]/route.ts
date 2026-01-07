@@ -7,7 +7,9 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = await params;
+    const { slug: rawSlug } = await params;
+    const slug = safeDecodeURIComponent(rawSlug);
+    const isDev = process.env.NODE_ENV !== "production";
 
     const product = await prisma.product.findUnique({
       where: { slug },
@@ -38,7 +40,43 @@ export async function GET(
     });
 
     if (!product) {
+      if (isDev) {
+        const fallback = await prisma.product.findFirst({
+          where: {
+            OR: [{ sallaProductId: slug }, { zidProductId: slug }],
+          },
+          select: {
+            id: true,
+            slug: true,
+            sallaProductId: true,
+            zidProductId: true,
+          },
+        });
+        const matchedBy = fallback
+          ? fallback.sallaProductId === slug
+            ? "sallaProductId"
+            : fallback.zidProductId === slug
+            ? "zidProductId"
+            : null
+          : null;
+        console.debug("[products] slug-lookup", {
+          requestedSlug: slug,
+          found: false,
+          fallbackMatched: Boolean(fallback),
+          matchedBy,
+          fallbackSlug: fallback?.slug ?? null,
+        });
+      }
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    }
+    if (isDev) {
+      console.debug("[products] slug-lookup", {
+        requestedSlug: slug,
+        found: true,
+        fallbackMatched: false,
+        matchedBy: null,
+        fallbackSlug: null,
+      });
     }
 
     // Increment view count
@@ -71,5 +109,13 @@ export async function GET(
       { error: "Failed to fetch product" },
       { status: 500 }
     );
+  }
+}
+
+function safeDecodeURIComponent(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
   }
 }
