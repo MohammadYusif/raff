@@ -19,6 +19,7 @@ import {
   ExternalLink,
   Plus,
   Minus,
+  Loader2,
 } from "lucide-react";
 import { ArrowForward, ArrowBackward } from "@/core/i18n";
 import { useCart } from "@/lib/hooks/useCart";
@@ -26,6 +27,7 @@ import { formatPrice, getLocalizedText } from "@/lib/utils";
 import { TrendingUp } from "lucide-react";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
 import { toast } from "sonner";
+import { useState } from "react";
 
 /**
  * CartContent Component
@@ -42,6 +44,9 @@ export function CartContent() {
   const { items, itemCount, removeItem, clearCart, updateQuantity, isLoading } =
     useCart();
   const locale = useLocale();
+  const [trackingProductId, setTrackingProductId] = useState<string | null>(
+    null
+  );
 
   const showAuthNotice =
     status === "unauthenticated" ||
@@ -95,6 +100,37 @@ export function CartContent() {
       );
     } else {
       updateQuantity(itemId, newQuantity);
+    }
+  };
+
+  // Handle tracked redirect for cart items
+  const handleCartItemClick = async (productId: string) => {
+    setTrackingProductId(productId);
+
+    try {
+      const response = await fetch("/api/track/click", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ productId }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to track click");
+      }
+
+      const data = await response.json();
+      window.location.href = data.redirectUrl;
+    } catch (error) {
+      console.error("Click tracking error:", error);
+      toast.error(
+        locale === "ar"
+          ? "فشل في تتبع النقرة"
+          : "Failed to track click. Please try again."
+      );
+    } finally {
+      setTrackingProductId(null);
     }
   };
 
@@ -546,24 +582,28 @@ export function CartContent() {
 
                   <div className="mt-6 space-y-3">
                     {items.map((item) => (
-                      <a
+                      <AnimatedButton
                         key={item.id}
-                        href={item.externalUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block"
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        onClick={() => handleCartItemClick(item.id)}
+                        disabled={trackingProductId === item.id}
                       >
-                        <AnimatedButton
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                        >
-                          {locale === "ar" && item.merchantNameAr
-                            ? item.merchantNameAr
-                            : item.merchantName}
-                          <ExternalLink className="ms-2 h-4 w-4" />
-                        </AnimatedButton>
-                      </a>
+                        {trackingProductId === item.id ? (
+                          <>
+                            <Loader2 className="me-2 h-4 w-4 animate-spin" />
+                            {locale === "ar" ? "جاري التحميل..." : "Loading..."}
+                          </>
+                        ) : (
+                          <>
+                            {locale === "ar" && item.merchantNameAr
+                              ? item.merchantNameAr
+                              : item.merchantName}
+                            <ExternalLink className="ms-2 h-4 w-4" />
+                          </>
+                        )}
+                      </AnimatedButton>
                     ))}
                   </div>
                 </CardContent>
