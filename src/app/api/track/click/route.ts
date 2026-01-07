@@ -280,7 +280,11 @@ export async function POST(request: NextRequest) {
     const userAgent = request.headers.get("user-agent") || "unknown";
     const referrerUrl = request.headers.get("referer");
     const secFetchSite = request.headers.get("sec-fetch-site");
-    const appOrigin = request.nextUrl.origin;
+
+    // Get the actual origin from headers (handles Railway's proxy correctly)
+    const host = request.headers.get("host");
+    const proto = request.headers.get("x-forwarded-proto") || "https";
+    const appOrigin = host ? `${proto}://${host}` : request.nextUrl.origin;
 
     const ipLimit = rateLimit(`track-click:ip:${ip}`, {
       windowMs: 60_000,
