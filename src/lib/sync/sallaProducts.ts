@@ -10,6 +10,11 @@ import {
   toStringOrNull,
   type SallaProduct,
 } from "@/lib/integrations/salla/products";
+import {
+  ensureSallaAccessToken,
+  refreshSallaAccessToken,
+} from "@/lib/services/salla.service";
+import type { SallaRequestOptions } from "@/lib/integrations/salla/client";
 
 const shouldDebug = process.env.RAFF_SALLA_SYNC_DEBUG === "true";
 const debugLog = (message: string, details?: Record<string, unknown>) => {
@@ -195,12 +200,52 @@ export async function syncSallaProductsForMerchant(
 }> {
   const merchant = await prisma.merchant.findUnique({
     where: { id: merchantId },
-    select: { id: true, userId: true, sallaAccessToken: true },
+    select: {
+      id: true,
+      userId: true,
+      sallaAccessToken: true,
+      sallaRefreshToken: true,
+      sallaTokenExpiry: true,
+    },
   });
 
   if (!merchant?.sallaAccessToken) {
     throw new Error("Salla access token missing");
   }
+
+  const tokens = await ensureSallaAccessToken({
+    id: merchant.id,
+    sallaAccessToken: merchant.sallaAccessToken,
+    sallaRefreshToken: merchant.sallaRefreshToken,
+    sallaTokenExpiry: merchant.sallaTokenExpiry,
+    sallaStoreId: null,
+    sallaStoreUrl: null,
+  });
+
+  let currentAccessToken = tokens.accessToken || merchant.sallaAccessToken;
+  let currentRefreshToken = tokens.refreshToken || merchant.sallaRefreshToken;
+  const isDev = process.env.NODE_ENV !== "production";
+
+  if (!currentAccessToken) {
+    throw new Error("Salla access token missing");
+  }
+
+  const requestOptions: SallaRequestOptions = {
+    onUnauthorized: async () => {
+      const refreshed = await refreshSallaAccessToken({
+        id: merchant.id,
+        sallaRefreshToken: currentRefreshToken,
+      });
+      currentAccessToken = refreshed.accessToken;
+      currentRefreshToken = refreshed.refreshToken;
+      return refreshed.accessToken;
+    },
+    onRateLimit: (info) => {
+      if (isDev) {
+        console.warn("[salla-products] rate-limit", info);
+      }
+    },
+  };
 
   const perPage = opts?.perPage ?? 50;
   let page = 1;
@@ -215,8 +260,9 @@ export async function syncSallaProductsForMerchant(
 
   while (true) {
     const { items, pagination } = await sallaListProducts(
-      merchant.sallaAccessToken,
-      { page, perPage }
+      currentAccessToken,
+      { page, perPage },
+      requestOptions
     );
     pagesFetched += 1;
 

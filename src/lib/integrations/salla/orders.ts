@@ -1,5 +1,5 @@
 // src/lib/integrations/salla/orders.ts
-import { sallaFetch } from "@/lib/integrations/salla/client";
+import { sallaFetch, type SallaRequestOptions } from "@/lib/integrations/salla/client";
 import { toNumberOrNull, toStringOrNull, type SallaMoney } from "@/lib/integrations/salla/products";
 
 export type SallaOrderStatus = {
@@ -151,7 +151,8 @@ export async function sallaListOrders(
     paymentMethod?: string;
     referenceId?: string | number;
     format?: string;
-  }
+  },
+  requestOptions?: SallaRequestOptions
 ): Promise<{ items: SallaOrderListItem[]; pagination: SallaPagination }> {
   try {
     const response = await sallaFetch<SallaListResponse>({
@@ -168,6 +169,7 @@ export async function sallaListOrders(
         reference_id: params?.referenceId,
         format: params?.format,
       },
+      ...requestOptions,
     });
 
     if (!Array.isArray(response.data)) {
@@ -185,12 +187,16 @@ export async function sallaListOrders(
 
 export async function sallaGetOrderDetails(
   token: string,
-  orderId: string
+  orderId: string,
+  params?: { format?: string },
+  requestOptions?: SallaRequestOptions
 ): Promise<SallaOrderDetails> {
   try {
     const response = await sallaFetch<SallaSingleResponse>({
       token,
       path: `/admin/v2/orders/${encodeURIComponent(orderId)}`,
+      query: { format: params?.format },
+      ...requestOptions,
     });
 
     if (!isRecord(response.data)) {
@@ -205,13 +211,15 @@ export async function sallaGetOrderDetails(
 
 export async function sallaListOrderItems(
   token: string,
-  orderId: string
+  orderId: string,
+  requestOptions?: SallaRequestOptions
 ): Promise<SallaOrderItem[]> {
   try {
     const response = await sallaFetch<SallaListResponse>({
       token,
       path: "/admin/v2/orders/items",
       query: { order_id: orderId },
+      ...requestOptions,
     });
 
     if (!Array.isArray(response.data)) {
@@ -227,13 +235,15 @@ export async function sallaListOrderItems(
 export async function sallaListOrderHistories(
   token: string,
   orderId: string,
-  page = 1
+  page = 1,
+  requestOptions?: SallaRequestOptions
 ): Promise<{ items: SallaOrderHistory[]; pagination: SallaPagination }> {
   try {
     const response = await sallaFetch<SallaListResponse>({
       token,
       path: `/admin/v2/orders/${encodeURIComponent(orderId)}/histories`,
       query: { page },
+      ...requestOptions,
     });
 
     if (!Array.isArray(response.data)) {

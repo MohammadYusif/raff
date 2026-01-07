@@ -18,8 +18,16 @@ const debugSyncLog = (message: string, details?: Record<string, unknown>) => {
   console.log("[salla-sync]", message);
 };
 
+type RateLimitInfo = {
+  url: string;
+  retryAfterMs: number | null;
+  attempt: number;
+};
+
 interface SallaConfig {
   accessToken: string;
+  refreshAccessToken?: () => Promise<string | null>;
+  onRateLimit?: (info: RateLimitInfo) => void;
 }
 
 interface SallaProduct {
@@ -59,11 +67,40 @@ interface SallaPaginatedResponse<T> {
   };
 }
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+function extractPagination(
+  data: Record<string, unknown>
+): SallaPaginatedResponse<SallaProduct>["pagination"] {
+  if (isRecord(data.pagination)) return data.pagination;
+  const meta = isRecord(data.meta) ? data.meta : null;
+  if (meta && isRecord(meta.pagination)) {
+    return meta.pagination as SallaPaginatedResponse<SallaProduct>["pagination"];
+  }
+  return {};
+}
+
+function coerceSallaProduct(value: unknown): SallaProduct {
+  if (!isRecord(value)) {
+    throw new Error("Salla product payload missing");
+  }
+  const id = value.id;
+  if (typeof id !== "string" && typeof id !== "number") {
+    throw new Error("Salla product payload missing id");
+  }
+  return value as SallaProduct;
+}
+
 export class SallaService {
   private accessToken: string;
+  private refreshAccessToken?: () => Promise<string | null>;
+  private onRateLimit?: (info: RateLimitInfo) => void;
 
   constructor(config: SallaConfig) {
     this.accessToken = config.accessToken;
+    this.refreshAccessToken = config.refreshAccessToken;
+    this.onRateLimit = config.onRateLimit;
   }
 
   private getHeaders(): Record<string, string> {
@@ -81,6 +118,77 @@ export class SallaService {
     return parsed.toString();
   }
 
+  private async fetchJson<T>(url: string): Promise<T> {
+    const maxAttempts = 2;
+    let attempt = 0;
+
+    while (attempt < maxAttempts) {
+      const response = await fetchWithTimeout(url, {
+        headers: this.getHeaders(),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401 && this.refreshAccessToken && attempt === 0) {
+          await response.body?.cancel();
+          const refreshed = await this.refreshAccessToken();
+          if (refreshed) {
+            this.accessToken = refreshed;
+            attempt += 1;
+            continue;
+          }
+        }
+
+        if (response.status === 429 && attempt + 1 < maxAttempts) {
+          const retryAfter = response.headers.get("retry-after");
+          let retryAfterMs: number | null = null;
+          if (retryAfter) {
+            const seconds = Number(retryAfter);
+            if (!Number.isNaN(seconds)) {
+              retryAfterMs = Math.min(Math.max(seconds * 1000, 0), 30000);
+            } else {
+              const dateMs = Date.parse(retryAfter);
+              if (!Number.isNaN(dateMs)) {
+                retryAfterMs = Math.min(
+                  Math.max(dateMs - Date.now(), 0),
+                  30000
+                );
+              }
+            }
+          }
+
+          if (retryAfterMs === null) {
+            retryAfterMs = Math.min(500 * Math.pow(2, attempt), 30000);
+          }
+
+          this.onRateLimit?.({
+            url,
+            retryAfterMs,
+            attempt: attempt + 1,
+          });
+          await response.body?.cancel();
+          await new Promise((resolve) => setTimeout(resolve, retryAfterMs));
+          attempt += 1;
+          continue;
+        }
+
+        const bodyText = await response.text();
+        throw new Error(`Salla API error ${response.status}: ${bodyText}`);
+      }
+
+      const bodyText = await response.text();
+      if (!bodyText) {
+        throw new Error("Salla API empty response body");
+      }
+      try {
+        return JSON.parse(bodyText) as T;
+      } catch {
+        throw new Error(`Salla API invalid JSON: ${bodyText}`);
+      }
+    }
+
+    throw new Error("Salla API request failed after retries");
+  }
+
   async fetchProducts(
     page: number = 1,
     perPage: number = 50
@@ -92,22 +200,23 @@ export class SallaService {
 
     const url = this.buildPagedUrl(sallaConfig.productsApiUrl, page, perPage);
     debugSyncLog("fetch-products", { page, perPage, url });
-    const response = await fetchWithTimeout(url, { headers: this.getHeaders() });
-    if (!response.ok) {
-      debugSyncLog("fetch-products-error", { status: response.status });
-      throw new Error(`Salla API error: ${response.status}`);
+    const raw = await this.fetchJson<unknown>(url);
+    if (!isRecord(raw)) {
+      throw new Error("Salla products response not an object");
     }
-
-    const data = await response.json();
-    const products = data.data || data.products || data.items || [];
+    const productsRaw = raw.data ?? raw.products ?? raw.items ?? [];
+    const products = Array.isArray(productsRaw)
+      ? (productsRaw as SallaProduct[])
+      : [];
+    const pagination = extractPagination(raw);
     debugSyncLog("fetch-products-result", {
       page,
-      count: Array.isArray(products) ? products.length : 0,
-      pagination: data.pagination || data.meta?.pagination || {},
+      count: products.length,
+      pagination,
     });
     return {
       products,
-      pagination: data.pagination || data.meta?.pagination || {},
+      pagination,
     };
   }
 
@@ -119,18 +228,20 @@ export class SallaService {
 
     const url = sallaConfig.productApiUrlTemplate.replace("{id}", productId);
     debugSyncLog("fetch-product", { productId, url });
-    const response = await fetchWithTimeout(url, { headers: this.getHeaders() });
-    if (!response.ok) {
-      if (response.status === 404) return null;
-      debugSyncLog("fetch-product-error", {
-        productId,
-        status: response.status,
-      });
-      throw new Error(`Salla API error: ${response.status}`);
+    try {
+      const raw = await this.fetchJson<unknown>(url);
+      if (!isRecord(raw)) {
+        throw new Error("Salla product response not an object");
+      }
+      const candidate = raw.data ?? raw.product ?? raw;
+      return coerceSallaProduct(candidate);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("404")) {
+        return null;
+      }
+      debugSyncLog("fetch-product-error", { productId });
+      throw error;
     }
-
-    const data = await response.json();
-    return data.data || data.product || data;
   }
 
   async fetchCategories(): Promise<SallaCategory[]> {
@@ -140,18 +251,16 @@ export class SallaService {
     }
 
     debugSyncLog("fetch-categories", { url: sallaConfig.categoriesApiUrl });
-    const response = await fetchWithTimeout(sallaConfig.categoriesApiUrl, {
-      headers: this.getHeaders(),
-    });
-    if (!response.ok) {
-      debugSyncLog("fetch-categories-error", { status: response.status });
-      throw new Error(`Salla API error: ${response.status}`);
+    const raw = await this.fetchJson<unknown>(sallaConfig.categoriesApiUrl);
+    if (!isRecord(raw)) {
+      throw new Error("Salla categories response not an object");
     }
-
-    const data = await response.json();
-    const categories = data.data || data.categories || [];
+    const categoriesRaw = raw.data ?? raw.categories ?? [];
+    const categories = Array.isArray(categoriesRaw)
+      ? (categoriesRaw as SallaCategory[])
+      : [];
     debugSyncLog("fetch-categories-result", {
-      count: Array.isArray(categories) ? categories.length : 0,
+      count: categories.length,
     });
     return categories;
   }
@@ -202,7 +311,7 @@ function isTokenExpired(tokenExpiry: Date | null): boolean {
   return tokenExpiry.getTime() <= Date.now();
 }
 
-async function ensureSallaAccessToken(merchant: SallaMerchantAuth) {
+export async function ensureSallaAccessToken(merchant: SallaMerchantAuth) {
   if (!isTokenExpired(merchant.sallaTokenExpiry)) {
     return {
       accessToken: merchant.sallaAccessToken,
@@ -211,6 +320,33 @@ async function ensureSallaAccessToken(merchant: SallaMerchantAuth) {
     };
   }
 
+  if (!merchant.sallaRefreshToken) {
+    throw new Error("Salla refresh token missing");
+  }
+
+  const refreshed = await SallaService.refreshToken(merchant.sallaRefreshToken);
+  const tokenExpiry = new Date(Date.now() + refreshed.expiresIn * 1000);
+
+  await prisma.merchant.update({
+    where: { id: merchant.id },
+    data: {
+      sallaAccessToken: refreshed.accessToken,
+      sallaRefreshToken: refreshed.refreshToken,
+      sallaTokenExpiry: tokenExpiry,
+    },
+  });
+
+  return {
+    accessToken: refreshed.accessToken,
+    refreshToken: refreshed.refreshToken,
+    tokenExpiry,
+  };
+}
+
+export async function refreshSallaAccessToken(merchant: {
+  id: string;
+  sallaRefreshToken: string | null;
+}): Promise<{ accessToken: string; refreshToken: string; tokenExpiry: Date }> {
   if (!merchant.sallaRefreshToken) {
     throw new Error("Salla refresh token missing");
   }
@@ -471,8 +607,28 @@ export async function syncSallaProducts(merchant: SallaMerchantAuth): Promise<{
   });
 
   const tokens = await ensureSallaAccessToken(merchant);
+  let currentAccessToken = tokens.accessToken || merchant.sallaAccessToken;
+  let currentRefreshToken = tokens.refreshToken || merchant.sallaRefreshToken;
+  const isDev = process.env.NODE_ENV !== "production";
+
+  const refreshAccessToken = async () => {
+    const refreshed = await refreshSallaAccessToken({
+      id: merchant.id,
+      sallaRefreshToken: currentRefreshToken,
+    });
+    currentAccessToken = refreshed.accessToken;
+    currentRefreshToken = refreshed.refreshToken;
+    return refreshed.accessToken;
+  };
+
   const service = new SallaService({
-    accessToken: tokens.accessToken || merchant.sallaAccessToken,
+    accessToken: currentAccessToken || merchant.sallaAccessToken || "",
+    refreshAccessToken,
+    onRateLimit: (info) => {
+      if (isDev) {
+        console.warn("[salla-sync] rate-limit", info);
+      }
+    },
   });
 
   let productsCreated = 0;
@@ -695,8 +851,26 @@ export async function syncSallaProductById(
     productId,
   });
   const tokens = await ensureSallaAccessToken(merchant);
+  let currentAccessToken = tokens.accessToken || merchant.sallaAccessToken;
+  let currentRefreshToken = tokens.refreshToken || merchant.sallaRefreshToken;
+  const isDev = process.env.NODE_ENV !== "production";
+  const refreshAccessToken = async () => {
+    const refreshed = await refreshSallaAccessToken({
+      id: merchant.id,
+      sallaRefreshToken: currentRefreshToken,
+    });
+    currentAccessToken = refreshed.accessToken;
+    currentRefreshToken = refreshed.refreshToken;
+    return refreshed.accessToken;
+  };
   const service = new SallaService({
-    accessToken: tokens.accessToken || merchant.sallaAccessToken,
+    accessToken: currentAccessToken || merchant.sallaAccessToken || "",
+    refreshAccessToken,
+    onRateLimit: (info) => {
+      if (isDev) {
+        console.warn("[salla-sync] rate-limit", info);
+      }
+    },
   });
 
   const sallaProduct = await service.fetchProduct(productId);

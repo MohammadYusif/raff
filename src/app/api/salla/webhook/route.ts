@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { CommissionStatus, type Merchant } from "@prisma/client";
+import {
+  CommissionStatus,
+  OrderStatus,
+  Prisma,
+  WebhookProcessingStatus,
+  type Merchant,
+} from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getSallaWebhookConfig } from "@/lib/platform/config";
 import { syncSallaProductById } from "@/lib/services/salla.service";
@@ -64,6 +70,197 @@ function normalizeHexSig(sig: string): string {
 function safePrefix(value: string, n = 12): string {
   const v = value ?? "";
   return v.length <= n ? v : `${v.slice(0, n)}...`;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function toJsonValue(value: Record<string, unknown>): Prisma.InputJsonValue {
+  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
+}
+
+function toStringOrNull(value: unknown): string | null {
+  if (typeof value === "string") return value;
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return String(value);
+  }
+  return null;
+}
+
+function mapSallaStatusToOrderStatus(slug: string | null): OrderStatus {
+  const normalized = slug?.toLowerCase() ?? "";
+  if (normalized === "canceled" || normalized === "cancelled") return "CANCELLED";
+  if (normalized === "completed" || normalized === "delivered") return "DELIVERED";
+  if (normalized === "shipped") return "SHIPPED";
+  if (normalized === "processing" || normalized === "in_progress") return "PROCESSING";
+  return "PENDING";
+}
+
+function buildWebhookIdempotencyKey(params: {
+  platform: "SALLA";
+  storeId: string;
+  eventType: string;
+  entityId?: string | null;
+  deliveryId?: string | null;
+}): string {
+  const parts = [
+    params.platform,
+    params.storeId,
+    params.eventType,
+    params.entityId ?? "none",
+    params.deliveryId ?? "none",
+  ];
+  return crypto.createHash("sha256").update(parts.join("|")).digest("hex");
+}
+
+async function registerWebhookEvent(params: {
+  platform: "SALLA";
+  storeId: string;
+  eventType: string;
+  idempotencyKey: string;
+  payload: Record<string, unknown>;
+  deliveryHeaderId?: string | null;
+}): Promise<{ id: string | null; duplicate: boolean }> {
+  try {
+    const created = await prisma.webhookEvent.create({
+      data: {
+        platform: params.platform,
+        storeId: params.storeId,
+        eventType: params.eventType,
+        idempotencyKey: params.idempotencyKey,
+        deliveryHeaderId: params.deliveryHeaderId ?? null,
+        payload: toJsonValue(params.payload),
+        processingStatus: WebhookProcessingStatus.PROCESSED,
+      },
+      select: { id: true },
+    });
+    return { id: created.id, duplicate: false };
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2002") {
+        return { id: null, duplicate: true };
+      }
+    }
+    throw error;
+  }
+}
+
+async function updateWebhookEventStatus(params: {
+  id: string;
+  status: WebhookProcessingStatus;
+  error?: string;
+}): Promise<void> {
+  await prisma.webhookEvent.update({
+    where: { id: params.id },
+    data: {
+      processingStatus: params.status,
+      errorMessage: params.error ?? null,
+    },
+  });
+}
+
+function resolveSallaStoreId(payload: Record<string, unknown>): string | null {
+  const merchant = payload.merchant as Record<string, unknown> | undefined;
+  const data = payload.data as Record<string, unknown> | undefined;
+  const dataMerchant = isRecord(data?.merchant) ? data?.merchant : null;
+  const dataStore = isRecord(data?.store) ? data?.store : null;
+  const store =
+    merchant?.id ??
+    dataMerchant?.id ??
+    dataStore?.id ??
+    data?.id ??
+    payload.store_id ??
+    null;
+  return toStringOrNull(store);
+}
+
+async function findProductIdByPayload(
+  merchantId: string,
+  payload: Record<string, unknown>
+): Promise<string | null> {
+  const data = payload.data as Record<string, unknown> | undefined;
+  const items = Array.isArray(data?.items) ? data?.items : [];
+  if (items.length === 0) return null;
+
+  const first = items[0] as Record<string, unknown>;
+  const productId =
+    toStringOrNull(first.product_id) ??
+    toStringOrNull((first.product as Record<string, unknown> | undefined)?.id) ??
+    null;
+
+  if (!productId) return null;
+
+  const product = await prisma.product.findFirst({
+    where: { merchantId, sallaProductId: productId },
+    select: { id: true },
+  });
+
+  return product?.id ?? null;
+}
+
+function extractOrderQuantity(payload: Record<string, unknown>): number {
+  const data = payload.data as Record<string, unknown> | undefined;
+  const items = Array.isArray(data?.items) ? data?.items : [];
+  if (items.length === 0) return 1;
+  const total = items.reduce((sum, item) => {
+    const record = item as Record<string, unknown>;
+    const qty = Number(record.quantity ?? 0);
+    return sum + (Number.isFinite(qty) ? qty : 0);
+  }, 0);
+  return total > 0 ? total : 1;
+}
+
+function extractShippingInfo(payload: Record<string, unknown>): {
+  shippingAddress: Prisma.InputJsonValue | null;
+  shippingCity: string | null;
+} {
+  const data = payload.data as Record<string, unknown> | undefined;
+  const shipping =
+    (isRecord(data?.shipping) ? data?.shipping : null) ??
+    (isRecord(data?.shipping_address) ? data?.shipping_address : null) ??
+    (isRecord(data?.address) ? data?.address : null) ??
+    null;
+
+  if (!shipping) {
+    return { shippingAddress: null, shippingCity: null };
+  }
+
+  const city =
+    toStringOrNull(shipping.city) ??
+    toStringOrNull(shipping.city_name) ??
+    toStringOrNull(shipping.town) ??
+    null;
+
+  return {
+    shippingAddress: shipping as Prisma.InputJsonValue,
+    shippingCity: city,
+  };
+}
+
+function extractCustomerInfo(payload: Record<string, unknown>): {
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+} {
+  const data = payload.data as Record<string, unknown> | undefined;
+  const receiver = isRecord(data?.receiver) ? data?.receiver : null;
+  const customer = isRecord(data?.customer) ? data?.customer : null;
+
+  return {
+    name:
+      toStringOrNull(receiver?.name) ??
+      toStringOrNull(customer?.name) ??
+      null,
+    email:
+      toStringOrNull(receiver?.email) ??
+      toStringOrNull(customer?.email) ??
+      null,
+    phone:
+      toStringOrNull(receiver?.phone) ??
+      toStringOrNull(customer?.phone) ??
+      null,
+  };
 }
 
 /* ============================================================
@@ -170,6 +367,7 @@ export async function POST(request: NextRequest) {
   let rawBody: string = "";
   let normalized: ReturnType<typeof normalizeSallaOrderWebhook> | null = null;
   let merchantId: string | null = null;
+  let webhookEventId: string | null = null;
   let shouldLog = false;
   let processedOk = false;
   let errorMessage: string | undefined;
@@ -303,10 +501,16 @@ export async function POST(request: NextRequest) {
     /* --------------------------------------------------------
        PAYLOAD PARSE
     -------------------------------------------------------- */
-    const payload = JSON.parse(rawBody);
+    const payload = JSON.parse(rawBody) as Record<string, unknown>;
+    const data = payload.data as Record<string, unknown> | undefined;
+    const merchantPayload = payload.merchant as Record<string, unknown> | undefined;
     const eventType = String(payload.event ?? payload.event_type ?? "")
       .trim()
       .toLowerCase();
+    const deliveryHeaderId =
+      request.headers.get("x-salla-delivery-id") ??
+      request.headers.get("x-salla-webhook-id") ??
+      null;
 
     debugLog("received-event", { eventType });
 
@@ -336,17 +540,107 @@ export async function POST(request: NextRequest) {
       }
 
       merchantId = merchant.id;
+      shouldLog = true;
+
+      const orderEvent = await registerWebhookEvent({
+        platform: "SALLA",
+        storeId: normalized.storeId,
+        eventType,
+        idempotencyKey: normalized.idempotencyKey,
+        deliveryHeaderId,
+        payload: {
+          eventType,
+          orderId: normalized.orderId,
+          storeId: normalized.storeId,
+        },
+      });
+
+      webhookEventId = orderEvent.id;
+      if (orderEvent.duplicate) {
+        debugLog("duplicate-webhook", {
+          eventType,
+          orderId: normalized.orderId,
+        });
+        processedOk = true;
+        return NextResponse.json({ success: true, duplicate: true });
+      }
+
+      const orderStatus = mapSallaStatusToOrderStatus(normalized.orderStatus);
+      const paymentStatus = normalized.paymentStatus;
+      const payment = isRecord(data?.payment) ? data?.payment : null;
+      const paymentMethod =
+        toStringOrNull(payment?.method) ??
+        toStringOrNull(data?.payment_method) ??
+        null;
+      const quantity = extractOrderQuantity(payload);
+      const shipping = extractShippingInfo(payload);
+      const customerInfo = extractCustomerInfo(payload);
+      const productId = await findProductIdByPayload(merchant.id, payload);
+      const confirmedAt =
+        isPaymentConfirmed(paymentStatus, normalized.orderStatus) &&
+        normalized.updatedAt
+          ? normalized.updatedAt
+          : null;
+
+      const shippingData = shipping.shippingAddress
+        ? {
+            shippingAddress: shipping.shippingAddress,
+            shippingCity: shipping.shippingCity,
+          }
+        : {};
+
+      await prisma.order.upsert({
+        where: { sallaOrderId: normalized.orderId },
+        create: {
+          merchantId: merchant.id,
+          platform: "SALLA",
+          sallaOrderId: normalized.orderId,
+          sallaStatus: normalized.orderStatus,
+          totalPrice: new Prisma.Decimal(normalized.total),
+          currency: normalized.currency,
+          quantity,
+          productId,
+          status: orderStatus,
+          paymentStatus,
+          paymentMethod,
+          customerName: customerInfo.name,
+          customerEmail: customerInfo.email,
+          customerPhone: customerInfo.phone,
+          ...(normalized.createdAt ? { createdAt: normalized.createdAt } : {}),
+          ...(confirmedAt ? { confirmedAt } : {}),
+          ...shippingData,
+        },
+        update: {
+          merchantId: merchant.id,
+          platform: "SALLA",
+          sallaStatus: normalized.orderStatus,
+          totalPrice: new Prisma.Decimal(normalized.total),
+          currency: normalized.currency,
+          quantity,
+          productId,
+          status: orderStatus,
+          paymentStatus,
+          paymentMethod,
+          customerName: customerInfo.name,
+          customerEmail: customerInfo.email,
+          customerPhone: customerInfo.phone,
+          ...(confirmedAt ? { confirmedAt } : {}),
+          ...shippingData,
+        },
+      });
+
       const result = await processOrderWebhook(normalized, merchant);
       processedOk = true;
-      return NextResponse.json(result);
+      return NextResponse.json({ ...result, orderUpserted: true });
     }
 
     /* --------------------------------------------------------
        PRODUCT EVENTS
     -------------------------------------------------------- */
     if (eventType === "product.created" || eventType === "product.updated") {
-      const productId = payload.data?.id;
-      const storeId = payload.merchant?.id?.toString();
+      const productId = data?.id;
+      const storeId =
+        toStringOrNull(merchantPayload?.id) ?? resolveSallaStoreId(payload);
 
       if (!productId || !storeId) {
         return NextResponse.json({ error: "Missing data" }, { status: 400 });
@@ -363,6 +657,37 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      const idempotencyKey = buildWebhookIdempotencyKey({
+        platform: "SALLA",
+        storeId,
+        eventType,
+        entityId: String(productId),
+        deliveryId: deliveryHeaderId,
+      });
+
+      const productEvent = await registerWebhookEvent({
+        platform: "SALLA",
+        storeId,
+        eventType,
+        idempotencyKey,
+        deliveryHeaderId,
+        payload: {
+          eventType,
+          productId: String(productId),
+          storeId,
+        },
+      });
+
+      webhookEventId = productEvent.id;
+      if (productEvent.duplicate) {
+        debugLog("duplicate-product-webhook", {
+          eventType,
+          productId: String(productId),
+        });
+        processedOk = true;
+        return NextResponse.json({ success: true, duplicate: true });
+      }
+
       await syncSallaProductById(merchant, productId.toString());
       processedOk = true;
       return NextResponse.json({ success: true });
@@ -372,13 +697,7 @@ export async function POST(request: NextRequest) {
        APP INSTALLED
     -------------------------------------------------------- */
     if (eventType === "app.installed") {
-      const storeId =
-        payload.merchant?.id ??
-        payload.data?.merchant?.id ??
-        payload.data?.store?.id ??
-        payload.data?.id ??
-        null;
-      const storeIdString = storeId ? String(storeId) : "";
+      const storeIdString = resolveSallaStoreId(payload) ?? "";
 
       if (storeIdString) {
         const merchant = await prisma.merchant.findUnique({
@@ -429,6 +748,59 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
+    /* --------------------------------------------------------
+       APP UNINSTALLED
+    -------------------------------------------------------- */
+    if (eventType === "app.uninstalled" || eventType === "app.uninstall") {
+      const storeIdString = resolveSallaStoreId(payload) ?? "";
+
+      if (!storeIdString) {
+        console.warn("Salla app.uninstalled: missing storeId in payload");
+        processedOk = true;
+        return NextResponse.json({ success: true });
+      }
+
+      const idempotencyKey = buildWebhookIdempotencyKey({
+        platform: "SALLA",
+        storeId: storeIdString,
+        eventType,
+        entityId: storeIdString,
+        deliveryId: deliveryHeaderId,
+      });
+
+      const uninstallEvent = await registerWebhookEvent({
+        platform: "SALLA",
+        storeId: storeIdString,
+        eventType,
+        idempotencyKey,
+        deliveryHeaderId,
+        payload: {
+          eventType,
+          storeId: storeIdString,
+        },
+      });
+
+      webhookEventId = uninstallEvent.id;
+      if (uninstallEvent.duplicate) {
+        debugLog("duplicate-uninstall-webhook", { storeId: storeIdString });
+        processedOk = true;
+        return NextResponse.json({ success: true, duplicate: true });
+      }
+
+      await prisma.merchant.updateMany({
+        where: { sallaStoreId: storeIdString },
+        data: {
+          sallaAccessToken: null,
+          sallaRefreshToken: null,
+          sallaTokenExpiry: null,
+          autoSyncProducts: false,
+        },
+      });
+
+      processedOk = true;
+      return NextResponse.json({ success: true });
+    }
+
     debugLog("unhandled-event", { eventType });
     processedOk = true;
     return NextResponse.json({ success: true });
@@ -441,6 +813,20 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   } finally {
+    if (webhookEventId) {
+      try {
+        await updateWebhookEventStatus({
+          id: webhookEventId,
+          status: processedOk
+            ? WebhookProcessingStatus.PROCESSED
+            : WebhookProcessingStatus.FAILED,
+          error: errorMessage,
+        });
+      } catch (error) {
+        console.error("Failed to update webhook event status:", error);
+      }
+    }
+
     if (shouldLog && normalized && merchantId) {
       try {
         await logProcessedWebhook(

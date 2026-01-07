@@ -1,5 +1,5 @@
 // src/lib/integrations/salla/products.ts
-import { sallaFetch } from "@/lib/integrations/salla/client";
+import { sallaFetch, type SallaRequestOptions } from "@/lib/integrations/salla/client";
 
 export type SallaMoney = {
   amount?: number | string;
@@ -139,7 +139,8 @@ export async function sallaListProducts(
     status?: string;
     category?: string | number;
     format?: string;
-  }
+  },
+  requestOptions?: SallaRequestOptions
 ): Promise<{ items: SallaProduct[]; pagination: SallaPagination }> {
   const response = await sallaFetch<SallaListResponse>({
     token,
@@ -152,6 +153,7 @@ export async function sallaListProducts(
       category: params?.category,
       format: params?.format,
     },
+    ...requestOptions,
   });
 
   if (!Array.isArray(response.data)) {
@@ -172,11 +174,13 @@ export async function sallaListProducts(
 
 export async function sallaGetProductById(
   token: string,
-  productId: string
+  productId: string,
+  requestOptions?: SallaRequestOptions
 ): Promise<SallaProduct> {
   const response = await sallaFetch<SallaSingleResponse>({
     token,
     path: `/admin/v2/products/${encodeURIComponent(productId)}`,
+    ...requestOptions,
   });
 
   if (!isRecord(response.data)) {
@@ -193,7 +197,8 @@ export async function sallaGetProductById(
 
 export async function sallaGetProductBySku(
   token: string,
-  sku: string
+  sku: string,
+  requestOptions?: SallaRequestOptions
 ): Promise<SallaProduct> {
   if (!sku) {
     throw new Error("SKU is required for Salla product lookup");
@@ -202,6 +207,7 @@ export async function sallaGetProductBySku(
   const response = await sallaFetch<SallaSingleResponse>({
     token,
     path: `/admin/v2/products/sku/${encodeURIComponent(sku)}`,
+    ...requestOptions,
   });
 
   if (!isRecord(response.data)) {

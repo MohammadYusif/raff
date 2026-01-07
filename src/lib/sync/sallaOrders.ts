@@ -12,6 +12,12 @@ import {
   type SallaOrderListItem,
 } from "@/lib/integrations/salla/orders";
 import { moneyAmount, toNumberOrNull, toStringOrNull } from "@/lib/integrations/salla/products";
+import { isPaymentConfirmed } from "@/lib/platform/webhook-normalizer";
+import type { SallaRequestOptions } from "@/lib/integrations/salla/client";
+import {
+  ensureSallaAccessToken,
+  refreshSallaAccessToken,
+} from "@/lib/services/salla.service";
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
@@ -36,6 +42,46 @@ const resolveMoneyAmount = (value: unknown): number | null => {
 const resolveMoneyCurrency = (value: unknown): string | null => {
   if (!isRecord(value)) return null;
   return toStringOrNull(value.currency);
+};
+
+const parseDate = (value: unknown): Date | null => {
+  if (value instanceof Date) return value;
+  const asString = toStringOrNull(value);
+  if (!asString) return null;
+  const parsed = new Date(asString);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const extractShippingInfo = (
+  details: SallaOrderDetails | null
+): { shippingAddress: Prisma.InputJsonValue | null; shippingCity: string | null } => {
+  if (!details || typeof details !== "object") {
+    return { shippingAddress: null, shippingCity: null };
+  }
+
+  const record = details as Record<string, unknown>;
+  const shipping =
+    (isRecord(record.shipping) ? record.shipping : null) ??
+    (isRecord(record.shipping_address) ? record.shipping_address : null) ??
+    (isRecord(record.address) ? record.address : null) ??
+    (isRecord(record.shipment) ? record.shipment : null) ??
+    null;
+
+  if (!shipping) {
+    return { shippingAddress: null, shippingCity: null };
+  }
+
+  const city =
+    toStringOrNull(shipping.city) ??
+    toStringOrNull(shipping.city_name) ??
+    toStringOrNull(shipping.town) ??
+    toStringOrNull(shipping.region) ??
+    null;
+
+  return {
+    shippingAddress: shipping as Prisma.InputJsonValue,
+    shippingCity: city,
+  };
 };
 
 const extractStatusSlug = (
@@ -201,13 +247,51 @@ export async function syncSallaOrdersForMerchant(
 }> {
   const merchant = await prisma.merchant.findUnique({
     where: { id: merchantId },
-    select: { id: true, sallaAccessToken: true },
+    select: {
+      id: true,
+      sallaAccessToken: true,
+      sallaRefreshToken: true,
+      sallaTokenExpiry: true,
+    },
   });
 
-  const token = merchant?.sallaAccessToken ?? null;
-  if (!token) {
+  if (!merchant?.sallaAccessToken) {
     throw new Error("Salla access token missing");
   }
+
+  const tokens = await ensureSallaAccessToken({
+    id: merchant.id,
+    sallaAccessToken: merchant.sallaAccessToken,
+    sallaRefreshToken: merchant.sallaRefreshToken,
+    sallaTokenExpiry: merchant.sallaTokenExpiry,
+    sallaStoreId: null,
+    sallaStoreUrl: null,
+  });
+
+  let currentAccessToken = tokens.accessToken || merchant.sallaAccessToken;
+  let currentRefreshToken = tokens.refreshToken || merchant.sallaRefreshToken;
+  const isDev = process.env.NODE_ENV !== "production";
+
+  if (!currentAccessToken) {
+    throw new Error("Salla access token missing");
+  }
+
+  const requestOptions: SallaRequestOptions = {
+    onUnauthorized: async () => {
+      const refreshed = await refreshSallaAccessToken({
+        id: merchant.id,
+        sallaRefreshToken: currentRefreshToken,
+      });
+      currentAccessToken = refreshed.accessToken;
+      currentRefreshToken = refreshed.refreshToken;
+      return refreshed.accessToken;
+    },
+    onRateLimit: (info) => {
+      if (isDev) {
+        console.warn("[salla-orders] rate-limit", info);
+      }
+    },
+  };
 
   const perPage = opts?.perPage ?? 30;
   const maxPages = opts?.maxPages ?? 10;
@@ -220,13 +304,14 @@ export async function syncSallaOrdersForMerchant(
 
   while (page <= maxPages) {
     const { items, pagination } = await sallaListOrders(
-      token,
+      currentAccessToken,
       {
         page,
         perPage,
         fromDate: opts?.fromDate,
         toDate: opts?.toDate,
-      }
+      },
+      requestOptions
     );
 
     pagesFetched += 1;
@@ -242,9 +327,14 @@ export async function syncSallaOrdersForMerchant(
 
       try {
         const [detailResult, itemsResult, historiesResult] = await Promise.all([
-          sallaGetOrderDetails(token, orderId),
-          sallaListOrderItems(token, orderId),
-          sallaListOrderHistories(token, orderId, 1),
+          sallaGetOrderDetails(
+            currentAccessToken,
+            orderId,
+            { format: "light" },
+            requestOptions
+          ),
+          sallaListOrderItems(currentAccessToken, orderId, requestOptions),
+          sallaListOrderHistories(currentAccessToken, orderId, 1, requestOptions),
         ]);
         details = detailResult;
         itemsList = itemsResult;
@@ -274,6 +364,25 @@ export async function syncSallaOrdersForMerchant(
         null;
       const paymentStatus = toStringOrNull(details?.payment_status) ?? null;
 
+      const createdAt =
+        parseDate(details?.date?.date) ??
+        parseDate(order.date?.date) ??
+        null;
+      const confirmedAt =
+        isPaymentConfirmed(paymentStatus, statusSlug)
+          ? parseDate(details?.updated_at) ??
+            parseDate(latestHistory?.created_at) ??
+            createdAt
+          : null;
+
+      const shippingInfo = extractShippingInfo(details);
+      const shippingData = shippingInfo.shippingAddress
+        ? {
+            shippingAddress: shippingInfo.shippingAddress,
+            shippingCity: shippingInfo.shippingCity,
+          }
+        : {};
+
       await prisma.order.upsert({
         where: { sallaOrderId: orderId },
         create: {
@@ -291,6 +400,9 @@ export async function syncSallaOrdersForMerchant(
           customerName: customerInfo.name,
           customerEmail: customerInfo.email,
           customerPhone: customerInfo.phone,
+          ...(createdAt ? { createdAt } : {}),
+          ...(confirmedAt ? { confirmedAt } : {}),
+          ...shippingData,
         },
         update: {
           merchantId,
@@ -306,6 +418,8 @@ export async function syncSallaOrdersForMerchant(
           customerName: customerInfo.name,
           customerEmail: customerInfo.email,
           customerPhone: customerInfo.phone,
+          ...(confirmedAt ? { confirmedAt } : {}),
+          ...shippingData,
         },
       });
 
