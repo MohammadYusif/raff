@@ -35,7 +35,7 @@ export async function GET() {
     // Get last 20 outbound click events (includes disqualified clicks)
     const recentEvents = await prisma.outboundClickEvent.findMany({
       take: 20,
-      orderBy: { clickedAt: "desc" },
+      orderBy: { createdAt: "desc" },
       select: {
         id: true,
         trackingId: true,
@@ -43,7 +43,7 @@ export async function GET() {
         platform: true,
         qualified: true,
         disqualifyReason: true,
-        clickedAt: true,
+        createdAt: true,
       },
     });
 
