@@ -21,6 +21,9 @@ const debugSyncLog = (message: string, details?: Record<string, unknown>) => {
   console.log("[merchant-sync]", message);
 };
 
+const isZidAuthError = (error: unknown): boolean =>
+  error instanceof Error && /Zid API error\s+401/i.test(error.message);
+
 export async function POST(request: NextRequest) {
   try {
     const auth = await requireMerchant("api");
@@ -231,6 +234,18 @@ export async function POST(request: NextRequest) {
         storeUrl: storeUrl || null,
       });
       if (platform === "zid") {
+        console.info("[zid-sync] preflight", {
+          merchantId,
+          connected: zidConnected,
+          hasStoreId: Boolean(merchant.zidStoreId),
+          hasStoreUrl: Boolean(merchant.zidStoreUrl),
+          hasAccessToken: Boolean(merchant.zidAccessToken),
+          accessTokenLength: merchant.zidAccessToken?.length ?? 0,
+          hasManagerToken: Boolean(merchant.zidManagerToken),
+          managerTokenLength: merchant.zidManagerToken?.length ?? 0,
+          hasRefreshToken: Boolean(merchant.zidRefreshToken),
+          refreshTokenLength: merchant.zidRefreshToken?.length ?? 0,
+        });
         const ordering =
           body?.ordering === "created_at" || body?.ordering === "updated_at"
             ? body.ordering
@@ -332,6 +347,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(syncResult);
   } catch (error) {
     console.error("Error triggering product sync:", error);
+    if (isZidAuthError(error)) {
+      return NextResponse.json(
+        {
+          error: "Zid auth failed (401)",
+          hint: "tokens invalid/expired; reconnect Zid",
+        },
+        { status: 502 }
+      );
+    }
     const message =
       error instanceof Error
         ? error.message

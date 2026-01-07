@@ -114,9 +114,12 @@ export async function GET(_request: NextRequest) {
         // Individual platform connection status
         zidStoreId: merchant.zidStoreId,
         zidStoreUrl: merchant.zidStoreUrl,
+        zidHasAccessToken: Boolean(merchant.zidAccessToken),
+        zidHasManagerToken: Boolean(merchant.zidManagerToken),
         zidConnected,
         sallaStoreId: merchant.sallaStoreId,
         sallaStoreUrl: merchant.sallaStoreUrl,
+        sallaHasAccessToken: Boolean(merchant.sallaAccessToken),
         sallaConnected,
         totalProducts: merchant._count.products,
         status: merchant.status,

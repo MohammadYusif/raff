@@ -75,6 +75,19 @@ export function MerchantIntegrationsContent() {
 
   const isZidConnected = Boolean(profile?.zidConnected);
   const isSallaConnected = Boolean(profile?.sallaConnected);
+  const shouldWarn =
+    process.env.NODE_ENV !== "production" ||
+    process.env.NEXT_PUBLIC_DEBUG_INTEGRATIONS === "true";
+
+  useEffect(() => {
+    if (!shouldWarn || !profile || isZidConnected) return;
+    console.warn("[integrations] Zid not connected", {
+      zidStoreId: Boolean(profile.zidStoreId),
+      zidStoreUrl: Boolean(profile.zidStoreUrl),
+      zidAccessToken: Boolean(profile.zidHasAccessToken),
+      zidManagerToken: Boolean(profile.zidHasManagerToken),
+    });
+  }, [shouldWarn, profile, isZidConnected]);
 
   const handleConnectStore = (platform: "salla" | "zid") => {
     if (!merchantId) return;

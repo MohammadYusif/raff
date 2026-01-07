@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getZidWebhookConfig } from "@/lib/platform/config";
 import { deactivateZidProduct } from "@/lib/services/zid.service";
 import { syncZidProductById } from "@/lib/sync/zidProducts";
+import { isZidConnected } from "@/lib/zid/isZidConnected";
 import {
   normalizeZidOrderWebhook,
   logProcessedWebhook,
@@ -466,10 +467,9 @@ export async function POST(request: NextRequest) {
 
       const skipSyncInDev =
         !isProd && process.env.SKIP_PLATFORM_SYNC === "true";
+      const zidConnected = isZidConnected(merchant);
       const missingConfig =
-        !merchant.zidAccessToken ||
-        !merchant.zidManagerToken ||
-        !merchant.zidStoreId ||
+        !zidConnected ||
         !process.env.ZID_CLIENT_ID ||
         !process.env.ZID_CLIENT_SECRET ||
         !process.env.ZID_API_BASE_URL;

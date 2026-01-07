@@ -23,9 +23,12 @@ interface MerchantProfile {
   // Individual platform connection status
   zidStoreId: string | null;
   zidStoreUrl: string | null;
+  zidHasAccessToken: boolean;
+  zidHasManagerToken: boolean;
   zidConnected: boolean;
   sallaStoreId: string | null;
   sallaStoreUrl: string | null;
+  sallaHasAccessToken: boolean;
   sallaConnected: boolean;
   totalProducts: number;
   status: string;

@@ -4,16 +4,11 @@ import type { Merchant } from "@prisma/client";
 export type ZidConnectionFields = Pick<
   Merchant,
   "zidStoreId" | "zidStoreUrl" | "zidAccessToken" | "zidManagerToken"
-> & {
-  zidAuthorizationToken?: string | null;
-};
+>;
 
 type ZidConnectionOptions = {
   requireStoreUrl?: boolean;
 };
-
-const getAuthorizationToken = (merchant: ZidConnectionFields) =>
-  merchant.zidAuthorizationToken ?? merchant.zidAccessToken ?? null;
 
 export const getMissingZidConnectionFields = (
   merchant: ZidConnectionFields,
@@ -22,8 +17,8 @@ export const getMissingZidConnectionFields = (
   const requireStoreUrl = options?.requireStoreUrl ?? true;
   const missing: string[] = [];
 
-  if (!getAuthorizationToken(merchant)) {
-    missing.push("zidAuthorizationToken");
+  if (!merchant.zidAccessToken) {
+    missing.push("zidAccessToken");
   }
   if (!merchant.zidManagerToken) {
     missing.push("zidManagerToken");

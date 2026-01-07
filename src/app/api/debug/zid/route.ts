@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { zidListCategories, zidListProducts } from "@/lib/services/zidApi";
 import { ensureZidAccessToken } from "@/lib/services/zid.service";
+import {
+  getMissingZidConnectionFields,
+} from "@/lib/zid/isZidConnected";
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
@@ -86,9 +89,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Merchant not found" }, { status: 404 });
   }
 
-  if (!merchant.zidAccessToken || !merchant.zidStoreId || !merchant.zidManagerToken) {
+  const missingFields = getMissingZidConnectionFields(merchant);
+  if (missingFields.length > 0) {
     return NextResponse.json(
-      { error: "Zid credentials missing" },
+      { error: "Zid credentials missing", missingFields },
       { status: 400 }
     );
   }

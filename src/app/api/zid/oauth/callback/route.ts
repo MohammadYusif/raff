@@ -19,6 +19,7 @@ import { verifyOAuthState } from "@/lib/platform/oauth";
 import { ZidService } from "@/lib/services/zid.service";
 import { createRegistrationToken } from "@/lib/registrationToken";
 import { getZidRedirectUri } from "@/lib/zid/getZidRedirectUri";
+import { isZidConnected } from "@/lib/zid/isZidConnected";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
@@ -78,6 +79,36 @@ const redirectWithStatus = (
   return NextResponse.redirect(url);
 };
 
+const logZidOAuthSaved = (params: {
+  merchantId: string;
+  storeId: string | null;
+  storeUrl: string | null;
+  accessToken: string | null;
+  managerToken: string | null;
+  refreshToken: string | null;
+  stateVerified: boolean;
+}) => {
+  const connected = isZidConnected({
+    zidStoreId: params.storeId,
+    zidStoreUrl: params.storeUrl,
+    zidAccessToken: params.accessToken,
+    zidManagerToken: params.managerToken,
+  });
+  console.info("[zid-oauth] tokens saved", {
+    merchantId: params.merchantId,
+    connected,
+    stateVerified: params.stateVerified,
+    hasStoreId: Boolean(params.storeId),
+    hasStoreUrl: Boolean(params.storeUrl),
+    hasAccessToken: Boolean(params.accessToken),
+    accessTokenLength: params.accessToken?.length ?? 0,
+    hasManagerToken: Boolean(params.managerToken),
+    managerTokenLength: params.managerToken?.length ?? 0,
+    hasRefreshToken: Boolean(params.refreshToken),
+    refreshTokenLength: params.refreshToken?.length ?? 0,
+  });
+};
+
 export async function GET(request: NextRequest) {
   const config = getZidConfig();
   const code = request.nextUrl.searchParams.get("code");
@@ -132,6 +163,7 @@ async function handleJoinFlow(
   if (!cookieState || cookieState !== state) {
     return redirectWithStatus(config, "error");
   }
+  const stateVerified = true;
 
   // Exchange code for tokens
   const tokenBody = new URLSearchParams({
@@ -226,6 +258,15 @@ async function handleJoinFlow(
         zidStoreUrl: storeUrl || undefined,
       },
     });
+    logZidOAuthSaved({
+      merchantId: existingMerchant.id,
+      storeId: zidStoreId,
+      storeUrl,
+      accessToken: authorizationToken,
+      managerToken,
+      refreshToken,
+      stateVerified,
+    });
 
     // Try to register webhooks
     try {
@@ -284,6 +325,15 @@ async function handleJoinFlow(
 
     return { user, merchant };
   });
+  logZidOAuthSaved({
+    merchantId: merchant.id,
+    storeId: zidStoreId,
+    storeUrl,
+    accessToken: authorizationToken,
+    managerToken,
+    refreshToken,
+    stateVerified,
+  });
 
   // Try to register webhooks
   try {
@@ -326,11 +376,18 @@ async function handleRegularFlow(
   if (!cookieState || cookieState !== state) {
     return redirectWithStatus(config, "error");
   }
+  const stateVerified = true;
 
   const secret = process.env.NEXTAUTH_SECRET || config.clientSecret;
-  const payload = verifyOAuthState<{ merchantId: string }>(state, secret);
+  const payload = verifyOAuthState<{ merchantId: string; platform?: string }>(
+    state,
+    secret
+  );
 
   if (!payload?.merchantId) {
+    return redirectWithStatus(config, "error");
+  }
+  if (payload.platform && payload.platform !== "zid") {
     return redirectWithStatus(config, "error");
   }
 
@@ -420,6 +477,15 @@ async function handleRegularFlow(
       zidTokenExpiry: tokenExpiry,
       zidManagerToken: managerToken,
     },
+  });
+  logZidOAuthSaved({
+    merchantId: payload.merchantId,
+    storeId: zidStoreId,
+    storeUrl,
+    accessToken: authorizationToken,
+    managerToken,
+    refreshToken,
+    stateVerified,
   });
 
   try {
