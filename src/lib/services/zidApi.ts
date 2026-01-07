@@ -65,12 +65,16 @@ const buildZidHeaders = (
   merchant: ZidMerchantHeaders,
   options?: ZidHeaderOptions
 ): Record<string, string> => {
-  const accessToken = requireValue(merchant.zidAccessToken, "access token");
+  const accessToken = requireValue(
+    merchant.zidAccessToken,
+    "authorization token"
+  );
   const storeId = requireValue(merchant.zidStoreId, "store id");
 
   const headers: Record<string, string> = {
     Authorization: `Bearer ${accessToken}`,
     Accept: "application/json",
+    "Content-Type": "application/json",
     "Store-Id": String(storeId),
   };
 
@@ -79,10 +83,7 @@ const buildZidHeaders = (
   }
 
   if (options?.role === "Manager") {
-    const managerToken = requireValue(
-      merchant.zidManagerToken,
-      "manager token"
-    );
+    const managerToken = requireValue(merchant.zidManagerToken, "manager token");
     headers["X-Manager-Token"] = managerToken;
   }
 

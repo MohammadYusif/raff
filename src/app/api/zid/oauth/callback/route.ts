@@ -21,6 +21,57 @@ import { createRegistrationToken } from "@/lib/registrationToken";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
+const tokenString = (value: unknown): string | null =>
+  typeof value === "string" ? value : null;
+
+const toStringOrNull = (value: unknown): string | null => {
+  if (typeof value === "string") return value;
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return String(value);
+  }
+  return null;
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const extractZidTokens = (tokenData: Record<string, unknown>) => {
+  const authorizationToken =
+    tokenString(tokenData.authorization) ??
+    tokenString(tokenData.Authorization) ??
+    tokenString(tokenData.authorization_token) ??
+    tokenString(tokenData.authorizationToken);
+  const managerToken =
+    tokenString(tokenData.access_token) ??
+    tokenString(tokenData.accessToken);
+  const refreshToken =
+    tokenString(tokenData.refresh_token) ??
+    tokenString(tokenData.refreshToken);
+  const expiresRaw = tokenData.expires_in;
+  const expiresIn =
+    typeof expiresRaw === "number"
+      ? expiresRaw
+      : typeof expiresRaw === "string"
+      ? Number(expiresRaw)
+      : null;
+
+  return {
+    authorizationToken,
+    managerToken,
+    refreshToken,
+    expiresIn: Number.isFinite(expiresIn) ? expiresIn : null,
+  };
+};
+
+const redirectWithStatus = (
+  config: ReturnType<typeof getZidConfig>,
+  status: "connected" | "error"
+) => {
+  const url = new URL("/merchant/integrations", config.appBaseUrl);
+  url.searchParams.set("zid", status);
+  return NextResponse.redirect(url);
+};
+
 export async function GET(request: NextRequest) {
   const config = getZidConfig();
   const code = request.nextUrl.searchParams.get("code");
@@ -31,19 +82,26 @@ export async function GET(request: NextRequest) {
     request.cookies.get("raff_zid_join_flow")?.value === "true";
 
   if (!code || !state) {
-    return NextResponse.json(
-      { error: "Missing OAuth code or state" },
-      { status: 400 }
-    );
+    return redirectWithStatus(config, "error");
   }
 
   // Handle join flow (new merchant registration)
   if (isJoinFlow) {
-    return handleJoinFlow(request, code, state, config);
+    try {
+      return await handleJoinFlow(request, code, state, config);
+    } catch (error) {
+      console.error("Zid join flow failed:", error);
+      return redirectWithStatus(config, "error");
+    }
   }
 
   // Handle regular flow (existing merchant connecting store)
-  return handleRegularFlow(request, code, state, config);
+  try {
+    return await handleRegularFlow(request, code, state, config);
+  } catch (error) {
+    console.error("Zid OAuth callback failed:", error);
+    return redirectWithStatus(config, "error");
+  }
 }
 
 /**
@@ -58,7 +116,7 @@ async function handleJoinFlow(
   const cookieState = request.cookies.get("raff_zid_join_state")?.value;
 
   if (!cookieState || cookieState !== state) {
-    return NextResponse.json({ error: "Invalid OAuth state" }, { status: 400 });
+    return redirectWithStatus(config, "error");
   }
 
   // Exchange code for tokens
@@ -77,34 +135,28 @@ async function handleJoinFlow(
   });
 
   if (!tokenResponse.ok) {
-    return NextResponse.json(
-      { error: "Failed to exchange Zid OAuth code" },
-      { status: 400 }
-    );
+    return redirectWithStatus(config, "error");
   }
 
-  const tokenData = await tokenResponse.json();
-  const accessToken = tokenData.access_token as string | undefined;
-  const refreshToken = tokenData.refresh_token as string | undefined;
-  const expiresIn = tokenData.expires_in as number | undefined;
-  const tokenExpiry = expiresIn
-    ? new Date(Date.now() + expiresIn * 1000)
-    : null;
-  const managerToken =
-    tokenData.manager_token ||
-    tokenData.managerToken ||
-    tokenData.x_manager_token ||
-    null;
+  const tokenData = (await tokenResponse.json()) as Record<string, unknown>;
+  const { authorizationToken, managerToken, refreshToken, expiresIn } =
+    extractZidTokens(tokenData);
+  const tokenExpiry =
+    expiresIn && expiresIn > 0 ? new Date(Date.now() + expiresIn * 1000) : null;
+  const storePayload = isRecord(tokenData.store) ? tokenData.store : null;
   let zidStoreId =
-    tokenData.store_id || tokenData.storeId || tokenData.store?.id || null;
+    toStringOrNull(tokenData.store_id) ??
+    toStringOrNull(tokenData.storeId) ??
+    (storePayload ? toStringOrNull(storePayload.id) : null) ??
+    null;
   const zidStoreUrl =
-    tokenData.store_url || tokenData.storeUrl || tokenData.store?.url || null;
+    toStringOrNull(tokenData.store_url) ??
+    toStringOrNull(tokenData.storeUrl) ??
+    (storePayload ? toStringOrNull(storePayload.url) : null) ??
+    null;
 
-  if (!accessToken) {
-    return NextResponse.json(
-      { error: "Zid access token missing" },
-      { status: 400 }
-    );
+  if (!authorizationToken || !managerToken) {
+    return redirectWithStatus(config, "error");
   }
 
   // Fetch store information from Zid API
@@ -114,7 +166,7 @@ async function handleJoinFlow(
 
   try {
     const service = new ZidService({
-      accessToken,
+      accessToken: authorizationToken,
       storeId: zidStoreId,
       managerToken,
     });
@@ -153,8 +205,8 @@ async function handleJoinFlow(
     await prisma.merchant.update({
       where: { id: existingMerchant.id },
       data: {
-        zidAccessToken: accessToken,
-        zidRefreshToken: refreshToken || null,
+        zidAccessToken: authorizationToken,
+        zidRefreshToken: refreshToken,
         zidTokenExpiry: tokenExpiry,
         zidManagerToken: managerToken,
         zidStoreUrl: storeUrl || undefined,
@@ -163,7 +215,10 @@ async function handleJoinFlow(
 
     // Try to register webhooks
     try {
-      await registerZidWebhooks({ accessToken, managerToken });
+      await registerZidWebhooks({
+        accessToken: authorizationToken,
+        managerToken,
+      });
     } catch (error) {
       console.error("Zid webhook registration failed:", error);
     }
@@ -206,8 +261,8 @@ async function handleJoinFlow(
         isActive: true,
         zidStoreId: zidStoreId || undefined,
         zidStoreUrl: storeUrl || undefined,
-        zidAccessToken: accessToken,
-        zidRefreshToken: refreshToken || null,
+        zidAccessToken: authorizationToken,
+        zidRefreshToken: refreshToken,
         zidTokenExpiry: tokenExpiry,
         zidManagerToken: managerToken,
       },
@@ -218,7 +273,10 @@ async function handleJoinFlow(
 
   // Try to register webhooks
   try {
-    await registerZidWebhooks({ accessToken, managerToken });
+    await registerZidWebhooks({
+      accessToken: authorizationToken,
+      managerToken,
+    });
   } catch (error) {
     console.error("Zid webhook registration failed:", error);
   }
@@ -252,14 +310,14 @@ async function handleRegularFlow(
   const cookieState = request.cookies.get("raff_zid_oauth_state")?.value;
 
   if (!cookieState || cookieState !== state) {
-    return NextResponse.json({ error: "Invalid OAuth state" }, { status: 400 });
+    return redirectWithStatus(config, "error");
   }
 
   const secret = process.env.NEXTAUTH_SECRET || config.clientSecret;
   const payload = verifyOAuthState<{ merchantId: string }>(state, secret);
 
   if (!payload?.merchantId) {
-    return NextResponse.json({ error: "Invalid OAuth state" }, { status: 400 });
+    return redirectWithStatus(config, "error");
   }
 
   const tokenBody = new URLSearchParams({
@@ -277,34 +335,28 @@ async function handleRegularFlow(
   });
 
   if (!tokenResponse.ok) {
-    return NextResponse.json(
-      { error: "Failed to exchange Zid OAuth code" },
-      { status: 400 }
-    );
+    return redirectWithStatus(config, "error");
   }
 
-  const tokenData = await tokenResponse.json();
-  const accessToken = tokenData.access_token as string | undefined;
-  const refreshToken = tokenData.refresh_token as string | undefined;
-  const expiresIn = tokenData.expires_in as number | undefined;
-  const tokenExpiry = expiresIn
-    ? new Date(Date.now() + expiresIn * 1000)
-    : null;
-  const managerToken =
-    tokenData.manager_token ||
-    tokenData.managerToken ||
-    tokenData.x_manager_token ||
-    null;
+  const tokenData = (await tokenResponse.json()) as Record<string, unknown>;
+  const { authorizationToken, managerToken, refreshToken, expiresIn } =
+    extractZidTokens(tokenData);
+  const tokenExpiry =
+    expiresIn && expiresIn > 0 ? new Date(Date.now() + expiresIn * 1000) : null;
+  const storePayload = isRecord(tokenData.store) ? tokenData.store : null;
   let zidStoreId =
-    tokenData.store_id || tokenData.storeId || tokenData.store?.id || null;
+    toStringOrNull(tokenData.store_id) ??
+    toStringOrNull(tokenData.storeId) ??
+    (storePayload ? toStringOrNull(storePayload.id) : null) ??
+    null;
   const zidStoreUrl =
-    tokenData.store_url || tokenData.storeUrl || tokenData.store?.url || null;
+    toStringOrNull(tokenData.store_url) ??
+    toStringOrNull(tokenData.storeUrl) ??
+    (storePayload ? toStringOrNull(storePayload.url) : null) ??
+    null;
 
-  if (!accessToken) {
-    return NextResponse.json(
-      { error: "Zid access token missing" },
-      { status: 400 }
-    );
+  if (!authorizationToken || !managerToken) {
+    return redirectWithStatus(config, "error");
   }
 
   const merchant = await prisma.merchant.findUnique({
@@ -313,24 +365,21 @@ async function handleRegularFlow(
   });
 
   if (!merchant) {
-    return NextResponse.json({ error: "Merchant not found" }, { status: 404 });
+    return redirectWithStatus(config, "error");
   }
 
   if (
     merchant.status === MerchantStatus.REJECTED ||
     merchant.status === MerchantStatus.SUSPENDED
   ) {
-    return NextResponse.json(
-      { error: "Merchant is disabled" },
-      { status: 403 }
-    );
+    return redirectWithStatus(config, "error");
   }
 
   let storeUrl = normalizeStoreUrl(zidStoreUrl);
 
   try {
     const service = new ZidService({
-      accessToken,
+      accessToken: authorizationToken,
       storeId: zidStoreId,
       managerToken,
     });
@@ -352,15 +401,18 @@ async function handleRegularFlow(
     data: {
       zidStoreId: zidStoreId || undefined,
       zidStoreUrl: storeUrl || undefined,
-      zidAccessToken: accessToken,
-      zidRefreshToken: refreshToken || null,
+      zidAccessToken: authorizationToken,
+      zidRefreshToken: refreshToken,
       zidTokenExpiry: tokenExpiry,
       zidManagerToken: managerToken,
     },
   });
 
   try {
-    await registerZidWebhooks({ accessToken, managerToken });
+    await registerZidWebhooks({
+      accessToken: authorizationToken,
+      managerToken,
+    });
   } catch (error) {
     console.error("Zid webhook registration failed:", error);
   }

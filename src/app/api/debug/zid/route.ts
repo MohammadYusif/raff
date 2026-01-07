@@ -94,18 +94,26 @@ export async function GET(request: NextRequest) {
   }
 
   const tokens = await ensureZidAccessToken(merchant);
-  const accessToken = tokens.accessToken || merchant.zidAccessToken;
-  if (!accessToken) {
+  const authorizationToken =
+    tokens.authorizationToken ?? merchant.zidAccessToken;
+  const managerToken = tokens.managerToken ?? merchant.zidManagerToken;
+  if (!authorizationToken) {
     return NextResponse.json(
-      { error: "Zid access token missing" },
+      { error: "Zid authorization token missing" },
+      { status: 400 }
+    );
+  }
+  if (!managerToken) {
+    return NextResponse.json(
+      { error: "Zid manager token missing" },
       { status: 400 }
     );
   }
 
   const headers = {
     id: merchant.id,
-    zidAccessToken: accessToken,
-    zidManagerToken: merchant.zidManagerToken,
+    zidAccessToken: authorizationToken,
+    zidManagerToken: managerToken,
     zidStoreId: merchant.zidStoreId,
   };
 

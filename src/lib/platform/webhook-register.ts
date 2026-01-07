@@ -114,7 +114,8 @@ export async function registerZidWebhooks(params: {
   for (const event of config.webhook.events) {
     const payload = {
       event, // Single event
-      target_url: callbackUrl,
+      callback_url: callbackUrl,
+      ...(config.webhook.secret ? { secret: config.webhook.secret } : {}),
       original_id: config.appId,
       subscriber: config.appId,
       // Optional: Add conditions if needed

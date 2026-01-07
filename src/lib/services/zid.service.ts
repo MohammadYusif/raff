@@ -21,6 +21,13 @@ export type ZidMerchantAuth = {
   zidStoreUrl: string | null;
 };
 
+export type ZidTokenState = {
+  authorizationToken: string | null;
+  managerToken: string | null;
+  refreshToken: string | null;
+  tokenExpiry: Date | null;
+};
+
 export class ZidService {
   private baseUrl: string;
   private accessToken: string;
@@ -39,6 +46,7 @@ export class ZidService {
     const headers: Record<string, string> = {
       Authorization: `Bearer ${this.accessToken}`,
       Accept: "application/json",
+      "Content-Type": "application/json",
     };
 
     if (this.storeId) {
@@ -81,8 +89,9 @@ export class ZidService {
    * Refresh access token
    */
   static async refreshToken(refreshToken: string): Promise<{
-    accessToken: string;
-    refreshToken: string;
+    authorizationToken: string | null;
+    managerToken: string | null;
+    refreshToken: string | null;
     expiresIn: number;
   }> {
     const zidConfig = getZidConfig();
@@ -106,11 +115,29 @@ export class ZidService {
     }
 
     const data = await response.json();
+    const expiresRaw = data.expires_in;
+    const expiresIn =
+      typeof expiresRaw === "number"
+        ? expiresRaw
+        : typeof expiresRaw === "string"
+        ? Number(expiresRaw)
+        : null;
+
+    const expiresInValue =
+      typeof expiresIn === "number" && Number.isFinite(expiresIn)
+        ? expiresIn
+        : 0;
 
     return {
-      accessToken: data.access_token,
-      refreshToken: data.refresh_token,
-      expiresIn: data.expires_in,
+      authorizationToken:
+        data.authorization ||
+        data.Authorization ||
+        data.authorization_token ||
+        data.authorizationToken ||
+        null,
+      managerToken: data.access_token || data.accessToken || null,
+      refreshToken: data.refresh_token || data.refreshToken || null,
+      expiresIn: expiresInValue,
     };
   }
 }
@@ -123,7 +150,8 @@ function isTokenExpired(tokenExpiry: Date | null): boolean {
 export async function ensureZidAccessToken(merchant: ZidMerchantAuth) {
   if (!isTokenExpired(merchant.zidTokenExpiry)) {
     return {
-      accessToken: merchant.zidAccessToken,
+      authorizationToken: merchant.zidAccessToken,
+      managerToken: merchant.zidManagerToken,
       refreshToken: merchant.zidRefreshToken,
       tokenExpiry: merchant.zidTokenExpiry,
     };
@@ -135,19 +163,25 @@ export async function ensureZidAccessToken(merchant: ZidMerchantAuth) {
 
   const refreshed = await ZidService.refreshToken(merchant.zidRefreshToken);
   const tokenExpiry = new Date(Date.now() + refreshed.expiresIn * 1000);
+  const authorizationToken =
+    refreshed.authorizationToken ?? merchant.zidAccessToken;
+  const managerToken = refreshed.managerToken ?? merchant.zidManagerToken;
+  const refreshToken = refreshed.refreshToken ?? merchant.zidRefreshToken;
 
   await prisma.merchant.update({
     where: { id: merchant.id },
     data: {
-      zidAccessToken: refreshed.accessToken,
-      zidRefreshToken: refreshed.refreshToken,
+      zidAccessToken: authorizationToken,
+      zidManagerToken: managerToken,
+      zidRefreshToken: refreshToken,
       zidTokenExpiry: tokenExpiry,
     },
   });
 
   return {
-    accessToken: refreshed.accessToken,
-    refreshToken: refreshed.refreshToken,
+    authorizationToken,
+    managerToken,
+    refreshToken,
     tokenExpiry,
   };
 }

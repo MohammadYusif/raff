@@ -571,7 +571,7 @@ const getNextPage = (nextUrl: string | null): number | null => {
 
 const buildMerchantHeaders = (merchant: ZidMerchantAuth): ZidMerchantHeaders => {
   if (!merchant.zidAccessToken) {
-    throw new Error("Zid access token missing");
+    throw new Error("Zid authorization token missing");
   }
   if (!merchant.zidStoreId) {
     throw new Error("Zid store id missing");
@@ -614,14 +614,20 @@ export async function syncZidCategories(
 ): Promise<{ createdCount: number; updatedCount: number }> {
   const merchant = await loadMerchant(merchantId);
   const tokens = await ensureZidAccessToken(merchant);
-  const accessToken = tokens.accessToken || merchant.zidAccessToken;
-  if (!accessToken) {
-    throw new Error("Zid access token missing");
+  const authorizationToken =
+    tokens.authorizationToken ?? merchant.zidAccessToken;
+  const managerToken = tokens.managerToken ?? merchant.zidManagerToken;
+  if (!authorizationToken) {
+    throw new Error("Zid authorization token missing");
+  }
+  if (!managerToken) {
+    throw new Error("Zid manager token missing");
   }
 
   const headers = buildMerchantHeaders({
     ...merchant,
-    zidAccessToken: accessToken,
+    zidAccessToken: authorizationToken,
+    zidManagerToken: managerToken,
   });
 
   const raw = await zidListCategories(headers);
@@ -672,14 +678,20 @@ export async function syncZidProducts(
 }> {
   const merchant = await loadMerchant(merchantId);
   const tokens = await ensureZidAccessToken(merchant);
-  const accessToken = tokens.accessToken || merchant.zidAccessToken;
-  if (!accessToken) {
-    throw new Error("Zid access token missing");
+  const authorizationToken =
+    tokens.authorizationToken ?? merchant.zidAccessToken;
+  const managerToken = tokens.managerToken ?? merchant.zidManagerToken;
+  if (!authorizationToken) {
+    throw new Error("Zid authorization token missing");
+  }
+  if (!managerToken) {
+    throw new Error("Zid manager token missing");
   }
 
   const headers = buildMerchantHeaders({
     ...merchant,
-    zidAccessToken: accessToken,
+    zidAccessToken: authorizationToken,
+    zidManagerToken: managerToken,
   });
 
   const categoryCache = new Map<string, string>();
@@ -747,14 +759,20 @@ export async function syncZidProductById(
   productId: string
 ): Promise<{ created: boolean; updated: boolean }> {
   const tokens = await ensureZidAccessToken(merchant);
-  const accessToken = tokens.accessToken || merchant.zidAccessToken;
-  if (!accessToken) {
-    throw new Error("Zid access token missing");
+  const authorizationToken =
+    tokens.authorizationToken ?? merchant.zidAccessToken;
+  const managerToken = tokens.managerToken ?? merchant.zidManagerToken;
+  if (!authorizationToken) {
+    throw new Error("Zid authorization token missing");
+  }
+  if (!managerToken) {
+    throw new Error("Zid manager token missing");
   }
 
   const headers = buildMerchantHeaders({
     ...merchant,
-    zidAccessToken: accessToken,
+    zidAccessToken: authorizationToken,
+    zidManagerToken: managerToken,
   });
 
   const raw = await zidRetrieveProduct(headers, productId, { role: "Manager" });
