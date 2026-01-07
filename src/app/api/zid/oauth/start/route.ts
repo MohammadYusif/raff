@@ -42,10 +42,19 @@ export async function GET(request: NextRequest) {
     secret
   );
 
+  const redirectUri = getZidRedirectUri(request);
+  console.info("[zid-oauth-start] initiating OAuth", {
+    merchantId: merchant.id,
+    redirectUri,
+    configuredRedirectUri: config.redirectUri,
+    clientId: config.clientId,
+    scopes: config.scopes,
+  });
+
   const url = new URL(config.authUrl);
   url.searchParams.set("response_type", "code");
   url.searchParams.set("client_id", config.clientId);
-  url.searchParams.set("redirect_uri", getZidRedirectUri(request));
+  url.searchParams.set("redirect_uri", redirectUri);
   if (config.scopes.length) {
     url.searchParams.set("scope", config.scopes.join(" "));
   }
