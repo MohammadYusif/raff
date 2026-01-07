@@ -25,7 +25,8 @@ export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
   // Await params before using
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = normalizeSlug(rawSlug);
 
   try {
     const cookieStore = await cookies();
@@ -81,8 +82,8 @@ export async function generateMetadata({
 
 export default async function ProductPage({ params }: ProductPageProps) {
   // Await params before using
-  const { slug } = await params;
-
+  const { slug: rawSlug } = await params;
+  const slug = normalizeSlug(rawSlug);
   let product;
 
   try {
@@ -126,4 +127,19 @@ export default async function ProductPage({ params }: ProductPageProps) {
       <ProductDetailContent product={product} />
     </PageTransition>
   );
+}
+
+function normalizeSlug(raw: string): string {
+  const cleaned = raw.trim().replaceAll("+", "%20");
+  const once = safeDecode(cleaned);
+  const twice = safeDecode(once);
+  return twice.trim().normalize("NFC");
+}
+
+function safeDecode(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
 }
