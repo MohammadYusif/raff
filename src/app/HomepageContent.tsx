@@ -437,10 +437,7 @@ export function HomepageContent({
                             return (
                               <Link
                                 key={product.id}
-                                href={{
-                                  pathname: "/products/[slug]",
-                                  query: { slug: product.slug },
-                                }}
+                                href={`/products/${encodeURIComponent(product.slug)}`}
                                 className="group/product"
                               >
                                 <div className="overflow-hidden rounded-xl bg-raff-neutral-100 transition-all duration-300 hover:shadow-md">

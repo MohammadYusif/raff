@@ -10,6 +10,14 @@ export async function GET(
     const { slug: rawSlug } = await params;
     const slug = normalizeSlug(rawSlug);
     const isDev = process.env.NODE_ENV !== "production";
+    if (isDev) {
+      console.debug("[products] slug-debug", {
+        rawSlug,
+        normalizedSlug: slug,
+        rawLen: rawSlug.length,
+        normalizedLen: slug.length,
+      });
+    }
 
     const product = await prisma.product.findUnique({
       where: { slug },

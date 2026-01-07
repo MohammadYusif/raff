@@ -84,11 +84,8 @@ export function ProductCard({
     : null;
   const resolvedImage =
     product.imageUrl || product.thumbnail || product.images?.[0] || null;
-  const productPath = `/products/${product.slug}`;
-  const productHref = {
-    pathname: "/products/[slug]",
-    query: { slug: product.slug },
-  };
+  const productPath = `/products/${encodeURIComponent(product.slug)}`;
+  const productHref = productPath;
 
   const hasDiscount = originalPrice !== null && originalPrice > price;
   const discountPercentage = hasDiscount
