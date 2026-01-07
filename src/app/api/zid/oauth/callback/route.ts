@@ -110,23 +110,58 @@ const logZidOAuthSaved = (params: {
 };
 
 export async function GET(request: NextRequest) {
+  // TRIPWIRE: Log immediately to confirm endpoint is reached
+  console.info("[zid-oauth-callback] TRIPWIRE - Endpoint hit", {
+    timestamp: new Date().toISOString(),
+    url: request.url,
+  });
+
   const config = getZidConfig();
   const code = request.nextUrl.searchParams.get("code");
   const state = request.nextUrl.searchParams.get("state");
+  const error = request.nextUrl.searchParams.get("error");
+  const errorDescription = request.nextUrl.searchParams.get("error_description");
 
   // Check if this is a join flow or regular flow
   const joinFlowCookie = request.cookies.get("raff_zid_join_flow")?.value;
   const joinStateCookie = request.cookies.get("raff_zid_join_state")?.value;
+  const regularStateCookie = request.cookies.get("raff_zid_oauth_state")?.value;
   const isJoinFlow = joinFlowCookie === "true";
 
   console.info("[zid-oauth-callback] received", {
+    url: request.url,
     hasCode: Boolean(code),
+    codeLength: code?.length,
     hasState: Boolean(state),
+    stateLength: state?.length,
+    hasError: Boolean(error),
+    error,
+    errorDescription,
     isJoinFlow,
     hasJoinFlowCookie: Boolean(joinFlowCookie),
+    joinFlowCookieValue: joinFlowCookie,
     hasJoinStateCookie: Boolean(joinStateCookie),
-    cookiesReceived: request.cookies.getAll().map((c) => c.name),
+    hasRegularStateCookie: Boolean(regularStateCookie),
+    cookiesReceived: request.cookies.getAll().map((c) => ({
+      name: c.name,
+      hasValue: Boolean(c.value),
+    })),
+    headers: {
+      host: request.headers.get("host"),
+      origin: request.headers.get("origin"),
+      referer: request.headers.get("referer"),
+      userAgent: request.headers.get("user-agent"),
+    },
   });
+
+  // If Zid returned an error, log it and redirect
+  if (error) {
+    console.error("[zid-oauth-callback] Zid returned error", {
+      error,
+      errorDescription,
+    });
+    return redirectWithStatus(config, "error", error);
+  }
 
   if (!code || !state) {
     console.error("[zid-oauth-callback] missing code or state");
