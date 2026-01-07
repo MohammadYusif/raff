@@ -13,6 +13,22 @@ function appendTokenToUrl(url: string, token?: string): string {
   return parsed.toString();
 }
 
+function redactTokenFromUrl(url: string): string {
+  const parsed = new URL(url);
+  if (parsed.searchParams.has("token")) {
+    parsed.searchParams.set("token", "[redacted]");
+  }
+  return parsed.toString();
+}
+
+function ensureHttpsUrl(url: string): string {
+  const parsed = new URL(url);
+  if (parsed.protocol !== "https:") {
+    throw new Error("Zid webhook target_url must be https");
+  }
+  return parsed.toString();
+}
+
 async function postJson(
   url: string,
   headers: Record<string, string>,
@@ -75,10 +91,18 @@ export async function registerZidWebhooks(params: {
   managerToken?: string | null;
 }): Promise<RegisterResult> {
   const config = getZidConfig();
-  const callbackUrl = appendTokenToUrl(
-    config.webhook.callbackUrl || `${config.appBaseUrl}/api/zid/webhook`,
-    process.env.ZID_WEBHOOK_TOKEN
-  );
+  let targetUrl: string;
+  try {
+    const baseUrl =
+      config.webhook.callbackUrl || `${config.appBaseUrl}/api/zid/webhook`;
+    targetUrl = ensureHttpsUrl(
+      appendTokenToUrl(baseUrl, process.env.ZID_WEBHOOK_TOKEN)
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Invalid webhook URL";
+    return { status: "skipped", reason: message };
+  }
+  const logTargetUrl = redactTokenFromUrl(targetUrl);
 
   // Validation
   if (!config.webhook.createUrl) {
@@ -114,7 +138,7 @@ export async function registerZidWebhooks(params: {
   for (const event of config.webhook.events) {
     const payload = {
       event, // Single event
-      callback_url: callbackUrl,
+      target_url: targetUrl,
       ...(config.webhook.secret ? { secret: config.webhook.secret } : {}),
       original_id: config.appId,
       subscriber: config.appId,
@@ -123,7 +147,25 @@ export async function registerZidWebhooks(params: {
     };
 
     try {
-      await postJson(config.webhook.createUrl, headers, payload);
+      const response = await fetch(config.webhook.createUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...headers,
+        },
+        body: JSON.stringify(payload),
+      });
+      console.info("[zid-webhook] register", {
+        event,
+        targetUrl: logTargetUrl,
+        status: response.status,
+      });
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(
+          `Webhook registration failed: ${response.status} - ${text}`
+        );
+      }
       results.push({ event, success: true });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";

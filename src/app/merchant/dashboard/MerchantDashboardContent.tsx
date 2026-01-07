@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   Container,
   Card,
@@ -243,6 +244,7 @@ export function MerchantDashboardContent() {
   const t = useTranslations("merchantDashboard");
   const integrationsT = useTranslations("merchantIntegrations");
   const locale = useLocale();
+  const router = useRouter();
   const { data: session, status: sessionStatus } = useSession();
   const merchantId = session?.user?.merchantId ?? null;
   const { profile, loading: profileLoading } = useMerchantProfile(
@@ -326,6 +328,27 @@ export function MerchantDashboardContent() {
       return;
     }
     toast.error(result?.error || t("quickActions.syncError"));
+  };
+
+  const handleViewAnalytics = () => {
+    router.push("/merchant/analytics");
+  };
+
+  const handleSettings = () => {
+    router.push("/merchant/settings");
+  };
+
+  const handleViewStore = () => {
+    const storeUrl = profile?.storeInfo.storeUrl;
+    if (storeUrl) {
+      window.open(storeUrl, "_blank", "noopener,noreferrer");
+      return;
+    }
+    if (merchantId) {
+      router.push(`/merchants/${merchantId}`);
+      return;
+    }
+    router.push("/");
   };
 
   if (sessionStatus === "loading" || profileLoading) {
@@ -661,15 +684,27 @@ export function MerchantDashboardContent() {
                         ? t("connectStore.connecting")
                         : t("quickActions.syncProducts")}
                     </AnimatedButton>
-                    <AnimatedButton variant="outline" className="justify-start gap-2">
+                    <AnimatedButton
+                      variant="outline"
+                      className="justify-start gap-2"
+                      onClick={handleViewAnalytics}
+                    >
                       <BarChart3 className="h-4 w-4" />
                       {t("quickActions.viewAnalytics")}
                     </AnimatedButton>
-                    <AnimatedButton variant="outline" className="justify-start gap-2">
+                    <AnimatedButton
+                      variant="outline"
+                      className="justify-start gap-2"
+                      onClick={handleSettings}
+                    >
                       <Settings className="h-4 w-4" />
                       {t("quickActions.settings")}
                     </AnimatedButton>
-                    <AnimatedButton variant="outline" className="justify-start gap-2">
+                    <AnimatedButton
+                      variant="outline"
+                      className="justify-start gap-2"
+                      onClick={handleViewStore}
+                    >
                       <ExternalLink className="h-4 w-4" />
                       {t("quickActions.viewStore")}
                     </AnimatedButton>
