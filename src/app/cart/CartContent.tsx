@@ -336,7 +336,12 @@ export function CartContent() {
                   >
                     <CardContent className="flex h-full flex-col p-0">
                       {/* Product Image */}
-                      <Link href={`/products/${encodeURIComponent(item.slug)}`}>
+                      <Link
+                        href={{
+                          pathname: "/products/[slug]",
+                          query: { slug: item.slug },
+                        }}
+                      >
                         <div className="relative aspect-square overflow-hidden bg-raff-neutral-100 transition-transform duration-300 group-hover:scale-105">
                           {item.image ? (
                             <Image
@@ -379,7 +384,12 @@ export function CartContent() {
                         )}
 
                         {/* Title */}
-                        <Link href={`/products/${encodeURIComponent(item.slug)}`}>
+                        <Link
+                          href={{
+                            pathname: "/products/[slug]",
+                            query: { slug: item.slug },
+                          }}
+                        >
                           <h3
                             className="line-clamp-2 text-base font-semibold text-raff-primary transition-colors group-hover:text-raff-accent"
                             dir={locale === "ar" ? "rtl" : "ltr"}

@@ -307,7 +307,12 @@ export function OrderHistoryContent() {
                             )}
                           </div>
                           <div className="flex-1">
-                            <Link href={`/products/${encodeURIComponent(order.product.slug)}`}>
+                            <Link
+                              href={{
+                                pathname: "/products/[slug]",
+                                query: { slug: order.product.slug },
+                              }}
+                            >
                               <h3 className="mb-1 font-semibold text-raff-primary transition-colors hover:text-raff-accent">
                                 {productTitle}
                               </h3>
@@ -401,7 +406,12 @@ export function OrderHistoryContent() {
                     {/* Actions */}
                     <div className="flex flex-col gap-3 sm:flex-row md:flex-col">
                       {order.product && (
-                        <Link href={`/products/${encodeURIComponent(order.product.slug)}`}>
+                        <Link
+                          href={{
+                            pathname: "/products/[slug]",
+                            query: { slug: order.product.slug },
+                          }}
+                        >
                           <AnimatedButton
                             variant="outline"
                             size="sm"

@@ -10,14 +10,6 @@ export async function GET(
     const { slug: rawSlug } = await params;
     const slug = normalizeSlug(rawSlug);
     const isDev = process.env.NODE_ENV !== "production";
-    if (isDev) {
-      console.debug("[products] slug-normalize", {
-        rawSlug,
-        decodedSlug: slug,
-        rawLen: rawSlug.length,
-        decodedLen: slug.length,
-      });
-    }
 
     const product = await prisma.product.findUnique({
       where: { slug },
@@ -60,23 +52,23 @@ export async function GET(
             zidProductId: true,
           },
         });
-        const matchedBy = fallback
-          ? fallback.sallaProductId === slug
-            ? "sallaProductId"
-            : fallback.zidProductId === slug
-              ? "zidProductId"
-              : null
-          : null;
-        console.debug("[products] slug-lookup", {
+
+        const contains = await prisma.product.findFirst({
+          where: { slug: { contains: "فستان" } },
+          select: { slug: true },
+        });
+
+        console.debug("[products] slug-debug", {
           requestedSlug: slug,
-          found: false,
           fallbackMatched: Boolean(fallback),
-          matchedBy,
           fallbackSlug: fallback?.slug ?? null,
+          containsCheck: contains?.slug ?? null,
         });
       }
+
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
+
     if (isDev) {
       console.debug("[products] slug-lookup", {
         requestedSlug: slug,
@@ -121,12 +113,16 @@ export async function GET(
 }
 
 function normalizeSlug(raw: string): string {
+  // 1) trim and handle "+" (rare but safe)
   const cleaned = raw.trim().replaceAll("+", "%20");
 
+  // 2) decode once
   const once = safeDecode(cleaned);
+
+  // 3) decode twice (fixes double-encoding from encodeURIComponent + Next/link/router)
   const twice = safeDecode(once);
 
-  // normalize unicode (important for Arabic)
+  // 4) normalize unicode (important for Arabic)
   return twice.trim().normalize("NFC");
 }
 

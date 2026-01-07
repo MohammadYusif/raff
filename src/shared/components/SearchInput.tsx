@@ -223,7 +223,7 @@ export function SearchInput({
   const handleSuggestionClick = (slug: string) => {
     setIsOpen(false);
     setQuery("");
-    router.push(`/products/${encodeURIComponent(slug)}`);
+    router.push(`/products/${slug}`);
   };
 
   const sizeClasses = {

@@ -84,7 +84,11 @@ export function ProductCard({
     : null;
   const resolvedImage =
     product.imageUrl || product.thumbnail || product.images?.[0] || null;
-  const productHref = `/products/${encodeURIComponent(product.slug)}`;
+  const productPath = `/products/${product.slug}`;
+  const productHref = {
+    pathname: "/products/[slug]",
+    query: { slug: product.slug },
+  };
 
   const hasDiscount = originalPrice !== null && originalPrice > price;
   const discountPercentage = hasDiscount
@@ -109,7 +113,7 @@ export function ProductCard({
       merchantNameAr: product.merchant.nameAr,
       categoryName: product.category?.name || null,
       categoryNameAr: product.category?.nameAr || null,
-      externalUrl: product.externalUrl || productHref,
+      externalUrl: product.externalUrl || productPath,
     });
 
     toast.success(locale === "ar" ? "تمت الإضافة إلى السلة" : "Added to cart", {

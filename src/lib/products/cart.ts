@@ -41,7 +41,7 @@ function getExternalUrl(product: ProductCartInput): string {
   );
 
   if (!storeUrl) {
-    return `/products/${encodeURIComponent(product.slug)}`;
+    return `/products/${product.slug}`;
   }
 
   const productId = isZid ? product.zidProductId : product.sallaProductId;

@@ -109,9 +109,7 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 z-50 w-64 transform bg-white shadow-lg transition-transform duration-300 lg:static lg:translate-x-0 ${
-          isRtl ? "end-0 lg:end-auto" : "start-0 lg:start-auto"
-        } ${
+        className={`fixed inset-y-0 start-0 z-50 w-64 transform bg-white shadow-lg transition-transform duration-300 lg:static lg:translate-x-0 ${
           sidebarOpen
             ? "translate-x-0"
             : isRtl
