@@ -162,6 +162,19 @@ export async function registerZidWebhooks(params: {
       });
       if (!response.ok) {
         const text = await response.text();
+
+        // Check if error is due to duplicate webhook (idempotency)
+        // Zid returns 400 with Arabic error message when limit is exceeded
+        const isDuplicate =
+          response.status === 400 &&
+          (text.includes("الحد الأقصى") || text.includes("وهو 1"));
+
+        if (isDuplicate) {
+          console.info(`[zid-webhook] ${event} already registered (idempotent)`);
+          results.push({ event, success: true });
+          continue;
+        }
+
         throw new Error(
           `Webhook registration failed: ${response.status} - ${text}`
         );

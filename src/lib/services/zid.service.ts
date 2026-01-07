@@ -70,14 +70,21 @@ export class ZidService {
     email: string;
     domain: string;
   } | null> {
-    const response = await fetchWithTimeout(
-      `${this.baseUrl}/managers/account/profile`,
-      {
-        headers: this.getHeaders(),
-      }
-    );
+    const endpoint = `${this.baseUrl}/managers/account/profile`;
+    const headers = this.getHeaders();
+
+    const response = await fetchWithTimeout(endpoint, { headers });
 
     if (!response.ok) {
+      // Debug logging without exposing tokens
+      console.error("[zid] fetchStoreProfile failed", {
+        endpoint: "/managers/account/profile",
+        status: response.status,
+        role: headers.Role || "none",
+        hasAuthorization: Boolean(headers.Authorization),
+        hasManagerToken: Boolean(headers["X-Manager-Token"]),
+        hasRoleHeader: Boolean(headers.Role),
+      });
       throw new Error(`Zid API error: ${response.status}`);
     }
 
