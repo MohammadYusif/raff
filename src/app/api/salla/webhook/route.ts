@@ -790,6 +790,7 @@ export async function POST(request: NextRequest) {
       await prisma.merchant.updateMany({
         where: { sallaStoreId: storeIdString },
         data: {
+          isActive: false,
           sallaAccessToken: null,
           sallaRefreshToken: null,
           sallaTokenExpiry: null,

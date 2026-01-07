@@ -137,6 +137,9 @@ export function MerchantProductsContent() {
   const t = useTranslations("merchantProducts");
   const locale = useLocale();
   const merchantId = session?.user?.merchantId;
+  const isAdmin = session?.user?.role === "ADMIN";
+  const isDev = process.env.NODE_ENV !== "production";
+  const canAdminResync = Boolean(merchantId) && (isAdmin || isDev);
 
   const localeKey = locale === "ar" ? "ar-SA" : "en-US";
   const numberFormatter = useMemo(
@@ -157,6 +160,7 @@ export function MerchantProductsContent() {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [resyncing, setResyncing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<
     "all" | "active" | "inactive" | "outOfStock"
@@ -232,6 +236,42 @@ export function MerchantProductsContent() {
     toast.error(result?.error || t("syncError"));
   };
 
+  const handleAdminResync = async () => {
+    if (!merchantId || !canAdminResync) return;
+    const input = window.prompt(t("adminResyncPrompt"), "30");
+    if (input === null) return;
+    const trimmed = input.trim();
+    const parsed = trimmed ? Number(trimmed) : Number.NaN;
+    const ordersBackfillDays =
+      Number.isFinite(parsed) && parsed > 0 ? Math.trunc(parsed) : null;
+
+    try {
+      setResyncing(true);
+      const response = await fetch("/api/admin/merchant-resync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          merchantId,
+          ordersBackfillDays,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.message || data?.error || t("adminResyncError"));
+      }
+
+      toast.success(t("adminResyncSuccess"));
+      await fetchProducts();
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : t("adminResyncError");
+      toast.error(message);
+    } finally {
+      setResyncing(false);
+    }
+  };
+
   const filteredProducts = products
     .filter((product) => {
       // Filter by status
@@ -280,14 +320,27 @@ export function MerchantProductsContent() {
           </h1>
           <p className="text-raff-neutral-600">{t("subtitle")}</p>
         </div>
-        <AnimatedButton
-          onClick={handleSync}
-          disabled={syncing || loading}
-          className="gap-2"
-        >
-          <RefreshCw className={`h-4 w-4 ${syncing ? "animate-spin" : ""}`} />
-          {syncing ? t("syncing") : t("syncNow")}
-        </AnimatedButton>
+        <div className="flex flex-wrap gap-3">
+          <AnimatedButton
+            onClick={handleSync}
+            disabled={syncing || loading || resyncing}
+            className="gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${syncing ? "animate-spin" : ""}`} />
+            {syncing ? t("syncing") : t("syncNow")}
+          </AnimatedButton>
+          {canAdminResync && (
+            <AnimatedButton
+              variant="outline"
+              onClick={handleAdminResync}
+              disabled={syncing || loading || resyncing}
+              className="gap-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${resyncing ? "animate-spin" : ""}`} />
+              {t("adminResync")}
+            </AnimatedButton>
+          )}
+        </div>
       </div>
 
       {/* Stats Cards */}
