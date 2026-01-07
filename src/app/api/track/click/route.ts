@@ -10,9 +10,11 @@ const trackClickSchema = z.object({
   productId: z.string().min(1),
 });
 
-const PRODUCT_PAGE_PATHS = [
+const VALID_REFERRER_PATHS = [
   /^\/products\/[^/]+/i,
   /^\/(ar|en)\/products\/[^/]+/i,
+  /^\/cart$/i,
+  /^\/(ar|en)\/cart$/i,
 ];
 
 const BOT_USER_AGENT_SNIPPETS = [
@@ -47,8 +49,8 @@ function hashValue(value?: string | null): string | null {
   return crypto.createHash("sha256").update(value).digest("hex");
 }
 
-function isProductPagePath(pathname: string): boolean {
-  return PRODUCT_PAGE_PATHS.some((pattern) => pattern.test(pathname));
+function isValidReferrerPath(pathname: string): boolean {
+  return VALID_REFERRER_PATHS.some((pattern) => pattern.test(pathname));
 }
 
 function isValidReferrer(referrer: string | null, appOrigin: string): boolean {
@@ -59,7 +61,7 @@ function isValidReferrer(referrer: string | null, appOrigin: string): boolean {
   try {
     const url = new URL(referrer);
     const isValidOrigin = url.origin === appOrigin;
-    const isValidPath = isProductPagePath(url.pathname);
+    const isValidPath = isValidReferrerPath(url.pathname);
 
     console.log("[track-click] Referrer validation", {
       referrer,

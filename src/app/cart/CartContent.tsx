@@ -597,9 +597,9 @@ export function CartContent() {
                           </>
                         ) : (
                           <>
-                            {locale === "ar" && item.merchantNameAr
-                              ? item.merchantNameAr
-                              : item.merchantName}
+                            {locale === "ar" && item.nameAr
+                              ? item.nameAr
+                              : item.name}
                             <ExternalLink className="ms-2 h-4 w-4" />
                           </>
                         )}
