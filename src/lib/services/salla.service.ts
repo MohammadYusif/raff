@@ -89,7 +89,7 @@ function coerceSallaProduct(value: unknown): SallaProduct {
   if (typeof id !== "string" && typeof id !== "number") {
     throw new Error("Salla product payload missing id");
   }
-  return value as SallaProduct;
+  return value as unknown as SallaProduct;
 }
 
 export class SallaService {
