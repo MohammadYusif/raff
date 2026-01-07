@@ -85,6 +85,65 @@ const resolveSallaUrl = (product: SallaProduct): string | null => {
   );
 };
 
+type SallaCategoryPayload = {
+  id?: string | number;
+  name?: string;
+  name_ar?: string;
+};
+
+function pickSallaCategory(
+  product: SallaProduct
+): { externalId: string; name: string; nameAr: string | null } | null {
+  const categories = Array.isArray(product.categories) ? product.categories : [];
+  const primary =
+    (categories[0] as SallaCategoryPayload | undefined) ??
+    (product.category as SallaCategoryPayload | undefined) ??
+    null;
+  if (!primary) return null;
+
+  const externalId = toStringOrNull(primary.id);
+  if (!externalId) return null;
+
+  const name =
+    toStringOrNull(primary.name) ??
+    toStringOrNull(primary.name_ar) ??
+    "Category";
+  const nameAr = toStringOrNull(primary.name_ar);
+
+  return { externalId, name, nameAr };
+}
+
+async function upsertSallaCategory(
+  merchantId: string,
+  category: { externalId: string; name: string; nameAr: string | null }
+): Promise<{ id: string; slug: string; externalId: string }> {
+  const safeName = slugify(category.name) || "category";
+  const slug = `salla-${merchantId}-${category.externalId}-${safeName}`;
+
+  const saved = await prisma.category.upsert({
+    where: { slug },
+    create: {
+      name: category.name,
+      nameAr: category.nameAr,
+      slug,
+      description: null,
+      descriptionAr: null,
+      icon: null,
+      image: null,
+      isActive: true,
+      parentId: null,
+    },
+    update: {
+      name: category.name,
+      nameAr: category.nameAr,
+      isActive: true,
+    },
+    select: { id: true, slug: true },
+  });
+
+  return { id: saved.id, slug: saved.slug, externalId: category.externalId };
+}
+
 async function ensureUniqueSlug(
   baseSlug: string,
   existingId?: string | null
@@ -149,6 +208,9 @@ export async function syncSallaProductsForMerchant(
   let syncedCount = 0;
   let createdCount = 0;
   let updatedCount = 0;
+  let categoriesUpserted = 0;
+  const categoryCache = new Map<string, { id: string; slug: string; externalId: string }>();
+  const categorySamples: Array<{ slug: string; id: string; externalId: string }> = [];
   let totalPages: number | null = null;
 
   while (true) {
@@ -199,6 +261,32 @@ export async function syncSallaProductsForMerchant(
           : true;
       const isActive = baseIsActive && (quantity === null || quantity > 0);
 
+      const categoryInfo = pickSallaCategory(product);
+      let categoryId: string | null = null;
+      if (categoryInfo) {
+        const safeName = slugify(categoryInfo.name) || "category";
+        const categorySlug = `salla-${merchantId}-${categoryInfo.externalId}-${safeName}`;
+        const cached = categoryCache.get(categorySlug);
+        if (cached) {
+          categoryId = cached.id;
+        } else {
+          const savedCategory = await upsertSallaCategory(
+            merchantId,
+            categoryInfo
+          );
+          categoryId = savedCategory.id;
+          categoryCache.set(categorySlug, savedCategory);
+          categoriesUpserted += 1;
+          if (categorySamples.length < 5) {
+            categorySamples.push({
+              slug: savedCategory.slug,
+              id: savedCategory.id,
+              externalId: savedCategory.externalId,
+            });
+          }
+        }
+      }
+
       const existing = await prisma.product.findUnique({
         where: {
           sallaProductId_merchantId: { sallaProductId, merchantId },
@@ -231,6 +319,7 @@ export async function syncSallaProductsForMerchant(
         isActive,
         inStock,
         quantity,
+        categoryId,
         slug,
       };
 
@@ -287,6 +376,8 @@ export async function syncSallaProductsForMerchant(
     pagesFetched,
     createdCount,
     updatedCount,
+    categoriesUpserted,
+    categorySamples,
   });
   return { syncedCount, pagesFetched, createdCount, updatedCount };
 }

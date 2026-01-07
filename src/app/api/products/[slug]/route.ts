@@ -61,16 +61,11 @@ export async function GET(
           },
         });
 
-        const contains = await prisma.product.findFirst({
-          where: { slug: { contains: "فستان" } },
-          select: { slug: true },
-        });
 
         console.debug("[products] slug-debug", {
           requestedSlug: slug,
           fallbackMatched: Boolean(fallback),
           fallbackSlug: fallback?.slug ?? null,
-          containsCheck: contains?.slug ?? null,
         });
       }
 

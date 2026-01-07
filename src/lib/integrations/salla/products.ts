@@ -38,6 +38,8 @@ export type SallaProduct = {
   main_image?: string | null;
   images?: Array<SallaImage | string>;
   skus?: SallaSku[];
+  category?: { id?: string | number; name?: string; name_ar?: string };
+  categories?: Array<{ id?: string | number; name?: string; name_ar?: string }>;
 };
 
 export type SallaPagination = {

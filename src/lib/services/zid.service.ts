@@ -359,12 +359,33 @@ function buildProductTagsInput(tags: Array<string | null | undefined>) {
   };
 }
 
+type ZidCategoryPayload = {
+  id?: string | number;
+  name?: string;
+};
+
+function pickZidCategory(
+  product: ZidProduct
+): { externalId: string; name: string } | null {
+  const categories = Array.isArray(product.categories) ? product.categories : [];
+  const primary = categories[0] as ZidCategoryPayload | undefined;
+  if (!primary) return null;
+
+  const externalId =
+    primary.id !== null && primary.id !== undefined ? String(primary.id) : "";
+  if (!externalId) return null;
+
+  const name = primary.name || "Category";
+  return { externalId, name };
+}
+
 async function upsertCategory(
+  merchantId: string,
   category: ZidCategory,
   counters: { created: number; updated: number }
 ): Promise<string | null> {
-  const slug = slugify(category.name || "");
-  if (!slug) return null;
+  const safeName = slugify(category.name || "") || "category";
+  const slug = `zid-${merchantId}-${category.id}-${safeName}`;
 
   const existing = await prisma.category.findUnique({
     where: { slug },
@@ -393,10 +414,41 @@ async function upsertCategory(
       name: category.name,
       description: category.description || existing.description,
       image: category.image || existing.image,
+      isActive: true,
     },
   });
   counters.updated += 1;
   return updated.id;
+}
+
+async function upsertZidCategoryFromProduct(
+  merchantId: string,
+  category: { externalId: string; name: string }
+): Promise<{ id: string; slug: string; externalId: string }> {
+  const safeName = slugify(category.name) || "category";
+  const slug = `zid-${merchantId}-${category.externalId}-${safeName}`;
+
+  const saved = await prisma.category.upsert({
+    where: { slug },
+    create: {
+      name: category.name,
+      nameAr: null,
+      slug,
+      description: null,
+      descriptionAr: null,
+      icon: null,
+      image: null,
+      isActive: true,
+      parentId: null,
+    },
+    update: {
+      name: category.name,
+      isActive: true,
+    },
+    select: { id: true, slug: true },
+  });
+
+  return { id: saved.id, slug: saved.slug, externalId: category.externalId };
 }
 
 async function ensureUniqueSlug(
@@ -469,17 +521,15 @@ export async function syncZidProducts(
   };
 
   const categories = await service.fetchCategories();
-  const categoryMap = new Map<string, string>();
+  const categoryCache = new Map<
+    string,
+    { id: string; slug: string; externalId: string }
+  >();
+  let categoriesUpserted = 0;
+  const categorySamples: Array<{ slug: string; id: string; externalId: string }> = [];
 
   for (const category of categories) {
-    const categoryId = await upsertCategory(category, categoryCounters);
-    const categoryKey =
-      category.id !== null && category.id !== undefined
-        ? String(category.id)
-        : "";
-    if (categoryId && categoryKey) {
-      categoryMap.set(categoryKey, categoryId);
-    }
+    await upsertCategory(merchant.id, category, categoryCounters);
   }
 
   categoriesCreated = categoryCounters.created;
@@ -543,14 +593,31 @@ export async function syncZidProducts(
         existing ?? undefined
       );
 
-      const categoryKey =
-        zidProduct.categories &&
-        zidProduct.categories.length > 0 &&
-        zidProduct.categories[0].id !== null &&
-        zidProduct.categories[0].id !== undefined
-          ? String(zidProduct.categories[0].id)
-          : null;
-      const categoryId = categoryKey ? categoryMap.get(categoryKey) || null : null;
+      const categoryInfo = pickZidCategory(zidProduct);
+      let categoryId: string | null = null;
+      if (categoryInfo) {
+        const safeName = slugify(categoryInfo.name) || "category";
+        const categorySlug = `zid-${merchant.id}-${categoryInfo.externalId}-${safeName}`;
+        const cached = categoryCache.get(categorySlug);
+        if (cached) {
+          categoryId = cached.id;
+        } else {
+          const savedCategory = await upsertZidCategoryFromProduct(
+            merchant.id,
+            categoryInfo
+          );
+          categoryId = savedCategory.id;
+          categoryCache.set(categorySlug, savedCategory);
+          categoriesUpserted += 1;
+          if (categorySamples.length < 5) {
+            categorySamples.push({
+              slug: savedCategory.slug,
+              id: savedCategory.id,
+              externalId: savedCategory.externalId,
+            });
+          }
+        }
+      }
 
       const images =
         zidProduct.images?.map((image) => image.url).filter(Boolean) || [];
@@ -636,6 +703,8 @@ export async function syncZidProducts(
     productsUpdated,
     categoriesCreated,
     categoriesUpdated,
+    categoriesUpserted,
+    categorySamples,
   });
   return {
     productsCreated,
@@ -697,6 +766,22 @@ export async function syncZidProductById(
     },
   });
 
+  const categoryInfo = pickZidCategory(zidProduct);
+  let categoryId: string | null = null;
+  if (categoryInfo) {
+    const savedCategory = await upsertZidCategoryFromProduct(
+      merchant.id,
+      categoryInfo
+    );
+    categoryId = savedCategory.id;
+    debugSyncLog("category-upserted", {
+      merchantId: merchant.id,
+      categorySlug: savedCategory.slug,
+      categoryId: savedCategory.id,
+      externalId: savedCategory.externalId,
+    });
+  }
+
   const slug = await resolveProductSlug(
     merchant.id,
     name,
@@ -741,6 +826,7 @@ export async function syncZidProductById(
     currency: "SAR",
     images,
     thumbnail: images[0] || null,
+    categoryId,
     zidProductId,
     sallaProductId,
     sallaUrl,

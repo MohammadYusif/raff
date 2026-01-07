@@ -320,12 +320,40 @@ function buildProductTagsInput(tags: Array<string | null | undefined>) {
   };
 }
 
+type SallaCategoryPayload = {
+  id?: string | number;
+  name?: string;
+  name_ar?: string;
+};
+
+function pickSallaCategory(
+  product: SallaProduct
+): { externalId: string; name: string; nameAr: string | null } | null {
+  const categories = Array.isArray(product.categories) ? product.categories : [];
+  const primary =
+    (categories[0] as SallaCategoryPayload | undefined) ??
+    (product.category as SallaCategoryPayload | undefined) ??
+    null;
+  if (!primary) return null;
+
+  const externalId =
+    primary.id !== null && primary.id !== undefined ? String(primary.id) : "";
+  if (!externalId) return null;
+
+  const name = primary.name || primary.name_ar || "Category";
+  const nameAr = primary.name_ar || null;
+
+  return { externalId, name, nameAr };
+}
+
 async function upsertCategory(
+  merchantId: string,
   category: SallaCategory,
   counters: { created: number; updated: number }
 ): Promise<string | null> {
   const name = category.name || category.name_ar || "";
-  const slug = slugify(name);
+  const safeName = slugify(name) || "category";
+  const slug = `salla-${merchantId}-${category.id}-${safeName}`;
   if (!slug) return null;
 
   const existing = await prisma.category.findUnique({
@@ -357,10 +385,42 @@ async function upsertCategory(
       description: category.description || existing.description,
       descriptionAr: category.description_ar || existing.descriptionAr,
       image: category.image || existing.image,
+      isActive: true,
     },
   });
   counters.updated += 1;
   return updated.id;
+}
+
+async function upsertSallaCategoryFromProduct(
+  merchantId: string,
+  category: { externalId: string; name: string; nameAr: string | null }
+): Promise<{ id: string; slug: string; externalId: string }> {
+  const safeName = slugify(category.name) || "category";
+  const slug = `salla-${merchantId}-${category.externalId}-${safeName}`;
+
+  const saved = await prisma.category.upsert({
+    where: { slug },
+    create: {
+      name: category.name,
+      nameAr: category.nameAr,
+      slug,
+      description: null,
+      descriptionAr: null,
+      icon: null,
+      image: null,
+      isActive: true,
+      parentId: null,
+    },
+    update: {
+      name: category.name,
+      nameAr: category.nameAr,
+      isActive: true,
+    },
+    select: { id: true, slug: true },
+  });
+
+  return { id: saved.id, slug: saved.slug, externalId: category.externalId };
 }
 
 async function ensureUniqueSlug(
@@ -426,12 +486,14 @@ export async function syncSallaProducts(merchant: SallaMerchantAuth): Promise<{
   };
 
   const categories = await service.fetchCategories();
-  const categoryMap = new Map<string, string>();
+  const categoryCache = new Map<
+    string,
+    { id: string; slug: string; externalId: string }
+  >();
+  let categoriesUpserted = 0;
+  const categorySamples: Array<{ slug: string; id: string; externalId: string }> = [];
   for (const category of categories) {
-    const categoryId = await upsertCategory(category, categoryCounters);
-    if (categoryId) {
-      categoryMap.set(category.id, categoryId);
-    }
+    await upsertCategory(merchant.id, category, categoryCounters);
   }
 
   categoriesCreated = categoryCounters.created;
@@ -496,13 +558,31 @@ export async function syncSallaProducts(merchant: SallaMerchantAuth): Promise<{
         existing ?? undefined
       );
 
-      const categorySource =
-        sallaProduct.category ||
-        (sallaProduct.categories && sallaProduct.categories[0]) ||
-        null;
-      const categoryId = categorySource?.id
-        ? categoryMap.get(categorySource.id) || null
-        : null;
+      const categoryInfo = pickSallaCategory(sallaProduct);
+      let categoryId: string | null = null;
+      if (categoryInfo) {
+        const safeName = slugify(categoryInfo.name) || "category";
+        const categorySlug = `salla-${merchant.id}-${categoryInfo.externalId}-${safeName}`;
+        const cached = categoryCache.get(categorySlug);
+        if (cached) {
+          categoryId = cached.id;
+        } else {
+          const savedCategory = await upsertSallaCategoryFromProduct(
+            merchant.id,
+            categoryInfo
+          );
+          categoryId = savedCategory.id;
+          categoryCache.set(categorySlug, savedCategory);
+          categoriesUpserted += 1;
+          if (categorySamples.length < 5) {
+            categorySamples.push({
+              slug: savedCategory.slug,
+              id: savedCategory.id,
+              externalId: savedCategory.externalId,
+            });
+          }
+        }
+      }
 
       const images =
         sallaProduct.images?.map((image) => image.url).filter(Boolean) || [];
@@ -591,6 +671,8 @@ export async function syncSallaProducts(merchant: SallaMerchantAuth): Promise<{
     productsUpdated,
     categoriesCreated,
     categoriesUpdated,
+    categoriesUpserted,
+    categorySamples,
   });
   return {
     productsCreated,
@@ -641,6 +723,22 @@ export async function syncSallaProductById(
     },
   });
 
+  const categoryInfo = pickSallaCategory(sallaProduct);
+  let categoryId: string | null = null;
+  if (categoryInfo) {
+    const savedCategory = await upsertSallaCategoryFromProduct(
+      merchant.id,
+      categoryInfo
+    );
+    categoryId = savedCategory.id;
+    debugSyncLog("category-upserted", {
+      merchantId: merchant.id,
+      categorySlug: savedCategory.slug,
+      categoryId: savedCategory.id,
+      externalId: savedCategory.externalId,
+    });
+  }
+
   const slug = await resolveProductSlug(
     merchant.id,
     name,
@@ -690,6 +788,7 @@ export async function syncSallaProductById(
     currency,
     images,
     thumbnail: images[0] || null,
+    categoryId,
     sallaProductId,
     sallaUrl,
     externalProductUrl: externalProductUrl || undefined,
