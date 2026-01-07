@@ -115,10 +115,21 @@ export async function GET(request: NextRequest) {
   const state = request.nextUrl.searchParams.get("state");
 
   // Check if this is a join flow or regular flow
-  const isJoinFlow =
-    request.cookies.get("raff_zid_join_flow")?.value === "true";
+  const joinFlowCookie = request.cookies.get("raff_zid_join_flow")?.value;
+  const joinStateCookie = request.cookies.get("raff_zid_join_state")?.value;
+  const isJoinFlow = joinFlowCookie === "true";
+
+  console.info("[zid-oauth-callback] received", {
+    hasCode: Boolean(code),
+    hasState: Boolean(state),
+    isJoinFlow,
+    hasJoinFlowCookie: Boolean(joinFlowCookie),
+    hasJoinStateCookie: Boolean(joinStateCookie),
+    cookiesReceived: request.cookies.getAll().map((c) => c.name),
+  });
 
   if (!code || !state) {
+    console.error("[zid-oauth-callback] missing code or state");
     return redirectWithStatus(config, "error");
   }
 
@@ -160,7 +171,16 @@ async function handleJoinFlow(
 ) {
   const cookieState = request.cookies.get("raff_zid_join_state")?.value;
 
+  console.info("[zid-oauth-callback] handleJoinFlow", {
+    hasCookieState: Boolean(cookieState),
+    statesMatch: cookieState === state,
+  });
+
   if (!cookieState || cookieState !== state) {
+    console.error("[zid-oauth-callback] state mismatch or missing", {
+      hasCookieState: Boolean(cookieState),
+      receivedState: state?.substring(0, 10) + "...",
+    });
     return redirectWithStatus(config, "error");
   }
   const stateVerified = true;
@@ -181,12 +201,23 @@ async function handleJoinFlow(
   });
 
   if (!tokenResponse.ok) {
+    const errorText = await tokenResponse.text();
+    console.error("[zid-oauth-callback] join flow token exchange failed", {
+      status: tokenResponse.status,
+      error: errorText,
+    });
     return redirectWithStatus(config, "error");
   }
 
   const tokenData = (await tokenResponse.json()) as Record<string, unknown>;
   const { authorizationToken, managerToken, refreshToken, expiresIn } =
     extractZidTokens(tokenData);
+
+  console.info("[zid-oauth-callback] join flow tokens received", {
+    hasAuthToken: Boolean(authorizationToken),
+    hasManagerToken: Boolean(managerToken),
+    hasRefreshToken: Boolean(refreshToken),
+  });
   const tokenExpiry =
     expiresIn && expiresIn > 0 ? new Date(Date.now() + expiresIn * 1000) : null;
   const storePayload = isRecord(tokenData.store) ? tokenData.store : null;
@@ -217,6 +248,11 @@ async function handleJoinFlow(
       managerToken,
     });
     const profile = await service.fetchStoreProfile();
+    console.info("[zid-oauth-callback] join flow profile fetched", {
+      hasProfile: Boolean(profile),
+      profileId: profile?.id,
+      profileName: profile?.name,
+    });
     if (profile) {
       storeName = profile.name || storeName;
       storeEmail = profile.email || null;
@@ -229,7 +265,7 @@ async function handleJoinFlow(
       }
     }
   } catch (error) {
-    console.error("Failed to fetch Zid store info:", error);
+    console.error("[zid-oauth-callback] Failed to fetch Zid store info:", error);
   }
 
   // Generate email if not provided
@@ -247,6 +283,9 @@ async function handleJoinFlow(
   }
 
   if (existingMerchant) {
+    console.info("[zid-oauth-callback] existing merchant found, updating tokens", {
+      merchantId: existingMerchant.id,
+    });
     // Merchant already exists, just update tokens
     await prisma.merchant.update({
       where: { id: existingMerchant.id },
@@ -278,6 +317,7 @@ async function handleJoinFlow(
       console.error("Zid webhook registration failed:", error);
     }
 
+    console.info("[zid-oauth-callback] redirecting to integrations page");
     const response = NextResponse.redirect(
       `${config.appBaseUrl}/merchant/integrations?connected=zid`
     );
@@ -287,6 +327,11 @@ async function handleJoinFlow(
   }
 
   // Create new user and merchant with incomplete registration
+  console.info("[zid-oauth-callback] creating new merchant", {
+    email,
+    storeName,
+    hasStoreId: Boolean(zidStoreId),
+  });
   const tempPassword = crypto.randomBytes(32).toString("hex");
   const passwordHash = await bcrypt.hash(tempPassword, 10);
 
@@ -325,6 +370,10 @@ async function handleJoinFlow(
 
     return { user, merchant };
   });
+  console.info("[zid-oauth-callback] merchant created", {
+    userId: user.id,
+    merchantId: merchant.id,
+  });
   logZidOAuthSaved({
     merchantId: merchant.id,
     storeId: zidStoreId,
@@ -352,10 +401,13 @@ async function handleJoinFlow(
     storeEmail || "" // Pass the store email if available
   );
 
+  const redirectUrl = `${config.appBaseUrl}/merchant/complete-registration?token=${registrationToken}`;
+  console.info("[zid-oauth-callback] redirecting to complete registration", {
+    redirectUrl,
+  });
+
   // Redirect to complete registration page
-  const response = NextResponse.redirect(
-    `${config.appBaseUrl}/merchant/complete-registration?token=${registrationToken}`
-  );
+  const response = NextResponse.redirect(redirectUrl);
   response.cookies.set("raff_zid_join_state", "", { maxAge: 0, path: "/" });
   response.cookies.set("raff_zid_join_flow", "", { maxAge: 0, path: "/" });
 
