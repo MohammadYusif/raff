@@ -1,12 +1,16 @@
 // src/app/api/admin/clean-all-data/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAdminAuth } from "@/lib/auth/admin-guard";
 
 /**
  * Delete all products and categories to prepare for clean resync
  */
 
 export async function POST(request: NextRequest) {
+  const authError = await requireAdminAuth();
+  if (authError) return authError;
+
   try {
     const { confirm = false } = await request.json().catch(() => ({ confirm: false }));
 

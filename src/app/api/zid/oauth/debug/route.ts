@@ -10,6 +10,10 @@ import { getZidConfig } from "@/lib/platform/config";
 import { getZidRedirectUri } from "@/lib/zid/getZidRedirectUri";
 
 export async function GET(request: NextRequest) {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   const config = getZidConfig();
   const computedRedirectUri = getZidRedirectUri(request);
 

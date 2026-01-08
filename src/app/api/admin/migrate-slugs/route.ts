@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
+import { requireAdminAuth } from "@/lib/auth/admin-guard";
 
 /**
  * Migrate existing product and category slugs to platform-independent format
@@ -10,6 +11,9 @@ import { slugify } from "@/lib/utils";
  */
 
 export async function POST(request: NextRequest) {
+  const authError = await requireAdminAuth();
+  if (authError) return authError;
+
   try {
     const { dryRun = true } = await request.json().catch(() => ({ dryRun: true }));
 

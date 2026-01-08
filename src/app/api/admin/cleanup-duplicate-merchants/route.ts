@@ -1,6 +1,7 @@
 // src/app/api/admin/cleanup-duplicate-merchants/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAdminAuth } from "@/lib/auth/admin-guard";
 
 /**
  * Admin endpoint to merge duplicate Salla merchants
@@ -14,6 +15,9 @@ import { prisma } from "@/lib/prisma";
  */
 
 export async function POST(request: NextRequest) {
+  const authError = await requireAdminAuth();
+  if (authError) return authError;
+
   try {
     const { dryRun = true } = await request.json().catch(() => ({ dryRun: true }));
 
@@ -213,6 +217,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
+  const authError = await requireAdminAuth();
+  if (authError) return authError;
+
   return NextResponse.json({
     endpoint: "POST /api/admin/cleanup-duplicate-merchants",
     description: "Merge duplicate Salla merchants that have same domain but different store IDs",

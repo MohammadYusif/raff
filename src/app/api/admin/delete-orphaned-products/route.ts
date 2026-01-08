@@ -1,6 +1,7 @@
 // src/app/api/admin/delete-orphaned-products/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAdminAuth } from "@/lib/auth/admin-guard";
 
 /**
  * Delete orphaned products from old deleted merchants
@@ -8,6 +9,9 @@ import { prisma } from "@/lib/prisma";
  */
 
 export async function POST(request: NextRequest) {
+  const authError = await requireAdminAuth();
+  if (authError) return authError;
+
   try {
     const { dryRun = true, oldMerchantId } = await request.json().catch(() => ({ dryRun: true }));
 
