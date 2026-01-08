@@ -216,7 +216,12 @@
   "category": {
     "backToCategories": "Back to Categories",
     "noProducts": "No products in this category",
-    "noProductsDescription": "Products will appear here once added"
+    "noProductsDescription": "Products will appear here once added",
+    "notFound": {
+      "title": "Category Not Found",
+      "description": "The category you're looking for doesn't exist or has been removed.",
+      "browseCategories": "Browse Categories"
+    }
   },
   "merchants": {
     "title": "Merchants",

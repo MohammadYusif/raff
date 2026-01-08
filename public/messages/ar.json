@@ -216,7 +216,12 @@
   "category": {
     "backToCategories": "العودة للفئات",
     "noProducts": "لا توجد منتجات في هذه الفئة",
-    "noProductsDescription": "ستظهر المنتجات هنا بعد إضافتها"
+    "noProductsDescription": "ستظهر المنتجات هنا بعد إضافتها",
+    "notFound": {
+      "title": "الفئة غير موجودة",
+      "description": "الفئة التي تبحث عنها غير موجودة أو تم حذفها.",
+      "browseCategories": "تصفح الفئات"
+    }
   },
   "merchants": {
     "title": "التجار",

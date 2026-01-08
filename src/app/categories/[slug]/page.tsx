@@ -89,7 +89,7 @@ export default async function CategoryPage({
   const { slug } = await params;
   const searchParamsResolved = await searchParams;
 
-  const category = await prisma.category.findUnique({
+  let category = await prisma.category.findUnique({
     where: { slug },
     select: {
       id: true,
@@ -112,7 +112,48 @@ export default async function CategoryPage({
     },
   });
 
-  // If category not found, show 404
+  // If category not found by slug, try to find by extracting category name from slug
+  // This handles merchant-specific category slugs after grouping
+  if (!category) {
+    // Extract category name from slug (e.g., "salla-merchantId-12345-البلايز" -> "البلايز")
+    const slugParts = slug.split('-');
+    const possibleName = slugParts[slugParts.length - 1];
+
+    // Try to find any category with this name
+    const categoryByName = await prisma.category.findFirst({
+      where: {
+        OR: [
+          { name: possibleName },
+          { nameAr: possibleName },
+          { slug: { contains: possibleName } }
+        ],
+        isActive: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        nameAr: true,
+        slug: true,
+        description: true,
+        descriptionAr: true,
+        icon: true,
+        _count: {
+          select: {
+            products: {
+              where: {
+                isActive: true,
+                inStock: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    category = categoryByName;
+  }
+
+  // If still not found, show 404
   if (!category) {
     notFound();
   }
