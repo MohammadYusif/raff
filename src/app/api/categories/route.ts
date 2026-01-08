@@ -37,26 +37,8 @@ export async function GET() {
       },
     });
 
-    // Group categories by name to handle merchant-specific duplicates
-    // For categories with the same name from different merchants, merge them
-    const categoryMap = new Map<string, typeof categories[0] & { _count: { products: number } }>();
-
-    for (const category of categories) {
-      const key = category.name; // Group by name
-      const existing = categoryMap.get(key);
-
-      if (existing) {
-        // Merge: sum up product counts, keep first category's metadata
-        existing._count.products += category._count.products;
-      } else {
-        categoryMap.set(key, category);
-      }
-    }
-
-    // Convert map back to array
-    const groupedCategories = Array.from(categoryMap.values());
-
-    return NextResponse.json({ categories: groupedCategories });
+    // Categories now have platform-independent slugs, no grouping needed
+    return NextResponse.json({ categories });
   } catch (error) {
     console.error('Error fetching categories:', error);
     return NextResponse.json(
