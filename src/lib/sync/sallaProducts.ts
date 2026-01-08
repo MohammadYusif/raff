@@ -123,8 +123,8 @@ async function upsertSallaCategory(
   category: { externalId: string; name: string; nameAr: string | null }
 ): Promise<{ id: string; slug: string; externalId: string }> {
   const safeName = slugify(category.name) || "category";
-  // Use just the category name for slug (platform-independent)
-  const slug = safeName;
+  // Include merchant ID to prevent collisions between merchants
+  const slug = `${merchantId}-${safeName}`;
 
   const saved = await prisma.category.upsert({
     where: { slug },
@@ -177,8 +177,8 @@ async function resolveProductSlug(
 ): Promise<string> {
   if (existing?.slug) return existing.slug;
   const safeName = slugify(name) || "product";
-  // Platform-independent slug: productId-name
-  const baseSlug = `${sallaProductId}-${safeName}`;
+  // Include merchant ID to prevent collisions between merchants
+  const baseSlug = `${merchantId}-${sallaProductId}-${safeName}`;
   return ensureUniqueSlug(baseSlug);
 }
 

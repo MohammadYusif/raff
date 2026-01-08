@@ -118,12 +118,30 @@ async function handleJoinFlow(
     `salla-${sallaStoreId || crypto.randomBytes(8).toString("hex")}@raff.merchants`;
 
   // Check if user/merchant already exists with this Salla store
+  // Check both by storeId AND by store URL domain to catch store ID changes
   let existingMerchant = null;
-  if (sallaStoreId) {
-    existingMerchant = await prisma.merchant.findFirst({
-      where: { sallaStoreId },
-      include: { user: true },
-    });
+  if (sallaStoreId || sallaStoreUrl) {
+    const whereConditions = [];
+    if (sallaStoreId) {
+      whereConditions.push({ sallaStoreId });
+    }
+    if (sallaStoreUrl) {
+      try {
+        const url = new URL(sallaStoreUrl);
+        const domain = url.hostname;
+        whereConditions.push({ sallaStoreUrl: { contains: domain } });
+      } catch {
+        // Invalid URL, skip domain check
+      }
+    }
+
+    if (whereConditions.length > 0) {
+      existingMerchant = await prisma.merchant.findFirst({
+        where: { OR: whereConditions },
+        include: { user: true },
+        orderBy: { createdAt: 'desc' }, // Get most recent if multiple
+      });
+    }
   }
 
   if (existingMerchant) {

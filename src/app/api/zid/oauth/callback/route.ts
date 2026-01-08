@@ -309,12 +309,30 @@ async function handleJoinFlow(
     `zid-${zidStoreId || crypto.randomBytes(8).toString("hex")}@raff.merchants`;
 
   // Check if user/merchant already exists with this Zid store
+  // Check both by storeId AND by store URL domain to catch store ID changes
   let existingMerchant = null;
-  if (zidStoreId) {
-    existingMerchant = await prisma.merchant.findFirst({
-      where: { zidStoreId },
-      include: { user: true },
-    });
+  if (zidStoreId || storeUrl) {
+    const whereConditions = [];
+    if (zidStoreId) {
+      whereConditions.push({ zidStoreId });
+    }
+    if (storeUrl) {
+      try {
+        const url = new URL(storeUrl);
+        const domain = url.hostname;
+        whereConditions.push({ zidStoreUrl: { contains: domain } });
+      } catch {
+        // Invalid URL, skip domain check
+      }
+    }
+
+    if (whereConditions.length > 0) {
+      existingMerchant = await prisma.merchant.findFirst({
+        where: { OR: whereConditions },
+        include: { user: true },
+        orderBy: { createdAt: 'desc' }, // Get most recent if multiple
+      });
+    }
   }
 
   if (existingMerchant) {
