@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     }, {} as Record<string, typeof merchants>);
 
     const duplicateGroups = Object.entries(groupedByDomain)
-      .filter(([_, merchants]) => merchants.length > 1)
+      .filter(([, merchants]) => merchants.length > 1)
       .map(([domain, merchants]) => ({ domain, merchants }));
 
     if (duplicateGroups.length === 0) {
