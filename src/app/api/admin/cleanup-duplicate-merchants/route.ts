@@ -105,28 +105,48 @@ export async function POST(request: NextRequest) {
             data: { merchantId: keepMerchant.id },
           });
 
-          // 2. Reassign all categories
-          await tx.category.updateMany({
+          // 2. Remap product categories from old to new
+          // Find all old categories that will be deleted
+          const oldCategorySlugs = deleteMerchants.map(m => `salla-${m.id}-`);
+          const oldCategories = await tx.category.findMany({
             where: {
-              slug: {
-                in: deleteMerchants.flatMap(m =>
-                  [`salla-${m.id}-%`]
-                )
-              }
+              OR: oldCategorySlugs.map(slug => ({ slug: { contains: slug } }))
             },
-            data: {
-              // Categories need slug update too since they include merchantId
-              // We'll delete and let them be recreated on next sync
-            },
+            select: { id: true, name: true, nameAr: true }
           });
 
-          // Actually, let's just delete old merchant categories
-          // They'll be recreated on next sync with correct merchantId
+          // For each old category, find matching new category by name and remap products
+          for (const oldCategory of oldCategories) {
+            const newCategory = await tx.category.findFirst({
+              where: {
+                slug: { startsWith: `salla-${keepMerchant.id}-` },
+                OR: [
+                  { name: oldCategory.name },
+                  { nameAr: oldCategory.nameAr }
+                ]
+              },
+              select: { id: true }
+            });
+
+            if (newCategory) {
+              // Remap products from old category to new category
+              await tx.product.updateMany({
+                where: { categoryId: oldCategory.id },
+                data: { categoryId: newCategory.id }
+              });
+            } else {
+              // If no matching new category, set to null
+              await tx.product.updateMany({
+                where: { categoryId: oldCategory.id },
+                data: { categoryId: null }
+              });
+            }
+          }
+
+          // 3. Delete old merchant categories after products are remapped
           await tx.category.deleteMany({
             where: {
-              slug: {
-                contains: deleteMerchants.map(m => `salla-${m.id}-`).join('|')
-              }
+              OR: oldCategorySlugs.map(slug => ({ slug: { contains: slug } }))
             }
           });
 
