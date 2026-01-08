@@ -176,7 +176,7 @@ export default async function CategoryPage({
   const { products, pagination } = await fetchProductsServer({
     page: searchParamsResolved.page ? parseInt(searchParamsResolved.page) : 1,
     limit: 12,
-    category: slug, // Filter by category slug
+    category: category.slug, // Use the actual category slug, not the URL slug
     search: searchParamsResolved.search,
     sortBy,
     minPrice: searchParamsResolved.minPrice
