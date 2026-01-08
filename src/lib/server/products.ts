@@ -43,7 +43,28 @@ export async function fetchProductsServer(filters: ProductFilters = {}) {
   };
 
   if (category) {
-    where.category = { slug: category };
+    // First lookup the category by slug to get its ID
+    const categoryRecord = await prisma.category.findUnique({
+      where: { slug: category },
+      select: { id: true },
+    });
+
+    if (categoryRecord) {
+      where.categoryId = categoryRecord.id;
+    } else {
+      // If category not found, return empty results early
+      return {
+        products: [],
+        pagination: {
+          page,
+          limit,
+          totalCount: 0,
+          totalPages: 0,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+      };
+    }
   }
 
   if (merchantId) {
