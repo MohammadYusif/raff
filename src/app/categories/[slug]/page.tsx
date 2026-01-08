@@ -31,11 +31,28 @@ interface CategoryPageProps {
   }>;
 }
 
+// Helper functions for slug normalization
+function normalizeSlug(raw: string): string {
+  const cleaned = raw.trim().replaceAll("+", "%20");
+  const once = safeDecode(cleaned);
+  const twice = safeDecode(once);
+  return twice.trim().normalize("NFC");
+}
+
+function safeDecode(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
 // Generate metadata for SEO
 export async function generateMetadata({
   params,
 }: CategoryPageProps): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = normalizeSlug(rawSlug);
 
   try {
     const cookieStore = await cookies();
@@ -86,7 +103,8 @@ export default async function CategoryPage({
   searchParams,
 }: CategoryPageProps) {
   // Await params (Next.js 15 requirement)
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = normalizeSlug(rawSlug);
   const searchParamsResolved = await searchParams;
 
   const category = await prisma.category.findUnique({
