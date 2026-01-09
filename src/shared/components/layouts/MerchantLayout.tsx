@@ -110,7 +110,7 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
       {/* Sidebar */}
       <aside
         className={`fixed inset-y-0 z-50 w-64 transform bg-white shadow-lg transition-transform duration-300 lg:static lg:translate-x-0 ${
-          isRtl ? "end-0" : "start-0"
+          isRtl ? "right-0" : "left-0"
         } ${
           sidebarOpen
             ? "translate-x-0"
@@ -166,7 +166,7 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
             {platformName && platformLogo && (
               <div className="rounded-lg border border-raff-neutral-200 bg-raff-neutral-50 p-3">
                 <div className="mb-2 flex items-center gap-2">
-                  <div className="h-5 w-5 flex items-center justify-center">
+                  <div className="flex h-5 w-5 items-center justify-center">
                     <Image
                       src={platformLogo}
                       alt={platformName}
