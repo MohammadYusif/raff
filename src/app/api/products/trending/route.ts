@@ -4,6 +4,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { createLogger } from '@/lib/utils/logger';
+
+const logger = createLogger('trending-products');
 
 export async function GET(request: NextRequest) {
   try {
@@ -46,7 +49,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ products });
   } catch (error) {
-    console.error('Error fetching trending products:', error);
+    logger.error('Error fetching trending products', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: 'Failed to fetch trending products' },
       { status: 500 }
