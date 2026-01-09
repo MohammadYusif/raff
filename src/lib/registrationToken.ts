@@ -1,7 +1,16 @@
 // src/lib/registrationToken.ts
 import crypto from "crypto";
+import { createLogger } from "@/lib/utils/logger";
 
-const SECRET = process.env.NEXTAUTH_SECRET || "fallback-secret-key";
+const logger = createLogger("registration-token");
+
+if (!process.env.NEXTAUTH_SECRET) {
+  throw new Error(
+    "NEXTAUTH_SECRET environment variable is required for secure token generation"
+  );
+}
+
+const SECRET = process.env.NEXTAUTH_SECRET;
 const TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 interface RegistrationTokenPayload {
@@ -63,7 +72,9 @@ export function verifyRegistrationToken(
 
     return payload;
   } catch (error) {
-    console.error("Token verification error:", error);
+    logger.error("Token verification error", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return null;
   }
 }
