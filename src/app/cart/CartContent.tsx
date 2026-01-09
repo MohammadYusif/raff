@@ -50,7 +50,9 @@ export function CartContent() {
 
   const showAuthNotice =
     status === "unauthenticated" ||
-    (status === "authenticated" && session?.user?.role !== "CUSTOMER");
+    (status === "authenticated" &&
+      session?.user?.role !== "CUSTOMER" &&
+      session?.user?.role !== "MERCHANT");
 
   // Calculate totals by currency
   const totalsByCurrency = items.reduce(
