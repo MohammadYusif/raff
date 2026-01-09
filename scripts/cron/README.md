@@ -6,6 +6,20 @@ This directory contains configuration files to automatically run trending score 
 
 Choose the method that fits your deployment environment:
 
+### Option 0: Railway Cron Service (Recommended for Railway)
+
+**See [Railway Setup Guide](./railway-setup.md) for detailed instructions.**
+
+Quick setup:
+1. Install dependency: `npm install`
+2. In Railway Dashboard, create new service from your repo
+3. Name it `raff-cron`
+4. Start command: `npm run cron:service`
+5. Copy environment variables from main app
+6. Deploy!
+
+---
+
 ### Option 1: Automated Setup (Linux with systemd)
 
 ```bash

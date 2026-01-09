@@ -1,8 +1,0 @@
-{
-  "crons": [
-    {
-      "path": "/api/admin/calculate-trending",
-      "schedule": "0 */3 * * *"
-    }
-  ]
-}
