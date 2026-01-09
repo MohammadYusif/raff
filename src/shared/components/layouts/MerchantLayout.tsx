@@ -94,11 +94,7 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
         : null;
 
   return (
-    <div
-      className={`flex h-screen bg-raff-neutral-50 ${
-        isRtl ? "lg:flex-row-reverse" : "lg:flex-row"
-      }`}
-    >
+    <div className="flex h-screen bg-raff-neutral-50">
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div
@@ -109,7 +105,7 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 z-50 w-64 transform bg-white shadow-lg transition-transform duration-300 lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 z-50 w-64 bg-white shadow-lg transition-transform duration-300 ${
           isRtl ? "right-0" : "left-0"
         } ${
           sidebarOpen
@@ -117,7 +113,7 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
             : isRtl
               ? "translate-x-full"
               : "-translate-x-full"
-        }`}
+        } lg:translate-x-0`}
       >
         <div className="flex h-full flex-col">
           {/* Header */}
@@ -245,7 +241,11 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
       </aside>
 
       {/* Main Content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div
+        className={`flex flex-1 flex-col overflow-hidden ${
+          isRtl ? "lg:mr-64" : "lg:ml-64"
+        }`}
+      >
         {/* Mobile Header */}
         <header className="border-b border-raff-neutral-200 bg-white p-4 lg:hidden">
           <button
