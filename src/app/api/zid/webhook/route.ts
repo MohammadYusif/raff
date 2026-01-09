@@ -15,6 +15,9 @@ import {
   verifySignature,
   SignatureConfig,
 } from "@/lib/platform/webhook-normalizer";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("zid-webhook");
 
 function isSameAmount(value: unknown, target: number): boolean {
   const numeric =
@@ -342,9 +345,12 @@ async function processOrderWebhook(
       }
     }
 
-    console.log(
-      `? Commission ${status}: ${commissionAmount} ${normalized.currency} for order ${normalized.orderId}`
-    );
+    logger.info("Commission processed", {
+      status,
+      amount: commissionAmount,
+      currency: normalized.currency,
+      orderId: normalized.orderId,
+    });
 
     return {
       success: true,
@@ -368,7 +374,7 @@ export async function POST(request: NextRequest) {
     const webhookConfig = getZidWebhookConfig();
     const isProd = process.env.NODE_ENV === "production";
     if (isProd && process.env.SKIP_WEBHOOK_VERIFICATION === "true") {
-      console.error("SKIP_WEBHOOK_VERIFICATION is not allowed in production");
+      logger.error("SKIP_WEBHOOK_VERIFICATION is not allowed in production");
       errorMessage = "Webhook verification misconfigured";
       processedOk = false;
       return NextResponse.json(
@@ -383,7 +389,7 @@ export async function POST(request: NextRequest) {
     const tokenFromQuery = request.nextUrl.searchParams.get("token");
 
     if (isProd && !skipVerification && !canVerify && !zidWebhookToken) {
-      console.error("Zid webhook config missing in production");
+      logger.error("Zid webhook config missing in production");
       errorMessage = "Webhook not configured";
       processedOk = false;
       return NextResponse.json(
@@ -398,7 +404,7 @@ export async function POST(request: NextRequest) {
       const signature = request.headers.get(webhookConfig.header!);
 
       if (!signature) {
-        console.error("Zid webhook signature missing");
+        logger.error("Zid webhook signature missing");
         errorMessage = "Missing signature";
         processedOk = false;
         return NextResponse.json({ error: "Missing signature" }, { status: 401 });
@@ -410,20 +416,20 @@ export async function POST(request: NextRequest) {
       };
 
       if (!verifySignature(signature, signatureConfig, rawBody)) {
-        console.error("Zid webhook signature verification failed");
+        logger.error("Zid webhook signature verification failed");
         errorMessage = "Invalid signature";
         processedOk = false;
         return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
       }
     } else if (isProd && !skipVerification) {
       if (!zidWebhookToken || tokenFromQuery !== zidWebhookToken) {
-        console.error("Zid webhook token verification failed");
+        logger.error("Zid webhook token verification failed");
         errorMessage = "Invalid token";
         processedOk = false;
         return NextResponse.json({ error: "Invalid token" }, { status: 401 });
       }
     } else {
-      console.log("Zid webhook verification skipped");
+      logger.debug("Zid webhook verification skipped");
     }
 
     const payload = JSON.parse(rawBody);
@@ -431,7 +437,7 @@ export async function POST(request: NextRequest) {
       .trim()
       .toLowerCase();
 
-    console.log(`📥 Zid webhook received: ${eventType}`);
+    logger.info("Zid webhook received", { eventType });
 
     // ============================================
     // PRODUCT EVENTS
@@ -447,7 +453,7 @@ export async function POST(request: NextRequest) {
       const storeId = payload.store_id ?? payload.data?.store_id;
 
       if (!productId || !storeId) {
-        console.error("❌ Missing product_id or store_id in payload");
+        logger.error("Missing product_id or store_id in payload");
         processedOk = false;
         return NextResponse.json({ error: "Missing data" }, { status: 400 });
       }
@@ -457,7 +463,7 @@ export async function POST(request: NextRequest) {
       });
 
       if (!merchant) {
-        console.error(`❌ Merchant not found for store_id: ${storeId}`);
+        logger.error("Merchant not found for store_id", { storeId });
         processedOk = false;
         return NextResponse.json(
           { error: "Merchant not found" },
@@ -475,7 +481,7 @@ export async function POST(request: NextRequest) {
         !process.env.ZID_API_BASE_URL;
 
       if (skipSyncInDev || (!isProd && missingConfig)) {
-        console.log("Zid product sync skipped in development");
+        logger.debug("Zid product sync skipped in development");
         processedOk = true;
         return NextResponse.json({
           success: true,
@@ -484,7 +490,7 @@ export async function POST(request: NextRequest) {
       }
 
       if (missingConfig) {
-        console.error("Zid product sync missing API config in production");
+        logger.error("Zid product sync missing API config in production");
         processedOk = false;
         return NextResponse.json(
           { error: "Product sync not configured" },
@@ -514,7 +520,7 @@ export async function POST(request: NextRequest) {
       const storeId = payload.store_id ?? payload.data?.store_id;
 
       if (!productId || !storeId) {
-        console.error("❌ Missing product_id or store_id in delete payload");
+        logger.error("Missing product_id or store_id in delete payload");
         processedOk = false;
         return NextResponse.json({ error: "Missing data" }, { status: 400 });
       }
@@ -524,7 +530,7 @@ export async function POST(request: NextRequest) {
       });
 
       if (!merchant) {
-        console.error(`❌ Merchant not found for store_id: ${storeId}`);
+        logger.error("Merchant not found for store_id in delete", { storeId });
         processedOk = false;
         return NextResponse.json(
           { error: "Merchant not found" },
@@ -560,7 +566,7 @@ export async function POST(request: NextRequest) {
       normalized = normalizeZidOrderWebhook(payload);
 
       if (!normalized) {
-        console.error("❌ Failed to normalize Zid order webhook");
+        logger.error("Failed to normalize Zid order webhook");
         errorMessage = "Failed to normalize webhook payload";
         processedOk = false;
         return NextResponse.json(
@@ -577,9 +583,9 @@ export async function POST(request: NextRequest) {
       });
 
       if (!merchant) {
-        console.error(
-          `❌ Merchant not found for store_id: ${normalized.storeId}`
-        );
+        logger.error("Merchant not found for store_id in order", {
+          storeId: normalized.storeId,
+        });
         errorMessage = "Merchant not found";
         processedOk = false;
         return NextResponse.json(
@@ -599,16 +605,16 @@ export async function POST(request: NextRequest) {
     // ============================================
     // UNKNOWN EVENT
     // ============================================
-    console.log(`⚠️  Unhandled Zid webhook event: ${eventType}`);
+    logger.debug("Unhandled Zid webhook event", { eventType });
     processedOk = true;
     return NextResponse.json({
       success: true,
       message: "Event received but not processed",
     });
   } catch (error) {
-    console.error("❌ Zid webhook error:", error);
-    errorMessage =
-      error instanceof Error ? error.message : "Unknown error occurred";
+    const errorMsg = error instanceof Error ? error.message : "Unknown error occurred";
+    logger.error("Zid webhook error", { error: errorMsg });
+    errorMessage = errorMsg;
     processedOk = false;
 
     return NextResponse.json(
@@ -635,7 +641,8 @@ export async function POST(request: NextRequest) {
           prisma
         );
       } catch (logError) {
-        console.error("Failed to log webhook:", logError);
+        const errorMsg = logError instanceof Error ? logError.message : String(logError);
+        logger.error("Failed to log webhook", { error: errorMsg });
       }
     }
   }

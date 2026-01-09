@@ -10,16 +10,9 @@ import {
   getMissingZidConnectionFields,
   isZidConnected,
 } from "@/lib/zid/isZidConnected";
+import { createLogger } from "@/lib/utils/logger";
 
-const shouldDebugSync = process.env.RAFF_SYNC_DEBUG === "true";
-const debugSyncLog = (message: string, details?: Record<string, unknown>) => {
-  if (!shouldDebugSync) return;
-  if (details) {
-    console.log("[merchant-sync]", message, details);
-    return;
-  }
-  console.log("[merchant-sync]", message);
-};
+const logger = createLogger("merchant-sync");
 
 const isZidAuthError = (error: unknown): boolean =>
   error instanceof Error && /Zid API error\s+401/i.test(error.message);
@@ -40,7 +33,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}));
     const requestedPlatform = body?.platform;
     const syncOrders = Boolean(body?.syncOrders);
-    debugSyncLog("sync-request", {
+    logger.debug("Sync request", {
       merchantId,
       requestedPlatform,
     });
@@ -80,7 +73,7 @@ export async function POST(request: NextRequest) {
     const zidConnected = isZidConnected(merchant);
     const isSallaConnected = !!merchant.sallaAccessToken;
 
-    debugSyncLog("connection-status", {
+    logger.debug("Connection status", {
       isZidConnected: zidConnected,
       isSallaConnected,
       hasZidStoreId: Boolean(merchant.zidStoreId),
@@ -131,7 +124,7 @@ export async function POST(request: NextRequest) {
         const waitTime = Math.ceil(
           (fiveMinutesInMs - timeSinceLastSync) / 1000 / 60
         );
-        debugSyncLog("sync-lock-rejected", {
+        logger.debug("Sync lock rejected", {
           merchantId,
           lastSyncAt: currentMerchant.lastSyncAt.toISOString(),
           waitTimeMinutes: waitTime,
@@ -153,7 +146,7 @@ export async function POST(request: NextRequest) {
         : zidConnected
         ? "zid"
         : "salla";
-    debugSyncLog("platform-selected", {
+    logger.debug("Platform selected", {
       platform,
       requestedPlatform,
       isZidConnected: zidConnected,
@@ -162,7 +155,7 @@ export async function POST(request: NextRequest) {
 
     if (platform === "zid" && !zidConnected) {
       const missingFields = getMissingZidConnectionFields(merchant);
-      debugSyncLog("zid-connection-missing", {
+      logger.debug("Zid connection missing", {
         merchantId,
         missingFields,
       });
@@ -171,7 +164,7 @@ export async function POST(request: NextRequest) {
         where: { id: merchantId },
         data: { lastSyncAt: merchant.lastSyncAt },
       });
-      debugSyncLog("sync-aborted", {
+      logger.debug("Sync aborted", {
         reason: "zid-not-connected",
         merchantId,
       });
@@ -193,7 +186,7 @@ export async function POST(request: NextRequest) {
         where: { id: merchantId },
         data: { lastSyncAt: merchant.lastSyncAt },
       });
-      debugSyncLog("sync-aborted", {
+      logger.debug("Sync aborted", {
         reason: "salla-not-connected",
         merchantId,
       });
@@ -228,13 +221,13 @@ export async function POST(request: NextRequest) {
     try {
       // Lock already acquired above via updateMany
 
-      debugSyncLog("sync-start", {
+      logger.debug("Sync start", {
         merchantId,
         platform,
         storeUrl: storeUrl || null,
       });
       if (platform === "zid") {
-        console.info("[zid-sync] preflight", {
+        logger.info("Zid sync preflight", {
           merchantId,
           connected: zidConnected,
           hasStoreId: Boolean(merchant.zidStoreId),
@@ -289,7 +282,7 @@ export async function POST(request: NextRequest) {
         where: { id: merchantId },
         data: { lastSyncAt: new Date() },
       });
-      debugSyncLog("sync-complete", {
+      logger.debug("Sync complete", {
         merchantId,
         platform,
         summary: syncSummary || null,
@@ -299,7 +292,7 @@ export async function POST(request: NextRequest) {
         where: { id: merchantId },
         data: { lastSyncAt: previousLastSyncAt },
       });
-      debugSyncLog("sync-error", {
+      logger.error("Sync error", {
         merchantId,
         platform,
         error: error instanceof Error ? error.message : "Unknown error",
@@ -346,7 +339,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(syncResult);
   } catch (error) {
-    console.error("Error triggering product sync:", error);
+    const errorMsg = error instanceof Error ? error.message : "Unknown error";
+    logger.error("Error triggering product sync", { error: errorMsg });
     if (isZidAuthError(error)) {
       return NextResponse.json(
         {
@@ -431,7 +425,8 @@ export async function GET(_request: NextRequest) {
         : true,
     });
   } catch (error) {
-    console.error("Error fetching sync status:", error);
+    const errorMsg = error instanceof Error ? error.message : "Unknown error";
+    logger.error("Error fetching sync status", { error: errorMsg });
     return NextResponse.json(
       { error: "Failed to fetch sync status" },
       { status: 500 }

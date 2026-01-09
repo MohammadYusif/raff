@@ -5,6 +5,9 @@ import { nanoid } from "nanoid";
 import { z } from "zod";
 import { getRequestIp, rateLimit } from "@/lib/rateLimit";
 import crypto from "crypto";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("track-click");
 
 const trackClickSchema = z.object({
   productId: z.string().min(1),
@@ -55,7 +58,7 @@ function isValidReferrerPath(pathname: string): boolean {
 
 function isValidReferrer(referrer: string | null, appOrigin: string): boolean {
   if (!referrer) {
-    console.log("[track-click] No referrer provided");
+    logger.debug("No referrer provided");
     return false;
   }
   try {
@@ -63,7 +66,7 @@ function isValidReferrer(referrer: string | null, appOrigin: string): boolean {
     const isValidOrigin = url.origin === appOrigin;
     const isValidPath = isValidReferrerPath(url.pathname);
 
-    console.log("[track-click] Referrer validation", {
+    logger.debug("Referrer validation", {
       referrer,
       appOrigin,
       urlOrigin: url.origin,
@@ -75,7 +78,8 @@ function isValidReferrer(referrer: string | null, appOrigin: string): boolean {
     if (!isValidOrigin) return false;
     return isValidPath;
   } catch (error) {
-    console.log("[track-click] Invalid referrer URL", { referrer, error });
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.debug("Invalid referrer URL", { referrer, error: errorMsg });
     return false;
   }
 }
@@ -182,7 +186,8 @@ async function logOutboundClickEvent(data: {
       },
     });
   } catch (error) {
-    console.warn("Failed to log outbound click event:", error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.warn("Failed to log outbound click event", { error: errorMsg });
   }
 }
 
@@ -437,7 +442,8 @@ export async function POST(request: NextRequest) {
       disqualifyReason,
     });
   } catch (error) {
-    console.error("Click tracking error:", error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error("Click tracking error", { error: errorMsg });
     return NextResponse.json(
       { error: "Failed to track click" },
       { status: 500 }

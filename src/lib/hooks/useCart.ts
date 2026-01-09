@@ -306,8 +306,9 @@ function useCartState(options: CartStateOptions = {}): CartContextValue {
       const controller = new AbortController();
       userCartAbortRef.current = controller;
 
-      const request = readUserCart(controller.signal)
-        .then((next) => {
+      const request = (async () => {
+        try {
+          const next = await readUserCart(controller.signal);
           if (requestId !== userCartRequestIdRef.current) {
             return userCartCacheRef.current ?? [];
           }
@@ -317,13 +318,13 @@ function useCartState(options: CartStateOptions = {}): CartContextValue {
             return next;
           }
           return userCartCacheRef.current ?? [];
-        })
-        .finally(() => {
+        } finally {
           if (userCartAbortRef.current === controller) {
             userCartAbortRef.current = null;
           }
           userCartInFlightRef.current = null;
-        });
+        }
+      })();
 
       userCartInFlightRef.current = request;
       return request;
@@ -376,13 +377,13 @@ function useCartState(options: CartStateOptions = {}): CartContextValue {
       userId !== prevUserIdRef.current &&
       status === "authenticated"
     ) {
-      mergeGuestCartToUser(userId).then((merged) => {
+      (async () => {
+        const merged = await mergeGuestCartToUser(userId);
         if (merged) {
-          fetchUserCart(true).then((next) => {
-            setItems((prev) => (areCartItemsEqual(prev, next) ? prev : next));
-          });
+          const next = await fetchUserCart(true);
+          setItems((prev) => (areCartItemsEqual(prev, next) ? prev : next));
         }
-      });
+      })();
       prevUserIdRef.current = userId;
     }
   }, [userId, status, fetchUserCart]);
@@ -399,9 +400,8 @@ function useCartState(options: CartStateOptions = {}): CartContextValue {
     const initializeCart = async () => {
       if (userId && status === "authenticated") {
         if (hasInitialSnapshotForUser) {
-          fetchUserCart(true).then((next) => {
-            setItems((prev) => (areCartItemsEqual(prev, next) ? prev : next));
-          });
+          const next = await fetchUserCart(true);
+          setItems((prev) => (areCartItemsEqual(prev, next) ? prev : next));
         } else {
           setIsLoading(true);
           const guestCart = readGuestCart();
@@ -434,11 +434,10 @@ function useCartState(options: CartStateOptions = {}): CartContextValue {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const handleUpdate = () => {
+    const handleUpdate = async () => {
       if (userId && status === "authenticated") {
-        fetchUserCart().then((next) => {
-          setItems((prev) => (areCartItemsEqual(prev, next) ? prev : next));
-        });
+        const next = await fetchUserCart();
+        setItems((prev) => (areCartItemsEqual(prev, next) ? prev : next));
       } else {
         const guestCart = readGuestCart();
         setItems((prev) => (areCartItemsEqual(prev, guestCart) ? prev : guestCart));

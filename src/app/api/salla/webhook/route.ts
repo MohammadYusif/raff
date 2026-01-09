@@ -348,9 +348,12 @@ async function processOrderWebhook(
       },
     });
 
-    console.log(
-      `Commission ${desiredStatus}: ${commissionAmount} ${normalized.currency} for order ${normalized.orderId}`
-    );
+    logger.info("Commission processed", {
+      status: desiredStatus,
+      amount: commissionAmount,
+      currency: normalized.currency,
+      orderId: normalized.orderId,
+    });
 
     return {
       success: true,
@@ -775,7 +778,7 @@ export async function POST(request: NextRequest) {
         });
 
         if (!merchant) {
-          console.warn("Salla app.installed: merchant not found for store", {
+          logger.warn("Salla app.installed: merchant not found for store", {
             storeId: storeIdString,
           });
           processedOk = true;
@@ -800,12 +803,12 @@ export async function POST(request: NextRequest) {
         if (merchant.sallaAccessToken) {
           await syncSallaStoreInfo(merchant.id);
         } else {
-          console.warn("Salla app.installed: missing access token for store", {
+          logger.warn("Salla app.installed: missing access token for store", {
             storeId: storeIdString,
           });
         }
       } else {
-        console.warn("Salla app.installed: missing storeId in payload");
+        logger.warn("Salla app.installed: missing storeId in payload");
       }
 
       processedOk = true;
@@ -819,7 +822,7 @@ export async function POST(request: NextRequest) {
       const storeIdString = resolveSallaStoreId(payload) ?? "";
 
       if (!storeIdString) {
-        console.warn("Salla app.uninstalled: missing storeId in payload");
+        logger.warn("Salla app.uninstalled: missing storeId in payload");
         processedOk = true;
         return NextResponse.json({ success: true });
       }
