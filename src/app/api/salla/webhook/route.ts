@@ -681,6 +681,83 @@ export async function POST(request: NextRequest) {
     }
 
     /* --------------------------------------------------------
+       PRODUCT DELETED
+    -------------------------------------------------------- */
+    if (eventType === "product.deleted") {
+      const productId = data?.id;
+      const storeId =
+        toStringOrNull(merchantPayload?.id) ?? resolveSallaStoreId(payload);
+
+      if (!productId || !storeId) {
+        return NextResponse.json({ error: "Missing data" }, { status: 400 });
+      }
+
+      const merchant = await prisma.merchant.findUnique({
+        where: { sallaStoreId: storeId },
+      });
+
+      if (!merchant) {
+        return NextResponse.json(
+          { error: "Merchant not found" },
+          { status: 404 }
+        );
+      }
+
+      const idempotencyKey = buildWebhookIdempotencyKey({
+        platform: "SALLA",
+        storeId,
+        eventType,
+        entityId: String(productId),
+        deliveryId: deliveryHeaderId,
+      });
+
+      const productEvent = await registerWebhookEvent({
+        platform: "SALLA",
+        storeId,
+        eventType,
+        idempotencyKey,
+        deliveryHeaderId,
+        payload: {
+          eventType,
+          productId: String(productId),
+          storeId,
+        },
+      });
+
+      webhookEventId = productEvent.id;
+      if (productEvent.duplicate) {
+        logger.debug("duplicate-product-deletion-webhook", {
+          eventType,
+          productId: String(productId),
+        });
+        processedOk = true;
+        return NextResponse.json({ success: true, duplicate: true });
+      }
+
+      // Mark product as inactive instead of deleting
+      // This preserves historical data and order references
+      const updated = await prisma.product.updateMany({
+        where: {
+          merchantId: merchant.id,
+          sallaProductId: productId.toString(),
+        },
+        data: {
+          isActive: false,
+          inStock: false,
+        },
+      });
+
+      logger.info("Product marked as deleted", {
+        merchantId: merchant.id,
+        productId: productId.toString(),
+        updatedCount: updated.count,
+      });
+
+      processedOk = true;
+      return NextResponse.json({ success: true, productsUpdated: updated.count });
+    }
+
+    /* --------------------------------------------------------
        APP INSTALLED
     -------------------------------------------------------- */
     if (eventType === "app.installed") {
