@@ -123,11 +123,22 @@ export class SallaService {
       if (!response.ok) {
         if (response.status === 401 && this.refreshAccessToken && attempt === 0) {
           await response.body?.cancel();
-          const refreshed = await this.refreshAccessToken();
-          if (refreshed) {
-            this.accessToken = refreshed;
-            attempt += 1;
-            continue;
+          try {
+            const refreshed = await this.refreshAccessToken();
+            if (refreshed) {
+              this.accessToken = refreshed;
+              attempt += 1;
+              logger.debug("Token refreshed and retrying request", { url });
+              continue;
+            } else {
+              // Token refresh returned null - this merchant needs to reconnect
+              logger.error("Token refresh returned null", { url });
+              throw new Error("Token refresh failed - merchant requires reconnection");
+            }
+          } catch (error) {
+            const errorMsg = error instanceof Error ? error.message : String(error);
+            logger.error("Token refresh threw error", { url, error: errorMsg });
+            throw new Error(`Token refresh failed: ${errorMsg}`);
           }
         }
 
@@ -314,26 +325,49 @@ export async function ensureSallaAccessToken(merchant: SallaMerchantAuth) {
   }
 
   if (!merchant.sallaRefreshToken) {
-    throw new Error("Salla refresh token missing");
+    logger.error("Salla refresh token missing", { merchantId: merchant.id });
+    throw new Error("Salla refresh token missing - merchant needs to reconnect");
   }
 
-  const refreshed = await SallaService.refreshToken(merchant.sallaRefreshToken);
-  const tokenExpiry = new Date(Date.now() + refreshed.expiresIn * 1000);
+  try {
+    const refreshed = await SallaService.refreshToken(merchant.sallaRefreshToken);
+    const tokenExpiry = new Date(Date.now() + refreshed.expiresIn * 1000);
 
-  await prisma.merchant.update({
-    where: { id: merchant.id },
-    data: {
-      sallaAccessToken: refreshed.accessToken,
-      sallaRefreshToken: refreshed.refreshToken,
-      sallaTokenExpiry: tokenExpiry,
-    },
-  });
+    await prisma.merchant.update({
+      where: { id: merchant.id },
+      data: {
+        sallaAccessToken: refreshed.accessToken,
+        sallaRefreshToken: refreshed.refreshToken,
+        sallaTokenExpiry: tokenExpiry,
+        isActive: true, // Reactivate if token refresh succeeds
+      },
+    });
 
-  return {
-    accessToken: refreshed.accessToken,
-    refreshToken: refreshed.refreshToken,
-    tokenExpiry,
-  };
+    logger.info("Salla token refreshed successfully", { merchantId: merchant.id });
+
+    return {
+      accessToken: refreshed.accessToken,
+      refreshToken: refreshed.refreshToken,
+      tokenExpiry,
+    };
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error("Salla token refresh failed", {
+      merchantId: merchant.id,
+      error: errorMsg
+    });
+
+    // Mark merchant as inactive so sync stops trying
+    // The error is already logged for debugging
+    await prisma.merchant.update({
+      where: { id: merchant.id },
+      data: {
+        isActive: false,
+      },
+    });
+
+    throw new Error(`Token refresh failed for merchant ${merchant.id} - marked as inactive. Merchant needs to reconnect.`);
+  }
 }
 
 export async function refreshSallaAccessToken(merchant: {
@@ -341,26 +375,49 @@ export async function refreshSallaAccessToken(merchant: {
   sallaRefreshToken: string | null;
 }): Promise<{ accessToken: string; refreshToken: string; tokenExpiry: Date }> {
   if (!merchant.sallaRefreshToken) {
-    throw new Error("Salla refresh token missing");
+    logger.error("Salla refresh token missing", { merchantId: merchant.id });
+    throw new Error("Salla refresh token missing - merchant needs to reconnect");
   }
 
-  const refreshed = await SallaService.refreshToken(merchant.sallaRefreshToken);
-  const tokenExpiry = new Date(Date.now() + refreshed.expiresIn * 1000);
+  try {
+    const refreshed = await SallaService.refreshToken(merchant.sallaRefreshToken);
+    const tokenExpiry = new Date(Date.now() + refreshed.expiresIn * 1000);
 
-  await prisma.merchant.update({
-    where: { id: merchant.id },
-    data: {
-      sallaAccessToken: refreshed.accessToken,
-      sallaRefreshToken: refreshed.refreshToken,
-      sallaTokenExpiry: tokenExpiry,
-    },
-  });
+    await prisma.merchant.update({
+      where: { id: merchant.id },
+      data: {
+        sallaAccessToken: refreshed.accessToken,
+        sallaRefreshToken: refreshed.refreshToken,
+        sallaTokenExpiry: tokenExpiry,
+        isActive: true, // Reactivate if token refresh succeeds
+      },
+    });
 
-  return {
-    accessToken: refreshed.accessToken,
-    refreshToken: refreshed.refreshToken,
-    tokenExpiry,
-  };
+    logger.info("Salla token refreshed successfully", { merchantId: merchant.id });
+
+    return {
+      accessToken: refreshed.accessToken,
+      refreshToken: refreshed.refreshToken,
+      tokenExpiry,
+    };
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error("Salla token refresh failed", {
+      merchantId: merchant.id,
+      error: errorMsg
+    });
+
+    // Mark merchant as inactive so sync stops trying
+    // The error is already logged for debugging
+    await prisma.merchant.update({
+      where: { id: merchant.id },
+      data: {
+        isActive: false,
+      },
+    });
+
+    throw new Error(`Token refresh failed for merchant ${merchant.id} - marked as inactive. Merchant needs to reconnect.`);
+  }
 }
 
 function resolveSallaProductUrl(product: SallaProduct): string | null {

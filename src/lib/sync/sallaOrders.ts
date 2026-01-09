@@ -196,39 +196,89 @@ const mapWithConcurrency = async <T, R>(
   return results;
 };
 
-const findProductMatch = async (
+/**
+ * Build a product lookup map for batch queries (prevents N+1 queries)
+ * @returns Map of sallaProductId -> productId and Map of lowercase name -> productId
+ */
+const buildProductLookupMaps = async (
   merchantId: string,
-  item: SallaOrderItem | null
-): Promise<string | null> => {
-  if (!item) return null;
+  productIds: Set<string>,
+  productNames: Set<string>
+): Promise<{
+  byId: Map<string, string>;
+  byName: Map<string, string>;
+}> => {
+  const byId = new Map<string, string>();
+  const byName = new Map<string, string>();
 
-  const itemProductId = toStringOrNull(item.product_id);
-  if (itemProductId) {
-    const productById = await prisma.product.findFirst({
-      where: {
-        merchantId,
-        sallaProductId: itemProductId,
-      },
-      select: { id: true },
-    });
-    if (productById?.id) return productById.id;
+  if (productIds.size === 0 && productNames.size === 0) {
+    return { byId, byName };
   }
 
+  // Batch query 1: Fetch all products by Salla product IDs
+  if (productIds.size > 0) {
+    const productsByIds = await prisma.product.findMany({
+      where: {
+        merchantId,
+        sallaProductId: { in: Array.from(productIds) },
+      },
+      select: { id: true, sallaProductId: true },
+    });
+
+    for (const product of productsByIds) {
+      if (product.sallaProductId) {
+        byId.set(product.sallaProductId, product.id);
+      }
+    }
+  }
+
+  // Batch query 2: Fetch all products by names (for items without product_id)
+  if (productNames.size > 0) {
+    const productsByNames = await prisma.product.findMany({
+      where: {
+        merchantId,
+        OR: [
+          { title: { in: Array.from(productNames), mode: "insensitive" } },
+          { titleAr: { in: Array.from(productNames), mode: "insensitive" } },
+        ],
+      },
+      select: { id: true, title: true, titleAr: true },
+    });
+
+    for (const product of productsByNames) {
+      if (product.title) {
+        byName.set(product.title.toLowerCase(), product.id);
+      }
+      if (product.titleAr) {
+        byName.set(product.titleAr.toLowerCase(), product.id);
+      }
+    }
+  }
+
+  return { byId, byName };
+};
+
+/**
+ * Find product match using pre-built lookup maps (O(1) instead of O(n) queries)
+ */
+const findProductMatchFromMaps = (
+  item: SallaOrderItem | null,
+  lookupMaps: { byId: Map<string, string>; byName: Map<string, string> }
+): string | null => {
+  if (!item) return null;
+
+  // Try to match by product ID first
+  const itemProductId = toStringOrNull(item.product_id);
+  if (itemProductId) {
+    const productId = lookupMaps.byId.get(itemProductId);
+    if (productId) return productId;
+  }
+
+  // Fallback to matching by name
   const itemName = toStringOrNull(item.name);
   if (!itemName) return null;
 
-  const productByName = await prisma.product.findFirst({
-    where: {
-      merchantId,
-      OR: [
-        { title: { equals: itemName, mode: "insensitive" } },
-        { titleAr: { equals: itemName, mode: "insensitive" } },
-      ],
-    },
-    select: { id: true },
-  });
-
-  return productByName?.id ?? null;
+  return lookupMaps.byName.get(itemName.toLowerCase()) ?? null;
 };
 
 export async function syncSallaOrdersForMerchant(
@@ -317,6 +367,20 @@ export async function syncSallaOrdersForMerchant(
     pagesFetched += 1;
     ordersSeen += items.length;
 
+    // PHASE 1: Fetch all order details and collect product IDs/names for batch lookup
+    type OrderData = {
+      orderId: string;
+      order: SallaOrderListItem;
+      details: SallaOrderDetails | null;
+      itemsList: SallaOrderItem[];
+      latestHistory: SallaOrderHistory | null;
+      primaryItem: SallaOrderItem | null;
+    };
+
+    const orderDataList: OrderData[] = [];
+    const productIds = new Set<string>();
+    const productNames = new Set<string>();
+
     await mapWithConcurrency(items, concurrency, async (order) => {
       const orderId = toStringOrNull(order.id);
       if (!orderId) return;
@@ -345,11 +409,46 @@ export async function syncSallaOrdersForMerchant(
         }
         throw error;
       }
+
+      const primaryItem = pickPrimaryItem(itemsList);
+
+      // Collect product IDs and names for batch lookup
+      if (primaryItem) {
+        const itemProductId = toStringOrNull(primaryItem.product_id);
+        if (itemProductId) {
+          productIds.add(itemProductId);
+        }
+        const itemName = toStringOrNull(primaryItem.name);
+        if (itemName) {
+          productNames.add(itemName);
+        }
+      }
+
+      orderDataList.push({
+        orderId,
+        order,
+        details,
+        itemsList,
+        latestHistory,
+        primaryItem,
+      });
+    });
+
+    // PHASE 2: Build product lookup maps (2 queries total instead of N*2)
+    const productLookupMaps = await buildProductLookupMaps(
+      merchantId,
+      productIds,
+      productNames
+    );
+
+    // PHASE 3: Process orders using the pre-built maps (no more queries per order)
+    for (const orderData of orderDataList) {
+      const { orderId, order, details, itemsList, latestHistory, primaryItem } = orderData;
+
       // Histories are fetched to validate access; we do not persist them yet.
       void latestHistory;
 
-      const primaryItem = pickPrimaryItem(itemsList);
-      const productId = await findProductMatch(merchantId, primaryItem);
+      const productId = findProductMatchFromMaps(primaryItem, productLookupMaps);
       if (productId) ordersWithProductMatch += 1;
 
       const quantity = sumItemQuantities(itemsList);
@@ -424,7 +523,7 @@ export async function syncSallaOrdersForMerchant(
       });
 
       ordersUpserted += 1;
-    });
+    }
 
     const currentPage = pagination.currentPage ?? page;
     const totalPages = pagination.totalPages;
