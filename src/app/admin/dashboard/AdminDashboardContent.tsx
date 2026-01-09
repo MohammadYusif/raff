@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   Users,
   Store,
@@ -10,6 +11,7 @@ import {
   TrendingUp,
   Eye,
   MousePointerClick,
+  Home,
 } from "lucide-react";
 
 interface AdminAnalytics {
@@ -161,11 +163,20 @@ export function AdminDashboardContent() {
     <div className="min-h-screen bg-raff-neutral-50 p-8">
       <div className="mx-auto max-w-7xl">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-raff-neutral-900">Admin Dashboard</h1>
-          <p className="mt-2 text-raff-neutral-600">
-            Real-time platform analytics and insights
-          </p>
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-raff-neutral-900">Admin Dashboard</h1>
+            <p className="mt-2 text-raff-neutral-600">
+              Real-time platform analytics and insights
+            </p>
+          </div>
+          <Link
+            href="/"
+            className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-raff-neutral-700 shadow-sm transition-colors hover:bg-raff-neutral-100"
+          >
+            <Home className="h-4 w-4" />
+            <span>Back to Home</span>
+          </Link>
         </div>
 
         {/* Time Range Selector */}
