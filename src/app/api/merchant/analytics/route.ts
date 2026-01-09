@@ -33,8 +33,8 @@ export async function GET(request: NextRequest) {
     const startDate = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
     const previousStartDate = new Date(startDate.getTime() - daysAgo * 24 * 60 * 60 * 1000);
 
-    // Get current period stats (using available models)
-    const [currentClicks, currentOrders] = await Promise.all([
+    // Get current period stats
+    const [currentClicks, currentOrders, currentProductStats] = await Promise.all([
       prisma.clickTracking.count({
         where: {
           merchantId,
@@ -50,15 +50,22 @@ export async function GET(request: NextRequest) {
           totalPrice: true,
         },
       }),
+      prisma.product.aggregate({
+        where: { merchantId },
+        _sum: {
+          viewCount: true,
+        },
+      }),
     ]);
 
-    const currentViews = currentClicks; // Using clicks as proxy for views
+    const currentViews = currentProductStats._sum.viewCount || 0;
     const currentRevenue = currentOrders.reduce(
       (sum, order) => sum + Number(order.totalPrice),
       0
     );
 
     // Get previous period stats
+    // Note: Views are cumulative, so we calculate previous period views differently
     const [previousClicks, previousOrders] = await Promise.all([
       prisma.clickTracking.count({
         where: {
@@ -83,7 +90,27 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
-    const previousViews = previousClicks;
+    // For views, estimate previous period by checking trending logs
+    // Get product IDs for this merchant
+    const merchantProductIds = await prisma.product.findMany({
+      where: { merchantId },
+      select: { id: true },
+    });
+
+    const productIds = merchantProductIds.map((p) => p.id);
+
+    const previousViewLogs = await prisma.trendingLog.count({
+      where: {
+        eventType: "VIEW",
+        createdAt: {
+          gte: previousStartDate,
+          lt: startDate,
+        },
+        productId: { in: productIds },
+      },
+    });
+
+    const previousViews = previousViewLogs;
     const previousRevenue = previousOrders.reduce(
       (sum, order) => sum + Number(order.totalPrice),
       0
@@ -197,7 +224,14 @@ export async function GET(request: NextRequest) {
       const dayStart = new Date(date.setHours(0, 0, 0, 0));
       const dayEnd = new Date(date.setHours(23, 59, 59, 999));
 
-      const [dayClicks, dayOrders] = await Promise.all([
+      const [dayViews, dayClicks, dayOrders] = await Promise.all([
+        prisma.trendingLog.count({
+          where: {
+            eventType: "VIEW",
+            createdAt: { gte: dayStart, lte: dayEnd },
+            productId: { in: productIds },
+          },
+        }),
         prisma.clickTracking.count({
           where: {
             merchantId,
@@ -214,7 +248,7 @@ export async function GET(request: NextRequest) {
 
       dailyStats.push({
         date: dayStart.toISOString(),
-        views: dayClicks,
+        views: dayViews,
         clicks: dayClicks,
         orders: dayOrders,
       });

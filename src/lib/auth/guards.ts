@@ -59,3 +59,34 @@ export async function requireMerchant(
 
   return { session };
 }
+
+export async function requireAdmin(context?: "api"): Promise<ApiGuardResult>;
+export async function requireAdmin(context: "page"): Promise<Session>;
+export async function requireAdmin(
+  context: "api" | "page" = "page"
+): Promise<ApiGuardResult | Session> {
+  if (context === "page") {
+    const session = await requireAuth("page");
+    const role = session.user.role;
+
+    if (role !== "ADMIN") {
+      redirect("/");
+    }
+
+    return session;
+  }
+
+  const authResult = await requireAuth("api");
+  if ("response" in authResult) {
+    return authResult;
+  }
+
+  const { session } = authResult;
+  const role = session.user.role;
+
+  if (role !== "ADMIN") {
+    return { response: NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 }) };
+  }
+
+  return { session };
+}
