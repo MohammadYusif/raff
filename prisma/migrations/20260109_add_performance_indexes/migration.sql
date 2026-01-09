@@ -37,9 +37,9 @@ CREATE INDEX IF NOT EXISTS "Order_merchantId_productId_idx" ON "Order"("merchant
 -- Used to prevent duplicate webhook processing
 CREATE INDEX IF NOT EXISTS "WebhookEvent_idempotencyKey_idx" ON "WebhookEvent"("idempotencyKey");
 
--- Index for finding recent webhook events by merchant
+-- Index for finding recent webhook events by store
 -- Used in monitoring and debugging
-CREATE INDEX IF NOT EXISTS "WebhookEvent_merchantId_createdAt_idx" ON "WebhookEvent"("merchantId", "createdAt");
+CREATE INDEX IF NOT EXISTS "WebhookEvent_storeId_createdAt_idx" ON "WebhookEvent"("storeId", "createdAt");
 
--- Index for webhook events by status (for monitoring failed webhooks)
-CREATE INDEX IF NOT EXISTS "WebhookEvent_status_createdAt_idx" ON "WebhookEvent"("status", "createdAt");
+-- Index for webhook events by processing status (for monitoring failed webhooks)
+CREATE INDEX IF NOT EXISTS "WebhookEvent_processingStatus_createdAt_idx" ON "WebhookEvent"("processingStatus", "createdAt");
