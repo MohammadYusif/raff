@@ -29,70 +29,79 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  /* Raff Custom Colors - Matching Logo Aesthetic */
-  --color-raff-primary: #3d4554;
-  --color-raff-primary-light: #525b6b;
-  --color-raff-primary-dark: #2a2f3a;
-  --color-raff-accent: #3d4554;
-  --color-raff-accent-light: #525b6b;
-  --color-raff-accent-dark: #2a2f3a;
-  --color-raff-neutral-50: #f8f9fa;
-  --color-raff-neutral-100: #f1f3f5;
-  --color-raff-neutral-200: #e9ecef;
-  --color-raff-neutral-300: #dee2e6;
-  --color-raff-neutral-400: #ced4da;
-  --color-raff-neutral-500: #adb5bd;
-  --color-raff-neutral-600: #6c757d;
-  --color-raff-neutral-700: #495057;
-  --color-raff-neutral-800: #343a40;
-  --color-raff-neutral-900: #212529;
-  --color-raff-success: #27ae60;
-  --color-raff-warning: #f39c12;
-  --color-raff-error: #e74c3c;
-  --color-raff-info: #3498db;
+  /* Raff Custom Colors - Soft & Gentle Palette from Logo */
+  /* Primary - Soft Navy Blue (from logo #383E59) */
+  --color-raff-primary: #4a5568;
+  --color-raff-primary-light: #667083;
+  --color-raff-primary-dark: #383e59;
+
+  /* Accent - Warm Gray (from logo #555A62) */
+  --color-raff-accent: #6b7280;
+  --color-raff-accent-light: #9ca3af;
+  --color-raff-accent-dark: #555a62;
+
+  /* Neutral - Soft Grays for gentle UI */
+  --color-raff-neutral-50: #fafbfc;
+  --color-raff-neutral-100: #f4f5f7;
+  --color-raff-neutral-200: #e5e7eb;
+  --color-raff-neutral-300: #d1d5db;
+  --color-raff-neutral-400: #9ca3af;
+  --color-raff-neutral-500: #6b7280;
+  --color-raff-neutral-600: #4b5563;
+  --color-raff-neutral-700: #374151;
+  --color-raff-neutral-800: #2d3748;
+  --color-raff-neutral-900: #1a202c;
+
+  /* Status Colors - Softer, More Approachable */
+  --color-raff-success: #48bb78;
+  --color-raff-warning: #ed8936;
+  --color-raff-error: #f56565;
+  --color-raff-info: #4299e1;
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --radius: 0.75rem;
+  /* Soft, Gentle Light Mode - Matching Logo Colors */
+  --background: oklch(0.99 0.005 240); /* Subtle blue-gray tint */
+  --foreground: oklch(0.25 0.015 245); /* Soft dark navy */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.30 0.015 245);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --popover-foreground: oklch(0.25 0.015 245);
+  --primary: oklch(0.42 0.035 245); /* Soft navy from logo */
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.96 0.010 240); /* Very light blue-gray */
+  --secondary-foreground: oklch(0.35 0.020 245);
+  --muted: oklch(0.96 0.010 240);
+  --muted-foreground: oklch(0.50 0.015 245); /* Medium gray */
+  --accent: oklch(0.48 0.020 240); /* Warm gray accent */
+  --accent-foreground: oklch(0.99 0 0);
+  --destructive: oklch(0.60 0.180 25); /* Softer red */
+  --border: oklch(0.90 0.010 240); /* Soft gray border */
+  --input: oklch(0.95 0.010 240);
+  --ring: oklch(0.42 0.035 245); /* Matches primary */
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  /* Soft Dark Mode - Less Harsh on Eyes */
+  --background: oklch(0.18 0.015 245); /* Soft dark navy instead of pure black */
+  --foreground: oklch(0.95 0.010 240); /* Slightly warm white */
+  --card: oklch(0.22 0.015 245);
+  --card-foreground: oklch(0.95 0.010 240);
+  --popover: oklch(0.22 0.015 245);
+  --popover-foreground: oklch(0.95 0.010 240);
+  --primary: oklch(0.65 0.040 245); /* Lighter navy for dark mode */
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.28 0.015 240);
+  --secondary-foreground: oklch(0.95 0.010 240);
+  --muted: oklch(0.28 0.015 240);
+  --muted-foreground: oklch(0.65 0.015 240);
+  --accent: oklch(0.55 0.025 240);
+  --accent-foreground: oklch(0.98 0 0);
+  --destructive: oklch(0.65 0.160 25);
+  --border: oklch(0.35 0.015 245);
+  --input: oklch(0.30 0.015 245);
+  --ring: oklch(0.60 0.035 245);
 }
 
 @layer base {
