@@ -15,16 +15,9 @@ import {
   refreshSallaAccessToken,
 } from "@/lib/services/salla.service";
 import type { SallaRequestOptions } from "@/lib/integrations/salla/client";
+import { createLogger } from "@/lib/utils/logger";
 
-const shouldDebug = process.env.RAFF_SALLA_SYNC_DEBUG === "true";
-const debugLog = (message: string, details?: Record<string, unknown>) => {
-  if (!shouldDebug) return;
-  if (details) {
-    console.log("[salla-sync]", message, details);
-    return;
-  }
-  console.log("[salla-sync]", message);
-};
+const logger = createLogger("salla-sync");
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
@@ -274,7 +267,7 @@ export async function syncSallaProductsForMerchant(
       const rawProductId = product.id;
       const sallaProductId = toStringOrNull(rawProductId);
       if (!sallaProductId) {
-        debugLog("skip-product", { reason: "missing-id", rawProductId });
+        logger.debug("skip-product", { reason: "missing-id", rawProductId });
         continue;
       }
 
@@ -419,7 +412,7 @@ export async function syncSallaProductsForMerchant(
     data: { lastSyncAt: new Date() },
   });
 
-  debugLog("sync-summary", {
+  logger.debug("sync-summary", {
     syncedCount,
     pagesFetched,
     createdCount,

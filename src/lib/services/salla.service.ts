@@ -7,16 +7,9 @@ import { getSallaConfig } from "@/lib/platform/config";
 import { buildExternalProductUrl } from "@/lib/platform/products";
 import { normalizeStoreUrl } from "@/lib/platform/store";
 import { fetchWithTimeout } from "@/lib/platform/fetch";
+import { createLogger } from "@/lib/utils/logger";
 
-const shouldDebugSync = process.env.RAFF_SYNC_DEBUG === "true";
-const debugSyncLog = (message: string, details?: Record<string, unknown>) => {
-  if (!shouldDebugSync) return;
-  if (details) {
-    console.log("[salla-sync]", message, details);
-    return;
-  }
-  console.log("[salla-sync]", message);
-};
+const logger = createLogger("salla-sync");
 
 type RateLimitInfo = {
   url: string;
@@ -112,7 +105,7 @@ export class SallaService {
 
   private buildPagedUrl(url: string, page: number, perPage: number): string {
     const parsed = new URL(url);
-    // TODO: Confirm pagination parameter names with Salla docs.
+    // Confirmed: Salla API uses 'page' and 'per_page' for pagination
     parsed.searchParams.set("page", String(page));
     parsed.searchParams.set("per_page", String(perPage));
     return parsed.toString();
@@ -199,7 +192,7 @@ export class SallaService {
     }
 
     const url = this.buildPagedUrl(sallaConfig.productsApiUrl, page, perPage);
-    debugSyncLog("fetch-products", { page, perPage, url });
+    logger.debug("fetch-products", { page, perPage, url });
     const raw = await this.fetchJson<unknown>(url);
     if (!isRecord(raw)) {
       throw new Error("Salla products response not an object");
@@ -209,7 +202,7 @@ export class SallaService {
       ? (productsRaw as SallaProduct[])
       : [];
     const pagination = extractPagination(raw);
-    debugSyncLog("fetch-products-result", {
+    logger.debug("fetch-products-result", {
       page,
       count: products.length,
       pagination,
@@ -227,7 +220,7 @@ export class SallaService {
     }
 
     const url = sallaConfig.productApiUrlTemplate.replace("{id}", productId);
-    debugSyncLog("fetch-product", { productId, url });
+    logger.debug("fetch-product", { productId, url });
     try {
       const raw = await this.fetchJson<unknown>(url);
       if (!isRecord(raw)) {
@@ -239,7 +232,7 @@ export class SallaService {
       if (error instanceof Error && error.message.includes("404")) {
         return null;
       }
-      debugSyncLog("fetch-product-error", { productId });
+      logger.debug("fetch-product-error", { productId });
       throw error;
     }
   }
@@ -250,7 +243,7 @@ export class SallaService {
       throw new Error("Missing SALLA_CATEGORIES_API_URL");
     }
 
-    debugSyncLog("fetch-categories", { url: sallaConfig.categoriesApiUrl });
+    logger.debug("fetch-categories", { url: sallaConfig.categoriesApiUrl });
     const raw = await this.fetchJson<unknown>(sallaConfig.categoriesApiUrl);
     if (!isRecord(raw)) {
       throw new Error("Salla categories response not an object");
@@ -259,7 +252,7 @@ export class SallaService {
     const categories = Array.isArray(categoriesRaw)
       ? (categoriesRaw as SallaCategory[])
       : [];
-    debugSyncLog("fetch-categories-result", {
+    logger.debug("fetch-categories-result", {
       count: categories.length,
     });
     return categories;
@@ -600,7 +593,7 @@ export async function syncSallaProducts(merchant: SallaMerchantAuth): Promise<{
     throw new Error("Salla access token missing");
   }
 
-  debugSyncLog("sync-start", {
+  logger.debug("sync-start", {
     merchantId: merchant.id,
     storeId: merchant.sallaStoreId,
     storeUrl: merchant.sallaStoreUrl,
@@ -654,7 +647,7 @@ export async function syncSallaProducts(merchant: SallaMerchantAuth): Promise<{
 
   categoriesCreated = categoryCounters.created;
   categoriesUpdated = categoryCounters.updated;
-  debugSyncLog("categories-synced", {
+  logger.debug("categories-synced", {
     created: categoriesCreated,
     updated: categoriesUpdated,
   });
@@ -670,7 +663,7 @@ export async function syncSallaProducts(merchant: SallaMerchantAuth): Promise<{
     if (response.pagination?.total_pages) {
       totalPages = response.pagination.total_pages;
     }
-    debugSyncLog("page-loaded", {
+    logger.debug("page-loaded", {
       page,
       perPage,
       count: sallaProducts.length,
@@ -687,14 +680,14 @@ export async function syncSallaProducts(merchant: SallaMerchantAuth): Promise<{
           : "";
 
       if (!name || !sallaProductId) {
-        debugSyncLog("skip-product", {
+        logger.debug("skip-product", {
           reason: !name ? "missing-name" : "missing-id",
           rawId: rawSallaProductId ?? null,
         });
         continue;
       }
       if (typeof rawSallaProductId === "number") {
-        debugSyncLog("normalized-product-id", {
+        logger.debug("normalized-product-id", {
           rawId: rawSallaProductId,
           normalizedId: sallaProductId,
         });
@@ -821,7 +814,7 @@ export async function syncSallaProducts(merchant: SallaMerchantAuth): Promise<{
     page += 1;
   }
 
-  debugSyncLog("sync-complete", {
+  logger.debug("sync-complete", {
     merchantId: merchant.id,
     productsCreated,
     productsUpdated,
@@ -846,7 +839,7 @@ export async function syncSallaProductById(
     throw new Error("Salla access token missing");
   }
 
-  debugSyncLog("sync-single-start", {
+  logger.debug("sync-single-start", {
     merchantId: merchant.id,
     productId,
   });
@@ -905,7 +898,7 @@ export async function syncSallaProductById(
       categoryInfo
     );
     categoryId = savedCategory.id;
-    debugSyncLog("category-upserted", {
+    logger.debug("category-upserted", {
       merchantId: merchant.id,
       categorySlug: savedCategory.slug,
       categoryId: savedCategory.id,
@@ -984,7 +977,7 @@ export async function syncSallaProductById(
         },
       },
     });
-    debugSyncLog("sync-single-updated", {
+    logger.debug("sync-single-updated", {
       merchantId: merchant.id,
       productId: sallaProductId,
     });
@@ -997,7 +990,7 @@ export async function syncSallaProductById(
       ...(productTags ? { productTags } : {}),
     },
   });
-  debugSyncLog("sync-single-created", {
+  logger.debug("sync-single-created", {
     merchantId: merchant.id,
     productId: sallaProductId,
   });

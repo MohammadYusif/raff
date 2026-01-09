@@ -153,6 +153,8 @@ export function getSallaConfig() {
       header: (
         process.env.SALLA_WEBHOOK_HEADER || "x-salla-signature"
       ).toLowerCase(),
+      signatureMode: (process.env.SALLA_WEBHOOK_SIGNATURE_MODE ||
+        "hmac-sha256") as WebhookSignatureMode, // Official Salla method
       createUrl:
         process.env.SALLA_WEBHOOK_CREATE_URL ||
         "https://api.salla.dev/admin/v2/webhooks/subscribe", // Default URL

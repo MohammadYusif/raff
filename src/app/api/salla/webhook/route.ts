@@ -18,18 +18,9 @@ import {
   isOrderCancelled,
 } from "@/lib/platform/webhook-normalizer";
 import crypto from "crypto";
+import { createLogger } from "@/lib/utils/logger";
 
-const shouldDebug =
-  process.env.RAFF_SALLA_WEBHOOK_DEBUG === "true" ||
-  process.env.NODE_ENV !== "production";
-const debugLog = (message: string, details?: Record<string, unknown>) => {
-  if (!shouldDebug) return;
-  if (details) {
-    console.log("[salla-webhook]", message, details);
-    return;
-  }
-  console.log("[salla-webhook]", message);
-};
+const logger = createLogger("salla-webhook");
 
 /* ============================================================
    Helpers
@@ -58,6 +49,16 @@ function hmacSha256(secret: string, rawBody: string): string {
     .createHmac("sha256", Buffer.from(secret, "utf8"))
     .update(rawBody, "utf8")
     .digest("hex");
+}
+
+/**
+ * Timing-safe string comparison to prevent timing attacks
+ */
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  const bufA = Buffer.from(a, "utf8");
+  const bufB = Buffer.from(b, "utf8");
+  return crypto.timingSafeEqual(bufA, bufB);
 }
 
 function normalizeHexSig(sig: string): string {
@@ -378,7 +379,7 @@ export async function POST(request: NextRequest) {
     /* --------------------------------------------------------
        CONFIG DEBUG (safe)
     -------------------------------------------------------- */
-    debugLog("config", {
+    logger.debug("config", {
       headerName: webhookConfig.header,
       signatureMode: webhookConfig.signatureMode,
       hasSecret: Boolean(webhookConfig.secret),
@@ -397,7 +398,7 @@ export async function POST(request: NextRequest) {
     const signatureRaw = request.headers.get(headerName);
     const strategyHeader = request.headers.get("x-salla-security-strategy");
 
-    debugLog("incoming-headers", {
+    logger.debug("incoming-headers", {
       signatureHeaderName: headerName.toLowerCase(),
       signaturePresent: Boolean(signatureRaw),
       signatureLength: signatureRaw ? signatureRaw.trim().length : 0,
@@ -406,7 +407,7 @@ export async function POST(request: NextRequest) {
       contentType: request.headers.get("content-type"),
     });
 
-    debugLog("raw-body", {
+    logger.debug("raw-body", {
       rawBodyLength: rawBody.length,
       rawBodyHash: crypto.createHash("sha256").update(rawBody).digest("hex"),
     });
@@ -415,7 +416,7 @@ export async function POST(request: NextRequest) {
        SIGNATURE VERIFICATION (SALLA)
     -------------------------------------------------------- */
     if (!webhookConfig.secret) {
-      console.error("SALLA_WEBHOOK_SECRET missing");
+      logger.error("SALLA_WEBHOOK_SECRET missing");
       return NextResponse.json(
         { error: "Webhook not configured" },
         { status: 500 }
@@ -423,80 +424,66 @@ export async function POST(request: NextRequest) {
     }
 
     if (!signatureRaw) {
-      console.error("Missing Salla signature header");
+      logger.error("Missing Salla signature header");
       return NextResponse.json({ error: "Missing signature" }, { status: 401 });
     }
 
+    // Salla officially uses HMAC-SHA256 for webhook signature verification
+    // Use timing-safe comparison to prevent timing attacks
     const provided = normalizeHexSig(signatureRaw);
     const secret = webhookConfig.secret;
+    const configuredMode = webhookConfig.signatureMode ?? "hmac-sha256";
 
-    const expSecretPlusBody = sha256SecretPlusBody(secret, rawBody);
-    const expBodyPlusSecret = sha256BodyPlusSecret(secret, rawBody);
-    const expHmac = hmacSha256(secret, rawBody);
-    const matchShaSecretBody = provided === expSecretPlusBody;
-    const matchShaBodySecret = provided === expBodyPlusSecret;
-    const matchHmac = provided === expHmac;
-    const matchPlain = signatureRaw.trim() === secret.trim();
+    let expectedSignature: string;
 
-    debugLog("signature-candidates", {
+    switch (configuredMode) {
+      case "hmac-sha256":
+        expectedSignature = hmacSha256(secret, rawBody);
+        break;
+      case "sha256":
+        // Try both orders for backwards compatibility
+        const expSecretPlusBody = sha256SecretPlusBody(secret, rawBody);
+        const expBodyPlusSecret = sha256BodyPlusSecret(secret, rawBody);
+        // Check both variations with timing-safe comparison
+        if (timingSafeEqual(provided, expSecretPlusBody) ||
+            timingSafeEqual(provided, expBodyPlusSecret)) {
+          logger.debug("signature-verified", { mode: "sha256" });
+          // Signature valid, continue processing
+          expectedSignature = provided; // Set to match for final check
+          break;
+        }
+        expectedSignature = expSecretPlusBody; // Will fail the final check
+        break;
+      case "plain":
+        // Plain text comparison (not recommended, for testing only)
+        if (timingSafeEqual(signatureRaw.trim(), secret.trim())) {
+          logger.debug("signature-verified", { mode: "plain" });
+          expectedSignature = provided;
+          break;
+        }
+        expectedSignature = "invalid"; // Will fail the final check
+        break;
+      default:
+        logger.error(`Unknown signature mode: ${configuredMode}`);
+        return NextResponse.json(
+          { error: "Invalid signature configuration" },
+          { status: 500 }
+        );
+    }
+
+    logger.debug("signature-check", {
+      mode: configuredMode,
       providedPrefix: safePrefix(provided),
-      providedLength: provided.length,
-      sha256_secret_plus_body: safePrefix(expSecretPlusBody),
-      sha256_body_plus_secret: safePrefix(expBodyPlusSecret),
-      hmac_sha256: safePrefix(expHmac),
+      expectedPrefix: safePrefix(expectedSignature),
     });
 
-    debugLog("signature-match", {
-      matchShaSecretBody,
-      matchShaBodySecret,
-      matchHmac,
-      matchPlain,
-    });
-
-    if (
-      !matchShaSecretBody &&
-      !matchShaBodySecret &&
-      !matchHmac &&
-      !matchPlain
-    ) {
-      console.error("Salla webhook signature verification failed");
+    // Final timing-safe comparison
+    if (!timingSafeEqual(provided, expectedSignature)) {
+      logger.error("Salla webhook signature verification failed");
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
-    const configuredMode = webhookConfig.signatureMode ?? "hmac-sha256";
-
-    if (
-      configuredMode === "sha256" &&
-      !(matchShaSecretBody || matchShaBodySecret)
-    ) {
-      console.error(
-        "Mode mismatch: expected sha256 but signature matched other method"
-      );
-      return NextResponse.json(
-        { error: "Invalid signature mode" },
-        { status: 401 }
-      );
-    }
-
-    if (configuredMode === "hmac-sha256" && !matchHmac) {
-      console.error(
-        "Mode mismatch: expected hmac-sha256 but signature matched other method"
-      );
-      return NextResponse.json(
-        { error: "Invalid signature mode" },
-        { status: 401 }
-      );
-    }
-
-    if (configuredMode === "plain" && !matchPlain) {
-      console.error(
-        "Mode mismatch: expected plain but signature matched other method"
-      );
-      return NextResponse.json(
-        { error: "Invalid signature mode" },
-        { status: 401 }
-      );
-    }
+    logger.debug("signature-verified", { mode: configuredMode });
 
     /* --------------------------------------------------------
        PAYLOAD PARSE
@@ -512,7 +499,7 @@ export async function POST(request: NextRequest) {
       request.headers.get("x-salla-webhook-id") ??
       null;
 
-    debugLog("received-event", { eventType });
+    logger.debug("received-event", { eventType });
 
     /* --------------------------------------------------------
        ORDER EVENTS
@@ -557,7 +544,7 @@ export async function POST(request: NextRequest) {
 
       webhookEventId = orderEvent.id;
       if (orderEvent.duplicate) {
-        debugLog("duplicate-webhook", {
+        logger.debug("duplicate-webhook", {
           eventType,
           orderId: normalized.orderId,
         });
@@ -680,7 +667,7 @@ export async function POST(request: NextRequest) {
 
       webhookEventId = productEvent.id;
       if (productEvent.duplicate) {
-        debugLog("duplicate-product-webhook", {
+        logger.debug("duplicate-product-webhook", {
           eventType,
           productId: String(productId),
         });
@@ -725,7 +712,7 @@ export async function POST(request: NextRequest) {
           merchant.sallaStoreId === storeIdString;
 
         if (recentlySynced) {
-          debugLog("app-installed-skip-recent", {
+          logger.debug("app-installed-skip-recent", {
             merchantId: merchant.id,
             sallaStoreId: storeIdString,
           });
@@ -782,7 +769,7 @@ export async function POST(request: NextRequest) {
 
       webhookEventId = uninstallEvent.id;
       if (uninstallEvent.duplicate) {
-        debugLog("duplicate-uninstall-webhook", { storeId: storeIdString });
+        logger.debug("duplicate-uninstall-webhook", { storeId: storeIdString });
         processedOk = true;
         return NextResponse.json({ success: true, duplicate: true });
       }
@@ -802,13 +789,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    debugLog("unhandled-event", { eventType });
+    logger.debug("unhandled-event", { eventType });
     processedOk = true;
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Salla webhook error:", error);
-    errorMessage =
-      error instanceof Error ? error.message : "Unknown error occurred";
+    const errorMsg = error instanceof Error ? error.message : "Unknown error occurred";
+    logger.error("Salla webhook error", { error: errorMsg });
+    errorMessage = errorMsg;
     return NextResponse.json(
       { error: "Webhook processing failed" },
       { status: 500 }
@@ -824,7 +811,8 @@ export async function POST(request: NextRequest) {
           error: errorMessage,
         });
       } catch (error) {
-        console.error("Failed to update webhook event status:", error);
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        logger.error("Failed to update webhook event status", { error: errorMsg });
       }
     }
 
@@ -846,7 +834,8 @@ export async function POST(request: NextRequest) {
           prisma
         );
       } catch (e) {
-        console.error("Failed to log webhook:", e);
+        const errorMsg = e instanceof Error ? e.message : String(e);
+        logger.error("Failed to log webhook", { error: errorMsg });
       }
     }
   }
