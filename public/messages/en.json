@@ -27,6 +27,7 @@
       "removeFromCart": "Remove from Cart",
       "orders": "My Orders",
       "goToDashboard": "Go to Dashboard",
+      "adminDashboard": "Admin Dashboard",
       "previous": "Previous",
       "next": "Next"
     },

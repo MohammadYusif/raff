@@ -141,6 +141,20 @@ export function UserMenu({ isMobile = false }: UserMenuProps) {
 
           {/* Menu Items */}
           <div className="p-2">
+            {/* Admin Dashboard Link - Only for admins */}
+            {session.user.role === "ADMIN" && (
+              <Link
+                href="/admin/dashboard"
+                onClick={() => setIsOpen(false)}
+                className="group flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-raff-neutral-700 transition-all hover:bg-raff-primary/10 hover:text-raff-primary"
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                <span className="font-medium">
+                  {t("actions.adminDashboard")}
+                </span>
+              </Link>
+            )}
+
             {/* Orders Link - Only for customers */}
             {session.user.role === "CUSTOMER" && (
               <Link
