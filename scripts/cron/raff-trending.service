@@ -1,0 +1,34 @@
+# /etc/systemd/system/raff-trending.service
+# Systemd service file for Raff trending score calculation
+#
+# Installation:
+#   sudo cp scripts/cron/raff-trending.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable raff-trending.timer
+#   sudo systemctl start raff-trending.timer
+
+[Unit]
+Description=Calculate Raff trending scores
+After=network.target postgresql.service
+
+[Service]
+Type=oneshot
+User=raff
+Group=raff
+WorkingDirectory=/path/to/raff
+Environment="NODE_ENV=production"
+Environment="DATABASE_URL=postgresql://user:password@localhost:5432/raff"
+ExecStart=/usr/bin/npm run calculate:trending
+StandardOutput=append:/var/log/raff/trending.log
+StandardError=append:/var/log/raff/trending-error.log
+SyslogIdentifier=raff-trending
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/path/to/raff
+
+[Install]
+WantedBy=multi-user.target

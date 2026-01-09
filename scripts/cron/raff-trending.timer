@@ -1,0 +1,40 @@
+# /etc/systemd/system/raff-trending.timer
+# Systemd timer for Raff trending score calculation
+# Runs every 3 hours: 00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00
+#
+# Installation:
+#   sudo cp scripts/cron/raff-trending.timer /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable raff-trending.timer
+#   sudo systemctl start raff-trending.timer
+#
+# Check status:
+#   sudo systemctl status raff-trending.timer
+#   sudo systemctl list-timers raff-trending.timer
+
+[Unit]
+Description=Run Raff trending calculation every 3 hours
+Requires=raff-trending.service
+
+[Timer]
+# Run 5 minutes after boot
+OnBootSec=5min
+
+# Run every 3 hours
+OnUnitActiveSec=3h
+
+# Also run at specific times (00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00)
+OnCalendar=00:00
+OnCalendar=03:00
+OnCalendar=06:00
+OnCalendar=09:00
+OnCalendar=12:00
+OnCalendar=15:00
+OnCalendar=18:00
+OnCalendar=21:00
+
+# Don't catch up on missed runs
+Persistent=false
+
+[Install]
+WantedBy=timers.target
