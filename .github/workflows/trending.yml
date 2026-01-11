@@ -7,6 +7,13 @@ on:
 
   workflow_dispatch: # Allow manual trigger from GitHub UI
 
+  push:
+    branches:
+      - production  # Your active branch
+      - main       # Default branch
+    paths:
+      - '.github/workflows/trending.yml'  # Only run when workflow is updated
+
 jobs:
   calculate-trending:
     name: Calculate and Update Trending Scores
