@@ -61,7 +61,7 @@ CREATE TABLE "Product" (
     "price" DOUBLE PRECISION NOT NULL,
     "currency" TEXT NOT NULL DEFAULT 'SAR',
     "originalPrice" DOUBLE PRECISION,
-    "images" TEXT[],
+    "images" TEXT[],    
     "thumbnail" TEXT,
     "categoryId" TEXT,
     "tags" TEXT[],

@@ -1,0 +1,14 @@
+# Nixpacks configuration for Railway Cron Service
+# This file is ONLY for the raff-cron service, not the main app
+
+[phases.setup]
+nixPkgs = ["nodejs_18"]
+
+[phases.install]
+cmds = ["npm install --production=false"]
+
+[phases.build]
+cmds = ["npx prisma generate"]
+
+[start]
+cmd = "node scripts/cron/railway-cron-service.js"
