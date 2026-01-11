@@ -869,6 +869,114 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
+    /* --------------------------------------------------------
+       SUBSCRIPTION EVENTS
+    -------------------------------------------------------- */
+    if (
+      eventType === "app.subscription.started" ||
+      eventType === "app.subscription.renewed" ||
+      eventType === "app.subscription.canceled" ||
+      eventType === "app.subscription.expired"
+    ) {
+      const merchantData = isRecord(data?.merchant) ? data.merchant : null;
+      const storeData = isRecord(data?.store) ? data.store : null;
+      const storeId = String(
+        merchantData?.id || storeData?.id || data?.store_id || ""
+      );
+
+      if (!storeId) {
+        logger.error("Missing store ID in subscription webhook", { eventType });
+        return NextResponse.json(
+          { error: "Missing store ID" },
+          { status: 400 }
+        );
+      }
+
+      const merchant = await prisma.merchant.findUnique({
+        where: { sallaStoreId: storeId },
+      });
+
+      if (!merchant) {
+        logger.warn("Merchant not found for subscription webhook", {
+          storeId,
+          eventType,
+        });
+        return NextResponse.json(
+          { error: "Merchant not found" },
+          { status: 404 }
+        );
+      }
+
+      // Handle subscription events
+      switch (eventType) {
+        case "app.subscription.started":
+          await prisma.merchant.update({
+            where: { id: merchant.id },
+            data: {
+              subscriptionStatus: "ACTIVE",
+              subscriptionPlan: toStringOrNull(data?.plan_name),
+              subscriptionStartDate: data?.start_date
+                ? new Date(String(data.start_date))
+                : new Date(),
+              subscriptionEndDate: data?.end_date
+                ? new Date(String(data.end_date))
+                : null,
+            },
+          });
+          logger.info("Subscription started", {
+            merchantId: merchant.id,
+            plan: data?.plan_name,
+          });
+          break;
+
+        case "app.subscription.renewed":
+          await prisma.merchant.update({
+            where: { id: merchant.id },
+            data: {
+              subscriptionStatus: "ACTIVE",
+              subscriptionPlan: toStringOrNull(data?.plan_name),
+              subscriptionStartDate: data?.renew_date
+                ? new Date(String(data.renew_date))
+                : new Date(),
+              subscriptionEndDate: data?.end_date
+                ? new Date(String(data.end_date))
+                : null,
+            },
+          });
+          logger.info("Subscription renewed", {
+            merchantId: merchant.id,
+            plan: data?.plan_name,
+          });
+          break;
+
+        case "app.subscription.canceled":
+          await prisma.merchant.update({
+            where: { id: merchant.id },
+            data: {
+              subscriptionStatus: "CANCELED",
+              subscriptionEndDate: data?.end_date
+                ? new Date(String(data.end_date))
+                : null,
+            },
+          });
+          logger.info("Subscription canceled", { merchantId: merchant.id });
+          break;
+
+        case "app.subscription.expired":
+          await prisma.merchant.update({
+            where: { id: merchant.id },
+            data: {
+              subscriptionStatus: "EXPIRED",
+            },
+          });
+          logger.info("Subscription expired", { merchantId: merchant.id });
+          break;
+      }
+
+      processedOk = true;
+      return NextResponse.json({ success: true });
+    }
+
     logger.debug("unhandled-event", { eventType });
     processedOk = true;
     return NextResponse.json({ success: true });

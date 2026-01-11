@@ -52,7 +52,14 @@ model Merchant {
   autoSyncProducts Boolean   @default(false)
   lastSyncAt       DateTime?
 
-  // Commission Settings
+  // Subscription Status
+  subscriptionStatus         SubscriptionStatus @default(INACTIVE)
+  subscriptionPlan           String?
+  subscriptionStartDate      DateTime?
+  subscriptionEndDate        DateTime?
+  lastSubscriptionCheckAt    DateTime?
+
+  // Commission Settings (DEPRECATED - moving to subscription model)
   commissionRate Decimal @default(5.00) @db.Decimal(5, 2)
 
   // Relations
@@ -733,4 +740,12 @@ enum WebhookProcessingStatus {
   PROCESSED
   FAILED
   DUPLICATE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  INACTIVE
+  CANCELED
+  EXPIRED
+  TRIAL
 }
