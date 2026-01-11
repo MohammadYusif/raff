@@ -34,7 +34,7 @@ const DEFAULT_CONFIG: TrendingConfig = {
   orderWeight: 10.0,
   recentActivityBoostHours: 24,
   recentActivityMultiplier: 1.5,
-  minimumScore: 10,
+  minimumScore: 1, // Lowered from 10 to show products with minimal activity
 };
 
 /**
@@ -232,11 +232,14 @@ async function calculateAllTrendingScores(config: TrendingConfig = DEFAULT_CONFI
 
         if (finalScore > 0) {
           updated++;
-          logger.debug("Updated trending score", {
+          logger.info("Updated trending score", {
             productId: product.id,
             title: product.title,
-            score: finalScore,
+            score: finalScore.toFixed(2),
+            baseScore: score.toFixed(2),
             velocity: velocity.toFixed(2) + "%",
+            viewCount: product.viewCount,
+            clickCount: product.clickCount,
           });
         } else {
           zeroed++;
