@@ -500,41 +500,39 @@ export function MerchantSettingsContent() {
                       ? "border-raff-warning/20 bg-raff-warning/5"
                       : "border-raff-error/20 bg-raff-error/5"
                 }`}>
-                  <div className="mb-3 flex items-center justify-between">
-                    <div>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
                       <p className="font-semibold text-raff-primary">
                         {t("subscription.status", { defaultValue: "Subscription Status" })}
                       </p>
-                      <div className="mt-1 flex items-center gap-2">
-                        <Badge
-                          variant={
-                            profile?.subscriptionStatus === "ACTIVE"
-                              ? "success"
-                              : profile?.subscriptionStatus === "TRIAL"
-                                ? "warning"
-                                : "default"
-                          }
-                        >
-                          {profile?.subscriptionStatus
-                            ? t(`subscription.statuses.${profile.subscriptionStatus}`, {
-                                defaultValue: profile.subscriptionStatus
-                              })
-                            : t("subscription.statuses.INACTIVE", { defaultValue: "Inactive" })
-                          }
-                        </Badge>
-                        {profile?.subscriptionPlan && (
-                          <span className="text-sm text-raff-neutral-600">
-                            {profile.subscriptionPlan}
-                          </span>
-                        )}
-                      </div>
-                      {profile?.subscriptionEndDate && (
-                        <p className="mt-2 text-xs text-raff-neutral-500">
-                          {t("subscription.expiresOn", { defaultValue: "Expires on" })}:{" "}
-                          {new Date(profile.subscriptionEndDate).toLocaleDateString(locale)}
-                        </p>
-                      )}
+                      <Badge
+                        variant={
+                          profile?.subscriptionStatus === "ACTIVE"
+                            ? "success"
+                            : profile?.subscriptionStatus === "TRIAL"
+                              ? "warning"
+                              : "default"
+                        }
+                      >
+                        {profile?.subscriptionStatus
+                          ? t(`subscription.statuses.${profile.subscriptionStatus}`, {
+                              defaultValue: profile.subscriptionStatus
+                            })
+                          : t("subscription.statuses.INACTIVE", { defaultValue: "Inactive" })
+                        }
+                      </Badge>
                     </div>
+                    {profile?.subscriptionPlan && (
+                      <p className="text-sm text-raff-neutral-600">
+                        {t("subscription.plan", { defaultValue: "Plan" })}: {profile.subscriptionPlan}
+                      </p>
+                    )}
+                    {profile?.subscriptionEndDate && (
+                      <p className="text-xs text-raff-neutral-500">
+                        {t("subscription.expiresOn", { defaultValue: "Expires on" })}:{" "}
+                        {new Date(profile.subscriptionEndDate).toLocaleDateString(locale)}
+                      </p>
+                    )}
                   </div>
                 </div>
 
