@@ -17,8 +17,6 @@ import {
   Trash2,
   AlertCircle,
   ExternalLink,
-  Plus,
-  Minus,
   Loader2,
 } from "lucide-react";
 import { ArrowForward, ArrowBackward } from "@/core/i18n";
@@ -32,16 +30,14 @@ import { useState } from "react";
 /**
  * CartContent Component
  *
- * Enhanced with:
- * - Quantity controls (increase/decrease)
- * - Item subtotal display
- * - Improved mobile UX
+ * Displays cart items with single quantity per item.
+ * Users are redirected to merchant's store to complete purchase.
  */
 export function CartContent() {
   const t = useTranslations("cart");
   const commonT = useTranslations("common");
   const { data: session, status } = useSession();
-  const { items, itemCount, removeItem, clearCart, updateQuantity, isLoading } =
+  const { items, itemCount, removeItem, clearCart, isLoading } =
     useCart();
   const locale = useLocale();
   const [trackingProductId, setTrackingProductId] = useState<string | null>(
@@ -54,56 +50,20 @@ export function CartContent() {
       session?.user?.role !== "CUSTOMER" &&
       session?.user?.role !== "MERCHANT");
 
-  // Calculate totals by currency
+  // Calculate totals by currency (each item is quantity 1)
   const totalsByCurrency = items.reduce(
     (acc, item) => {
       const currency = item.currency || "SAR";
       if (!acc[currency]) {
         acc[currency] = 0;
       }
-      acc[currency] += item.price * item.quantity;
+      acc[currency] += item.price;
       return acc;
     },
     {} as Record<string, number>
   );
 
   const hasMultipleCurrencies = Object.keys(totalsByCurrency).length > 1;
-
-  // Handle quantity changes
-  const handleQuantityChange = (
-    itemId: string,
-    currentQuantity: number,
-    change: number
-  ) => {
-    const newQuantity = currentQuantity + change;
-
-    if (newQuantity < 1) {
-      // If trying to go below 1, remove the item
-      removeItem(itemId);
-      toast.success(
-        locale === "ar" ? "تم الحذف من السلة" : "Removed from cart",
-        {
-          description:
-            locale === "ar"
-              ? "تم حذف المنتج من سلة التسوق"
-              : "Item removed from cart",
-        }
-      );
-    } else if (newQuantity > 99) {
-      // Maximum quantity limit
-      toast.error(
-        locale === "ar" ? "الحد الأقصى 99" : "Maximum quantity is 99",
-        {
-          description:
-            locale === "ar"
-              ? "لا يمكنك إضافة أكثر من 99 قطعة"
-              : "You cannot add more than 99 items",
-        }
-      );
-    } else {
-      updateQuantity(itemId, newQuantity);
-    }
-  };
 
   // Handle tracked redirect for cart items
   const handleCartItemClick = async (productId: string) => {
@@ -365,8 +325,6 @@ export function CartContent() {
                     )
                   : null;
 
-                const itemSubtotal = item.price * item.quantity;
-
                 return (
                   <Card
                     key={item.id}
@@ -431,14 +389,13 @@ export function CartContent() {
                           {merchantName || t("merchantFallback")}
                         </p>
 
-                        {/* Price & Quantity Controls */}
+                        {/* Price */}
                         <div className="mt-auto space-y-3">
-                          {/* Unit Price */}
-                          <div className="flex items-baseline justify-between">
-                            <span className="text-sm text-raff-neutral-600">
-                              {t("unitPrice")}
+                          <div className="flex items-baseline justify-between border-t border-raff-neutral-200 pt-3">
+                            <span className="text-sm font-medium text-raff-neutral-700">
+                              {t("price", { defaultValue: "Price" })}
                             </span>
-                            <span className="font-semibold text-raff-primary">
+                            <span className="text-lg font-bold text-raff-accent">
                               {formatPrice(
                                 item.price,
                                 locale,
@@ -446,79 +403,38 @@ export function CartContent() {
                               )}
                             </span>
                           </div>
-
-                          {/* Quantity Controls */}
-                          <div className="flex items-center justify-between rounded-lg border border-raff-neutral-200 bg-raff-neutral-50 p-2">
-                            <span className="text-sm font-medium text-raff-neutral-700">
-                              {t("quantity", { count: "" })}
-                            </span>
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={() =>
-                                  handleQuantityChange(
-                                    item.id,
-                                    item.quantity,
-                                    -1
-                                  )
-                                }
-                                className="flex h-8 w-8 items-center justify-center rounded-md border border-raff-neutral-300 bg-white text-raff-primary transition-colors hover:bg-raff-primary hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
-                                aria-label={
-                                  locale === "ar"
-                                    ? "تقليل الكمية"
-                                    : "Decrease quantity"
-                                }
-                              >
-                                <Minus className="h-4 w-4" />
-                              </button>
-                              <span className="text-center font-bold text-raff-primary">
-                                {item.quantity}
-                              </span>
-                              <button
-                                onClick={() =>
-                                  handleQuantityChange(
-                                    item.id,
-                                    item.quantity,
-                                    1
-                                  )
-                                }
-                                className="flex h-8 w-8 items-center justify-center rounded-md border border-raff-neutral-300 bg-white text-raff-primary transition-colors hover:bg-raff-primary hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
-                                disabled={item.quantity >= 99}
-                                aria-label={
-                                  locale === "ar"
-                                    ? "زيادة الكمية"
-                                    : "Increase quantity"
-                                }
-                              >
-                                <Plus className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Item Subtotal */}
-                          <div className="flex items-baseline justify-between border-t border-raff-neutral-200 pt-2">
-                            <span className="text-sm font-medium text-raff-neutral-700">
-                              {t("subtotal")}
-                            </span>
-                            <span className="text-lg font-bold text-raff-accent">
-                              {formatPrice(
-                                itemSubtotal,
-                                locale,
-                                item.currency || "SAR"
-                              )}
-                            </span>
-                          </div>
                         </div>
 
-                        {/* Remove Button */}
-                        <AnimatedButton
-                          variant="outline"
-                          size="sm"
-                          className="w-full text-red-600 hover:bg-red-50 hover:text-red-700"
-                          onClick={() => removeItem(item.id)}
-                        >
-                          <Trash2 className="me-2 h-4 w-4" />
-                          {t("remove")}
-                        </AnimatedButton>
+                        {/* Action Buttons */}
+                        <div className="flex gap-2">
+                          <AnimatedButton
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 text-red-600 hover:bg-red-50 hover:text-red-700"
+                            onClick={() => removeItem(item.id)}
+                          >
+                            <Trash2 className="me-2 h-4 w-4" />
+                            {t("remove")}
+                          </AnimatedButton>
+                          <AnimatedButton
+                            size="sm"
+                            className="flex-1"
+                            onClick={() => handleCartItemClick(item.id)}
+                            disabled={trackingProductId === item.id}
+                          >
+                            {trackingProductId === item.id ? (
+                              <>
+                                <Loader2 className="me-2 h-4 w-4 animate-spin" />
+                                {locale === "ar" ? "جاري التحميل..." : "Loading..."}
+                              </>
+                            ) : (
+                              <>
+                                {t("buyNow", { defaultValue: "Buy Now" })}
+                                <ExternalLink className="ms-2 h-4 w-4" />
+                              </>
+                            )}
+                          </AnimatedButton>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
