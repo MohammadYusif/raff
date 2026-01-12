@@ -27,6 +27,20 @@ export type SallaOrderListItem = {
   }>;
 };
 
+export type SallaShipment = {
+  id?: number | string;
+  tracking_number?: string;
+  tracking_link?: string;
+  shipping_number?: string;
+  courier_id?: number | string;
+  courier_name?: string;
+  courier_logo?: string;
+  status?: string;
+  ship_from?: Record<string, unknown>;
+  ship_to?: Record<string, unknown>;
+  packages?: Array<Record<string, unknown>>;
+};
+
 export type SallaOrderDetails = {
   id?: number | string;
   reference_id?: number | string;
@@ -53,6 +67,7 @@ export type SallaOrderDetails = {
     timezone?: string;
   };
   updated_at?: string;
+  shipments?: SallaShipment[];
 };
 
 export type SallaOrderItem = {

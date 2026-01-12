@@ -167,6 +167,26 @@ const extractCustomerInfo = (details: SallaOrderDetails | null) => {
   };
 };
 
+const extractTrackingInfo = (details: SallaOrderDetails | null) => {
+  // Extract tracking info from the first shipment (if available)
+  const shipments = Array.isArray(details?.shipments) ? details?.shipments : [];
+  const firstShipment = shipments[0];
+
+  if (!firstShipment) {
+    return {
+      trackingNumber: null,
+      trackingUrl: null,
+      shippingMethod: null,
+    };
+  }
+
+  return {
+    trackingNumber: toStringOrNull(firstShipment.tracking_number) ?? null,
+    trackingUrl: toStringOrNull(firstShipment.tracking_link) ?? null,
+    shippingMethod: toStringOrNull(firstShipment.courier_name) ?? null,
+  };
+};
+
 const isNotFoundError = (error: unknown): boolean => {
   if (!(error instanceof Error)) return false;
   return error.message.includes("404");
@@ -482,6 +502,15 @@ export async function syncSallaOrdersForMerchant(
           }
         : {};
 
+      const trackingInfo = extractTrackingInfo(details);
+      const trackingData = trackingInfo.trackingNumber
+        ? {
+            trackingNumber: trackingInfo.trackingNumber,
+            trackingUrl: trackingInfo.trackingUrl,
+            shippingMethod: trackingInfo.shippingMethod,
+          }
+        : {};
+
       await prisma.order.upsert({
         where: { sallaOrderId: orderId },
         create: {
@@ -502,6 +531,7 @@ export async function syncSallaOrdersForMerchant(
           ...(createdAt ? { createdAt } : {}),
           ...(confirmedAt ? { confirmedAt } : {}),
           ...shippingData,
+          ...trackingData,
         },
         update: {
           merchantId,
@@ -519,6 +549,7 @@ export async function syncSallaOrdersForMerchant(
           customerPhone: customerInfo.phone,
           ...(confirmedAt ? { confirmedAt } : {}),
           ...shippingData,
+          ...trackingData,
         },
       });
 

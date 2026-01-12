@@ -132,6 +132,9 @@ export async function GET(request: NextRequest) {
         currency: order.currency,
         status: order.status,
         paymentStatus: order.paymentStatus,
+        trackingNumber: order.trackingNumber,
+        trackingUrl: order.trackingUrl,
+        shippingMethod: order.shippingMethod,
         shippingAddress: order.shippingAddress,
         clickTracking: order.clickTracking
           ? {

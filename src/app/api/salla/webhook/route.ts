@@ -870,6 +870,60 @@ export async function POST(request: NextRequest) {
     }
 
     /* --------------------------------------------------------
+       SHIPMENT EVENTS
+    -------------------------------------------------------- */
+    if (
+      eventType === "order.shipment.created" ||
+      eventType === "order.shipment.creating" ||
+      eventType === "shipment.created" ||
+      eventType === "shipment.creating"
+    ) {
+      const shipmentData = isRecord(data) ? data : null;
+      const orderId = toStringOrNull(shipmentData?.order_id);
+
+      if (!orderId) {
+        logger.warn("Missing order_id in shipment webhook", { eventType });
+        return NextResponse.json(
+          { error: "Missing order_id" },
+          { status: 400 }
+        );
+      }
+
+      // Extract tracking information
+      const trackingNumber = toStringOrNull(shipmentData?.tracking_number);
+      const trackingUrl = toStringOrNull(shipmentData?.tracking_link);
+      const shippingMethod = toStringOrNull(shipmentData?.courier_name);
+
+      // Only update if we have tracking information
+      if (trackingNumber || trackingUrl) {
+        try {
+          await prisma.order.updateMany({
+            where: { sallaOrderId: orderId },
+            data: {
+              ...(trackingNumber ? { trackingNumber } : {}),
+              ...(trackingUrl ? { trackingUrl } : {}),
+              ...(shippingMethod ? { shippingMethod } : {}),
+            },
+          });
+
+          logger.info("Order tracking updated via shipment webhook", {
+            orderId,
+            trackingNumber,
+            shippingMethod,
+          });
+        } catch (error) {
+          logger.error("Failed to update order tracking from shipment webhook", {
+            orderId,
+            error: error instanceof Error ? error.message : "Unknown error",
+          });
+        }
+      }
+
+      processedOk = true;
+      return NextResponse.json({ success: true });
+    }
+
+    /* --------------------------------------------------------
        SUBSCRIPTION EVENTS
     -------------------------------------------------------- */
     if (

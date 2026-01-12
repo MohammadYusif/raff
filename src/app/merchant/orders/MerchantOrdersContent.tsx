@@ -47,6 +47,9 @@ interface OrderData {
   currency: string;
   status: OrderStatus;
   paymentStatus: string | null;
+  trackingNumber: string | null;
+  trackingUrl: string | null;
+  shippingMethod: string | null;
   clickTracking: {
     id: string;
     referrerCode: string;
@@ -425,6 +428,35 @@ export function MerchantOrdersContent() {
                             </Badge>
                           )}
                         </div>
+
+                        {/* Tracking Information */}
+                        {(order.trackingNumber || order.trackingUrl) && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <Truck className="h-4 w-4 text-raff-accent" />
+                            <div className="flex flex-col gap-1">
+                              {order.shippingMethod && (
+                                <span className="text-raff-neutral-600">
+                                  {order.shippingMethod}
+                                </span>
+                              )}
+                              {order.trackingNumber && (
+                                <span className="font-mono text-xs text-raff-neutral-700">
+                                  {t("trackingNumber", { defaultValue: "Tracking" })}: {order.trackingNumber}
+                                </span>
+                              )}
+                              {order.trackingUrl && (
+                                <a
+                                  href={order.trackingUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-raff-accent hover:underline"
+                                >
+                                  {t("trackShipment", { defaultValue: "Track Shipment" })} →
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        )}
 
                         <div className="text-xs text-raff-neutral-500">
                           {formatDate(new Date(order.createdAt), locale)}
