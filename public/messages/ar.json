@@ -329,6 +329,12 @@
       "settings": "الإعدادات",
       "viewStore": "عرض المتجر"
     },
+    "subscription": {
+      "title": "حالة الاشتراك",
+      "plan": "الخطة",
+      "expiresOn": "تنتهي في",
+      "upgrade": "ترقية"
+    },
     "gettingStarted": {
       "title": "دليل البدء",
       "description": "اتبع هذه الخطوات للاستفادة القصوى من تجربتك مع رَفّ",
@@ -574,6 +580,7 @@
     "nav": {
       "account": "الحساب",
       "store": "المتجر",
+      "subscription": "الاشتراك",
       "notifications": "الإشعارات",
       "security": "الأمان",
       "integrations": "الربط"
@@ -596,6 +603,14 @@
       "connected": "متصل",
       "autoSync": "المزامنة التلقائية",
       "autoSyncDesc": "مزامنة المنتجات تلقائياً من متجرك"
+    },
+    "subscription": {
+      "title": "الاشتراك والفواتير",
+      "description": "إدارة خطة اشتراكك والفواتير",
+      "status": "حالة الاشتراك",
+      "expiresOn": "تنتهي في",
+      "upgrade": "ترقية الخطة",
+      "manageInfo": "اتصل بالدعم لإدارة اشتراكك"
     },
     "notifications": {
       "title": "إعدادات الإشعارات",

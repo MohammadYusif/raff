@@ -329,6 +329,12 @@
       "settings": "Settings",
       "viewStore": "View Store"
     },
+    "subscription": {
+      "title": "Subscription Status",
+      "plan": "Plan",
+      "expiresOn": "Expires on",
+      "upgrade": "Upgrade"
+    },
     "gettingStarted": {
       "title": "Getting Started Guide",
       "description": "Follow these steps to maximize your Raff experience",
@@ -574,6 +580,7 @@
     "nav": {
       "account": "Account",
       "store": "Store",
+      "subscription": "Subscription",
       "notifications": "Notifications",
       "security": "Security",
       "integrations": "Integrations"
@@ -596,6 +603,14 @@
       "connected": "Connected",
       "autoSync": "Auto Sync",
       "autoSyncDesc": "Automatically sync products from your store"
+    },
+    "subscription": {
+      "title": "Subscription & Billing",
+      "description": "Manage your subscription plan and billing",
+      "status": "Subscription Status",
+      "expiresOn": "Expires on",
+      "upgrade": "Upgrade Plan",
+      "manageInfo": "Contact support to manage your subscription"
     },
     "notifications": {
       "title": "Notification Settings",
