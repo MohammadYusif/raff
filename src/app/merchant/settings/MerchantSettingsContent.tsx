@@ -381,47 +381,42 @@ export function MerchantSettingsContent() {
             <CardContent className="space-y-4">
               {/* Store Connection Status */}
               <div className="rounded-lg border border-raff-neutral-200 bg-raff-neutral-50 p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    {profile?.storeInfo.platform && (
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
-                        <Image
-                          src={`/images/brands/${profile.storeInfo.platform}.svg`}
-                          alt={profile.storeInfo.platform === "salla"
-                            ? integrationsT("platforms.salla.name")
-                            : integrationsT("platforms.zid.name")}
-                          width={24}
-                          height={24}
-                          className="h-6 w-6"
-                          onError={(e) => {
-                            e.currentTarget.style.display = "none";
-                          }}
-                        />
-                      </div>
-                    )}
-                    <div>
-                      <p className="font-semibold text-raff-primary">
-                        {t("store.connectedStore")}
-                      </p>
-                      <p className="text-sm text-raff-neutral-600">
-                        {profile?.name || t("store.noStore")}
-                      </p>
-                      {profile?.storeInfo.platform && (
-                        <p className="text-xs text-raff-neutral-500">
-                          {profile.storeInfo.platform === "salla"
-                            ? integrationsT("platforms.salla.name")
-                            : integrationsT("platforms.zid.name")}
-                        </p>
-                      )}
+                <div className="mb-3 flex items-center gap-3">
+                  {profile?.storeInfo.platform && (
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
+                      <Image
+                        src={`/images/brands/${profile.storeInfo.platform}.svg`}
+                        alt={profile.storeInfo.platform === "salla"
+                          ? integrationsT("platforms.salla.name")
+                          : integrationsT("platforms.zid.name")}
+                        width={24}
+                        height={24}
+                        className="h-6 w-6"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
                     </div>
-                  </div>
-                  {profile?.storeInfo.isConnected && (
-                    <CheckCircle className="h-5 w-5 text-raff-success" />
                   )}
+                  <div>
+                    <p className="font-semibold text-raff-primary">
+                      {t("store.connectedStore")}
+                    </p>
+                    <p className="text-sm text-raff-neutral-600">
+                      {profile?.name || t("store.noStore")}
+                    </p>
+                    {profile?.storeInfo.platform && (
+                      <p className="text-xs text-raff-neutral-500">
+                        {profile.storeInfo.platform === "salla"
+                          ? integrationsT("platforms.salla.name")
+                          : integrationsT("platforms.zid.name")}
+                      </p>
+                    )}
+                  </div>
                 </div>
                 {profile?.storeInfo.isConnected && (
                   <Badge variant="success" className="gap-1">
-                    <div className="h-2 w-2 animate-pulse rounded-full bg-raff-success" />
+                    <CheckCircle className="h-4 w-4" />
                     {t("store.connected")}
                   </Badge>
                 )}
