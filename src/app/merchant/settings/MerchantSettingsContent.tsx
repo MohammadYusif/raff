@@ -142,6 +142,7 @@ export function MerchantSettingsContent() {
           const mostVisibleSection = visibleSections[0].target.id as
             | "account"
             | "store"
+            | "subscription"
             | "notifications"
             | "security"
             | "integrations";
