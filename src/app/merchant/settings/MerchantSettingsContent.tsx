@@ -27,7 +27,10 @@ import {
   Save,
   RefreshCw,
   AlertCircle,
+  CreditCard,
 } from "lucide-react";
+import Image from "next/image";
+import { useLocale } from "next-intl";
 import { useMerchantProfile } from "@/lib/hooks/useMerchantApi";
 import { toast } from "sonner";
 
@@ -83,6 +86,8 @@ function SettingsLoadingSkeleton() {
 export function MerchantSettingsContent() {
   const { data: session, update: updateSession } = useSession();
   const t = useTranslations("merchantSettings");
+  const integrationsT = useTranslations("merchantIntegrations");
+  const locale = useLocale();
   const router = useRouter();
   const merchantId = session?.user?.merchantId ?? null;
   const { profile, loading: isLoading } = useMerchantProfile(
@@ -90,7 +95,7 @@ export function MerchantSettingsContent() {
   );
 
   const [activeSection, setActiveSection] = useState<
-    "account" | "store" | "notifications" | "security" | "integrations"
+    "account" | "store" | "subscription" | "notifications" | "security" | "integrations"
   >("account");
   const [saving, setSaving] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -116,6 +121,7 @@ export function MerchantSettingsContent() {
     const sections = [
       "account",
       "store",
+      "subscription",
       "notifications",
       "security",
       "integrations",
@@ -164,7 +170,7 @@ export function MerchantSettingsContent() {
   }, []);
 
   const handleSectionChange = (
-    sectionId: "account" | "store" | "notifications" | "security" | "integrations"
+    sectionId: "account" | "store" | "subscription" | "notifications" | "security" | "integrations"
   ) => {
     // Immediately set active section for responsive UI feedback
     setActiveSection(sectionId);
@@ -251,6 +257,7 @@ export function MerchantSettingsContent() {
             [
               { id: "account", label: t("nav.account"), icon: User },
               { id: "store", label: t("nav.store"), icon: Store },
+              { id: "subscription", label: t("nav.subscription", { defaultValue: "Subscription" }), icon: CreditCard },
               {
                 id: "notifications",
                 label: t("nav.notifications"),
@@ -374,13 +381,38 @@ export function MerchantSettingsContent() {
               {/* Store Connection Status */}
               <div className="rounded-lg border border-raff-neutral-200 bg-raff-neutral-50 p-4">
                 <div className="mb-3 flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-raff-primary">
-                      {t("store.connectedStore")}
-                    </p>
-                    <p className="text-sm text-raff-neutral-600">
-                      {profile?.name || t("store.noStore")}
-                    </p>
+                  <div className="flex items-center gap-3">
+                    {profile?.storeInfo.platform && (
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
+                        <Image
+                          src={`/images/brands/${profile.storeInfo.platform}.svg`}
+                          alt={profile.storeInfo.platform === "salla"
+                            ? integrationsT("platforms.salla.name")
+                            : integrationsT("platforms.zid.name")}
+                          width={24}
+                          height={24}
+                          className="h-6 w-6"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                          }}
+                        />
+                      </div>
+                    )}
+                    <div>
+                      <p className="font-semibold text-raff-primary">
+                        {t("store.connectedStore")}
+                      </p>
+                      <p className="text-sm text-raff-neutral-600">
+                        {profile?.name || t("store.noStore")}
+                      </p>
+                      {profile?.storeInfo.platform && (
+                        <p className="text-xs text-raff-neutral-500">
+                          {profile.storeInfo.platform === "salla"
+                            ? integrationsT("platforms.salla.name")
+                            : integrationsT("platforms.zid.name")}
+                        </p>
+                      )}
+                    </div>
                   </div>
                   {profile?.storeInfo.isConnected && (
                     <Badge variant="success" className="gap-1">
@@ -444,6 +476,81 @@ export function MerchantSettingsContent() {
                 )}
               </AnimatedButton>
             </CardContent>
+            </Card>
+          </section>
+
+          {/* Subscription */}
+          <section id="subscription" className="scroll-mt-24">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" />
+                  {t("subscription.title", { defaultValue: "Subscription & Billing" })}
+                </CardTitle>
+                <CardDescription>
+                  {t("subscription.description", { defaultValue: "Manage your subscription plan and billing" })}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Subscription Status */}
+                <div className={`rounded-lg border p-4 ${
+                  profile?.subscriptionStatus === "ACTIVE"
+                    ? "border-raff-success/20 bg-raff-success/5"
+                    : profile?.subscriptionStatus === "TRIAL"
+                      ? "border-raff-warning/20 bg-raff-warning/5"
+                      : "border-raff-error/20 bg-raff-error/5"
+                }`}>
+                  <div className="mb-3 flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-raff-primary">
+                        {t("subscription.status", { defaultValue: "Subscription Status" })}
+                      </p>
+                      <div className="mt-1 flex items-center gap-2">
+                        <Badge
+                          variant={
+                            profile?.subscriptionStatus === "ACTIVE"
+                              ? "success"
+                              : profile?.subscriptionStatus === "TRIAL"
+                                ? "warning"
+                                : "default"
+                          }
+                        >
+                          {profile?.subscriptionStatus || "INACTIVE"}
+                        </Badge>
+                        {profile?.subscriptionPlan && (
+                          <span className="text-sm text-raff-neutral-600">
+                            {profile.subscriptionPlan}
+                          </span>
+                        )}
+                      </div>
+                      {profile?.subscriptionEndDate && (
+                        <p className="mt-2 text-xs text-raff-neutral-500">
+                          {t("subscription.expiresOn", { defaultValue: "Expires on" })}:{" "}
+                          {new Date(profile.subscriptionEndDate).toLocaleDateString(locale)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                {(profile?.subscriptionStatus === "INACTIVE" ||
+                  profile?.subscriptionStatus === "EXPIRED" ||
+                  profile?.subscriptionStatus === "CANCELED") && (
+                  <AnimatedButton className="gap-2">
+                    <CreditCard className="h-4 w-4" />
+                    {t("subscription.upgrade", { defaultValue: "Upgrade Plan" })}
+                  </AnimatedButton>
+                )}
+
+                {profile?.subscriptionStatus === "ACTIVE" && (
+                  <div className="text-sm text-raff-neutral-600">
+                    {t("subscription.manageInfo", {
+                      defaultValue: "Contact support to manage your subscription"
+                    })}
+                  </div>
+                )}
+              </CardContent>
             </Card>
           </section>
 

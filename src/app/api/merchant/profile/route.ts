@@ -48,6 +48,11 @@ export async function GET(_request: NextRequest) {
         approvedAt: true,
         createdAt: true,
         updatedAt: true,
+        subscriptionStatus: true,
+        subscriptionPlan: true,
+        subscriptionStartDate: true,
+        subscriptionEndDate: true,
+        lastSubscriptionCheckAt: true,
         _count: {
           select: {
             products: {
@@ -121,6 +126,12 @@ export async function GET(_request: NextRequest) {
         sallaStoreUrl: merchant.sallaStoreUrl,
         sallaHasAccessToken: Boolean(merchant.sallaAccessToken),
         sallaConnected,
+        // Subscription info
+        subscriptionStatus: merchant.subscriptionStatus,
+        subscriptionPlan: merchant.subscriptionPlan,
+        subscriptionStartDate: merchant.subscriptionStartDate,
+        subscriptionEndDate: merchant.subscriptionEndDate,
+        lastSubscriptionCheckAt: merchant.lastSubscriptionCheckAt,
         totalProducts: merchant._count.products,
         status: merchant.status,
         approvedAt: merchant.approvedAt,

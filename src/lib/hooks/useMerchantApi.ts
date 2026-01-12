@@ -30,6 +30,12 @@ interface MerchantProfile {
   sallaStoreUrl: string | null;
   sallaHasAccessToken: boolean;
   sallaConnected: boolean;
+  // Subscription info
+  subscriptionStatus: "ACTIVE" | "INACTIVE" | "CANCELED" | "EXPIRED" | "TRIAL";
+  subscriptionPlan: string | null;
+  subscriptionStartDate: Date | null;
+  subscriptionEndDate: Date | null;
+  lastSubscriptionCheckAt: Date | null;
   totalProducts: number;
   status: string;
   createdAt: Date;

@@ -464,6 +464,20 @@ export function MerchantDashboardContent() {
             <Card className="border-raff-success/20 bg-raff-success/5">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
+                  {storePlatform && (
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
+                      <Image
+                        src={`/images/brands/${storePlatform}.svg`}
+                        alt={platformLabel}
+                        width={32}
+                        height={32}
+                        className="h-8 w-8"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
+                    </div>
+                  )}
                   <CheckCircle className="h-5 w-5 shrink-0 text-raff-success" />
                   <div className="flex-1">
                     <p className="font-semibold text-raff-primary">
@@ -481,6 +495,60 @@ export function MerchantDashboardContent() {
                       {t("storeConnected.manage")}
                     </AnimatedButton>
                   </Link>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Subscription Status */}
+          {isStoreConnected && profile && (
+            <Card className={`border ${
+              profile.subscriptionStatus === "ACTIVE"
+                ? "border-raff-success/20 bg-raff-success/5"
+                : profile.subscriptionStatus === "TRIAL"
+                  ? "border-raff-warning/20 bg-raff-warning/5"
+                  : "border-raff-error/20 bg-raff-error/5"
+            }`}>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-raff-primary">
+                        {t("subscription.title", { defaultValue: "Subscription Status" })}
+                      </p>
+                      <Badge
+                        variant={
+                          profile.subscriptionStatus === "ACTIVE"
+                            ? "success"
+                            : profile.subscriptionStatus === "TRIAL"
+                              ? "warning"
+                              : "default"
+                        }
+                      >
+                        {profile.subscriptionStatus}
+                      </Badge>
+                    </div>
+                    {profile.subscriptionPlan && (
+                      <p className="text-sm text-raff-neutral-600">
+                        {t("subscription.plan", { defaultValue: "Plan" })}: {profile.subscriptionPlan}
+                      </p>
+                    )}
+                    {profile.subscriptionEndDate && (
+                      <p className="text-xs text-raff-neutral-500">
+                        {t("subscription.expiresOn", { defaultValue: "Expires on" })}:{" "}
+                        {new Date(profile.subscriptionEndDate).toLocaleDateString(locale)}
+                      </p>
+                    )}
+                  </div>
+                  {(profile.subscriptionStatus === "INACTIVE" ||
+                    profile.subscriptionStatus === "EXPIRED" ||
+                    profile.subscriptionStatus === "CANCELED") && (
+                    <Link href="/merchant/settings">
+                      <AnimatedButton size="sm" className="gap-2">
+                        {t("subscription.upgrade", { defaultValue: "Upgrade" })}
+                      </AnimatedButton>
+                    </Link>
+                  )}
                 </div>
               </CardContent>
             </Card>
