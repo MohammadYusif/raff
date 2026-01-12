@@ -333,7 +333,14 @@
       "title": "Subscription Status",
       "plan": "Plan",
       "expiresOn": "Expires on",
-      "upgrade": "Upgrade"
+      "upgrade": "Upgrade",
+      "statuses": {
+        "ACTIVE": "Active",
+        "INACTIVE": "Inactive",
+        "TRIAL": "Trial",
+        "EXPIRED": "Expired",
+        "CANCELED": "Canceled"
+      }
     },
     "gettingStarted": {
       "title": "Getting Started Guide",
@@ -610,7 +617,14 @@
       "status": "Subscription Status",
       "expiresOn": "Expires on",
       "upgrade": "Upgrade Plan",
-      "manageInfo": "Contact support to manage your subscription"
+      "manageInfo": "Contact support to manage your subscription",
+      "statuses": {
+        "ACTIVE": "Active",
+        "INACTIVE": "Inactive",
+        "TRIAL": "Trial",
+        "EXPIRED": "Expired",
+        "CANCELED": "Canceled"
+      }
     },
     "notifications": {
       "title": "Notification Settings",

@@ -333,7 +333,14 @@
       "title": "حالة الاشتراك",
       "plan": "الخطة",
       "expiresOn": "تنتهي في",
-      "upgrade": "ترقية"
+      "upgrade": "ترقية",
+      "statuses": {
+        "ACTIVE": "نشط",
+        "INACTIVE": "غير نشط",
+        "TRIAL": "تجريبي",
+        "EXPIRED": "منتهي",
+        "CANCELED": "ملغي"
+      }
     },
     "gettingStarted": {
       "title": "دليل البدء",

@@ -28,6 +28,7 @@ import {
   RefreshCw,
   AlertCircle,
   CreditCard,
+  CheckCircle,
 } from "lucide-react";
 import Image from "next/image";
 import { useLocale } from "next-intl";
@@ -415,12 +416,15 @@ export function MerchantSettingsContent() {
                     </div>
                   </div>
                   {profile?.storeInfo.isConnected && (
-                    <Badge variant="success" className="gap-1">
-                      <div className="h-2 w-2 animate-pulse rounded-full bg-raff-success" />
-                      {t("store.connected")}
-                    </Badge>
+                    <CheckCircle className="h-5 w-5 text-raff-success" />
                   )}
                 </div>
+                {profile?.storeInfo.isConnected && (
+                  <Badge variant="success" className="gap-1">
+                    <div className="h-2 w-2 animate-pulse rounded-full bg-raff-success" />
+                    {t("store.connected")}
+                  </Badge>
+                )}
 
                 {profile?.storeInfo.storeUrl && (
                   <a
@@ -515,7 +519,12 @@ export function MerchantSettingsContent() {
                                 : "default"
                           }
                         >
-                          {profile?.subscriptionStatus || "INACTIVE"}
+                          {profile?.subscriptionStatus
+                            ? t(`subscription.statuses.${profile.subscriptionStatus}`, {
+                                defaultValue: profile.subscriptionStatus
+                              })
+                            : t("subscription.statuses.INACTIVE", { defaultValue: "Inactive" })
+                          }
                         </Badge>
                         {profile?.subscriptionPlan && (
                           <span className="text-sm text-raff-neutral-600">

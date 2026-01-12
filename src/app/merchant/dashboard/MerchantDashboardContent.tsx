@@ -525,7 +525,9 @@ export function MerchantDashboardContent() {
                               : "default"
                         }
                       >
-                        {profile.subscriptionStatus}
+                        {t(`subscription.statuses.${profile.subscriptionStatus}`, {
+                          defaultValue: profile.subscriptionStatus
+                        })}
                       </Badge>
                     </div>
                     {profile.subscriptionPlan && (
