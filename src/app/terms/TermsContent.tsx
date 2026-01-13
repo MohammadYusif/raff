@@ -3,27 +3,46 @@
 
 import { useTranslations, useLocale } from "next-intl";
 import { Container, Card, CardContent } from "@/shared/components/ui";
+import { PageLayout } from "@/shared/components/layouts/PageLayout";
+import { AnimatedButton } from "@/shared/components/AnimatedButton";
+import { ArrowBackward } from "@/core/i18n";
+import Link from "next/link";
 
 export function TermsContent() {
   const t = useTranslations("terms");
+  const commonT = useTranslations("common");
   const locale = useLocale();
 
   return (
-    <div className="min-h-screen bg-raff-neutral-50 py-12">
-      <Container>
-        <div className="mx-auto max-w-4xl">
-          <h1 className="mb-8 text-4xl font-bold text-raff-primary">
-            {t("title")}
-          </h1>
+    <PageLayout>
+      <div className="min-h-screen bg-raff-neutral-50">
+        <div className="border-b border-raff-neutral-200 bg-white">
+          <Container className="py-8">
+            <div className="mb-4">
+              <Link href="/">
+                <AnimatedButton variant="ghost" className="gap-2 -ms-2">
+                  <ArrowBackward className="h-4 w-4" />
+                  {commonT("actions.backToHome")}
+                </AnimatedButton>
+              </Link>
+            </div>
+          </Container>
+        </div>
 
-          <p className="mb-8 text-lg text-raff-neutral-600">
-            {t("lastUpdated")}:{" "}
-            {new Date().toLocaleDateString(locale === "ar" ? "ar-SA" : "en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          </p>
+        <Container className="py-12">
+          <div className="mx-auto max-w-4xl">
+            <h1 className="mb-8 text-4xl font-bold text-raff-primary">
+              {t("title")}
+            </h1>
+
+            <p className="mb-8 text-lg text-raff-neutral-600">
+              {t("lastUpdated")}:{" "}
+              {new Date().toLocaleDateString(locale === "ar" ? "ar-SA" : "en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </p>
 
           <div className="space-y-8">
             {/* Acceptance */}
@@ -254,8 +273,9 @@ export function TermsContent() {
               </CardContent>
             </Card>
           </div>
-        </div>
-      </Container>
-    </div>
+          </div>
+        </Container>
+      </div>
+    </PageLayout>
   );
 }

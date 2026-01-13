@@ -902,10 +902,10 @@
       "title": "For Merchants",
       "joinMerchant": "How do I join as a merchant?",
       "joinMerchantAnswer": "Click 'Join as Merchant' and connect your Salla or Zid store using our secure OAuth integration. Your products will be synced automatically.",
-      "commissions": "How do commissions work?",
-      "commissionsAnswer": "Raff charges a small commission on sales generated through our platform. The exact rate depends on your subscription plan. You'll see all commission details in your merchant dashboard.",
       "integration": "Is integration difficult?",
-      "integrationAnswer": "No! We use OAuth for one-click integration. Just click 'Connect', authorize Raff on your store platform, and your products will sync automatically. No technical knowledge required."
+      "integrationAnswer": "No! We use OAuth for one-click integration. Just click 'Connect', authorize Raff on your store platform, and your products will sync automatically. No technical knowledge required.",
+      "pricing": "Is there a cost to join?",
+      "pricingAnswer": "Joining Raff is free! Connect your store and start showcasing your products. We operate on a subscription model with different tiers to help you grow your business."
     },
     "needMoreHelp": "Still Need Help?",
     "contactDesc": "Our support team is here to assist you with any questions or concerns",

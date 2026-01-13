@@ -3,10 +3,15 @@
 
 import { useTranslations } from "next-intl";
 import { Container, Card, CardContent } from "@/shared/components/ui";
+import { PageLayout } from "@/shared/components/layouts/PageLayout";
+import { AnimatedButton } from "@/shared/components/AnimatedButton";
+import { ArrowBackward } from "@/core/i18n";
+import Link from "next/link";
 import { Mail, Phone, MapPin, MessageSquare, Store, Shield } from "lucide-react";
 
 export function ContactContent() {
   const t = useTranslations("contact");
+  const commonT = useTranslations("common");
 
   const contactOptions = [
     {
@@ -27,16 +32,30 @@ export function ContactContent() {
   ];
 
   return (
-    <div className="min-h-screen bg-raff-neutral-50 py-12">
-      <Container>
-        <div className="mx-auto max-w-4xl">
-          {/* Header */}
-          <div className="mb-12 text-center">
-            <h1 className="mb-4 text-4xl font-bold text-raff-primary">
-              {t("title")}
-            </h1>
-            <p className="text-lg text-raff-neutral-600">{t("subtitle")}</p>
-          </div>
+    <PageLayout>
+      <div className="min-h-screen bg-raff-neutral-50">
+        <div className="border-b border-raff-neutral-200 bg-white">
+          <Container className="py-8">
+            <div className="mb-4">
+              <Link href="/">
+                <AnimatedButton variant="ghost" className="gap-2 -ms-2">
+                  <ArrowBackward className="h-4 w-4" />
+                  {commonT("actions.backToHome")}
+                </AnimatedButton>
+              </Link>
+            </div>
+          </Container>
+        </div>
+
+        <Container className="py-12">
+          <div className="mx-auto max-w-4xl">
+            {/* Header */}
+            <div className="mb-12 text-center">
+              <h1 className="mb-4 text-4xl font-bold text-raff-primary">
+                {t("title")}
+              </h1>
+              <p className="text-lg text-raff-neutral-600">{t("subtitle")}</p>
+            </div>
 
           {/* Contact Options */}
           <div className="mb-12 grid gap-6 md:grid-cols-3">
@@ -139,8 +158,9 @@ export function ContactContent() {
               </div>
             </CardContent>
           </Card>
-        </div>
-      </Container>
-    </div>
+          </div>
+        </Container>
+      </div>
+    </PageLayout>
   );
 }
