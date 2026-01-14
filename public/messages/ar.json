@@ -711,6 +711,10 @@
       "passwordPlaceholder": "أنشئ كلمة مرور قوية",
       "confirmPasswordLabel": "تأكيد كلمة المرور",
       "confirmPasswordPlaceholder": "أعد إدخال كلمة المرور",
+      "acceptTerms": "أوافق على",
+      "termsOfService": "شروط الخدمة",
+      "and": "و",
+      "privacyPolicy": "سياسة الخصوصية",
       "submit": "إكمال التسجيل",
       "submitting": "جارٍ إكمال التسجيل"
     },
@@ -739,7 +743,8 @@
       "emailExists": "هذا البريد الإلكتروني مستخدم بالفعل",
       "passwordRequired": "كلمة المرور مطلوبة",
       "confirmPasswordRequired": "يرجى تأكيد كلمة المرور",
-      "passwordMismatch": "كلمات المرور غير متطابقة"
+      "passwordMismatch": "كلمات المرور غير متطابقة",
+      "termsRequired": "يجب الموافقة على الشروط وسياسة الخصوصية"
     },
     "success": {
       "title": "تم إكمال التسجيل!",
@@ -817,6 +822,11 @@
         "emailExists": "هذا البريد الإلكتروني مسجل بالفعل"
       },
       "passwordMismatch": "كلمات المرور غير متطابقة",
+      "acceptTerms": "أوافق على",
+      "termsOfService": "شروط الخدمة",
+      "and": "و",
+      "privacyPolicy": "سياسة الخصوصية",
+      "termsRequired": "يجب الموافقة على الشروط وسياسة الخصوصية",
       "success": "تم إنشاء الحساب بنجاح!",
       "successDescription": "جارٍ توجيهك لتسجيل الدخول...",
       "error": "حدث خطأ ما. يرجى المحاولة مرة أخرى."

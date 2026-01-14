@@ -20,6 +20,7 @@ import {
   validateEmail,
 } from "@/shared/components/EmailValidationIndicator";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
+import Link from "next/link";
 
 export function RegisterForm() {
   const t = useTranslations("auth.register");
@@ -31,6 +32,7 @@ export function RegisterForm() {
     email: "",
     password: "",
     confirmPassword: "",
+    acceptedTerms: false,
   });
 
   // Clear error for a field when user starts typing
@@ -82,6 +84,11 @@ export function RegisterForm() {
       newErrors.confirmPassword = t("errors.confirmPasswordRequired");
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = t("passwordMismatch");
+    }
+
+    // Terms acceptance validation
+    if (!formData.acceptedTerms) {
+      newErrors.acceptedTerms = t("termsRequired");
     }
 
     setErrors(newErrors);
@@ -274,6 +281,50 @@ export function RegisterForm() {
           <div className="mt-1.5 flex items-center gap-1.5 text-sm text-red-600 animate-in fade-in slide-in-from-top-1 duration-200">
             <AlertCircle className="h-4 w-4" />
             <span>{errors.confirmPassword}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Terms Acceptance Checkbox */}
+      <div>
+        <div className="flex items-start gap-2">
+          <input
+            id="acceptedTerms"
+            type="checkbox"
+            checked={formData.acceptedTerms}
+            onChange={(e) => {
+              setFormData({ ...formData, acceptedTerms: e.target.checked });
+              clearFieldError("acceptedTerms");
+            }}
+            disabled={loading}
+            className="mt-1 h-4 w-4 rounded border-raff-neutral-300 text-raff-accent focus:ring-raff-accent"
+          />
+          <label
+            htmlFor="acceptedTerms"
+            className="text-sm text-raff-neutral-700"
+          >
+            {t("acceptTerms")}{" "}
+            <Link
+              href="/terms"
+              className="text-raff-accent hover:underline"
+              target="_blank"
+            >
+              {t("termsOfService")}
+            </Link>{" "}
+            {t("and")}{" "}
+            <Link
+              href="/privacy"
+              className="text-raff-accent hover:underline"
+              target="_blank"
+            >
+              {t("privacyPolicy")}
+            </Link>
+          </label>
+        </div>
+        {errors.acceptedTerms && (
+          <div className="mt-1.5 flex items-center gap-1.5 text-sm text-red-600 animate-in fade-in slide-in-from-top-1 duration-200">
+            <AlertCircle className="h-4 w-4" />
+            <span>{errors.acceptedTerms}</span>
           </div>
         )}
       </div>

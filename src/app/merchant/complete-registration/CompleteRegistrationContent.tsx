@@ -21,6 +21,7 @@ import { PasswordStrengthIndicator } from "@/shared/components/PasswordStrengthI
 import { NameValidationIndicator } from "@/shared/components/NameValidationIndicator";
 import { EmailValidationIndicator } from "@/shared/components/EmailValidationIndicator";
 import { toast } from "sonner";
+import Link from "next/link";
 
 const COMMON_PASSWORDS = [
   "password",
@@ -55,6 +56,7 @@ export function CompleteRegistrationContent() {
     email: "",
     password: "",
     confirmPassword: "",
+    acceptedTerms: false,
   });
 
   const emailExistsMessage = t("errors.emailExists");
@@ -243,6 +245,11 @@ export function CompleteRegistrationContent() {
       newErrors.confirmPassword = t("errors.confirmPasswordRequired");
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = passwordMismatchMessage;
+    }
+
+    // Terms acceptance validation
+    if (!formData.acceptedTerms) {
+      newErrors.acceptedTerms = t("errors.termsRequired");
     }
 
     setErrors(newErrors);
@@ -572,6 +579,53 @@ export function CompleteRegistrationContent() {
                       <div className="mt-1.5 flex items-center gap-1.5 text-sm text-red-600 animate-in fade-in slide-in-from-top-1 duration-200">
                         <AlertCircle className="h-4 w-4" />
                         <span>{errors.confirmPassword}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Terms Acceptance Checkbox */}
+                  <div>
+                    <div className="flex items-start gap-2">
+                      <input
+                        id="acceptedTerms"
+                        type="checkbox"
+                        checked={formData.acceptedTerms}
+                        onChange={(event) => {
+                          setFormData((prev) => ({
+                            ...prev,
+                            acceptedTerms: event.target.checked,
+                          }));
+                          clearFieldError("acceptedTerms");
+                        }}
+                        disabled={isSubmitting}
+                        className="mt-1 h-4 w-4 rounded border-raff-neutral-300 text-raff-accent focus:ring-raff-accent"
+                      />
+                      <label
+                        htmlFor="acceptedTerms"
+                        className="text-sm text-raff-neutral-700 text-start"
+                      >
+                        {t("form.acceptTerms")}{" "}
+                        <Link
+                          href="/terms"
+                          className="text-raff-accent hover:underline"
+                          target="_blank"
+                        >
+                          {t("form.termsOfService")}
+                        </Link>{" "}
+                        {t("form.and")}{" "}
+                        <Link
+                          href="/privacy"
+                          className="text-raff-accent hover:underline"
+                          target="_blank"
+                        >
+                          {t("form.privacyPolicy")}
+                        </Link>
+                      </label>
+                    </div>
+                    {errors.acceptedTerms && (
+                      <div className="mt-1.5 flex items-center gap-1.5 text-sm text-red-600 animate-in fade-in slide-in-from-top-1 duration-200">
+                        <AlertCircle className="h-4 w-4" />
+                        <span>{errors.acceptedTerms}</span>
                       </div>
                     )}
                   </div>
