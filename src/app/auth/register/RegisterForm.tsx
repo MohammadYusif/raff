@@ -34,7 +34,6 @@ export function RegisterForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [resendCooldown, setResendCooldown] = useState(0);
   const [otp, setOtp] = useState("");
-  const [emailVerified, setEmailVerified] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -198,7 +197,6 @@ export function RegisterForm() {
       }
 
       // OTP verified, now register the user
-      setEmailVerified(true);
       toast.success(t("otpVerified"));
       await completeRegistration();
     } catch (error) {
@@ -254,7 +252,6 @@ export function RegisterForm() {
   const handleChangeEmail = () => {
     setStep("details");
     setOtp("");
-    setEmailVerified(false);
     setErrors({});
   };
 
