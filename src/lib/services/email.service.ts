@@ -1,9 +1,19 @@
 // src/lib/services/email.service.ts
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy initialization to avoid build-time errors when env vars aren't available
+let resendClient: Resend | null = null;
 
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "noreply@raff.sa";
+function getResendClient(): Resend {
+  if (!resendClient) {
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error("RESEND_API_KEY is not configured");
+    }
+    resendClient = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resendClient;
+}
+
 const FROM_NAME = "Raff";
 
 interface SendEmailOptions {
@@ -14,8 +24,11 @@ interface SendEmailOptions {
 
 async function sendEmail({ to, subject, html }: SendEmailOptions) {
   try {
+    const resend = getResendClient();
+    const fromEmail = process.env.RESEND_FROM_EMAIL || "noreply@raff.sa";
+
     const { data, error } = await resend.emails.send({
-      from: `${FROM_NAME} <${FROM_EMAIL}>`,
+      from: `${FROM_NAME} <${fromEmail}>`,
       to,
       subject,
       html,
