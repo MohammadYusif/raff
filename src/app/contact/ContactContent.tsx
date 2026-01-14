@@ -7,7 +7,7 @@ import { PageLayout } from "@/shared/components/layouts/PageLayout";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
 import { ArrowBackward } from "@/core/i18n";
 import Link from "next/link";
-import { Mail, Phone, MapPin, MessageSquare, Store, Shield } from "lucide-react";
+import { Mail, Globe, MessageSquare, Store, Shield } from "lucide-react";
 
 export function ContactContent() {
   const t = useTranslations("contact");
@@ -17,17 +17,17 @@ export function ContactContent() {
     {
       icon: MessageSquare,
       key: "general" as const,
-      email: "support@raff.sa",
+      email: "raffdiscoverysa@gmail.com",
     },
     {
       icon: Store,
       key: "merchant" as const,
-      email: "merchants@raff.sa",
+      email: "raffdiscoverysa@gmail.com",
     },
     {
       icon: Shield,
       key: "legal" as const,
-      email: "legal@raff.sa",
+      email: "raffdiscoverysa@gmail.com",
     },
   ];
 
@@ -105,37 +105,24 @@ export function ContactContent() {
                       {t("info.email")}
                     </h3>
                     <a
-                      href="mailto:support@raff.sa"
+                      href="mailto:raffdiscoverysa@gmail.com"
                       className="text-raff-neutral-700 hover:text-raff-accent"
                     >
-                      support@raff.sa
+                      raffdiscoverysa@gmail.com
                     </a>
                   </div>
                 </div>
 
-                {/* Phone */}
+                {/* Location */}
                 <div className="flex items-start gap-4">
                   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-raff-primary/10">
-                    <Phone className="h-6 w-6 text-raff-primary" />
+                    <Globe className="h-6 w-6 text-raff-primary" />
                   </div>
                   <div>
                     <h3 className="mb-1 font-semibold text-raff-primary">
-                      {t("info.phone")}
+                      {t("info.location")}
                     </h3>
-                    <p className="text-raff-neutral-700">{t("info.phoneValue")}</p>
-                  </div>
-                </div>
-
-                {/* Address */}
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-raff-primary/10">
-                    <MapPin className="h-6 w-6 text-raff-primary" />
-                  </div>
-                  <div>
-                    <h3 className="mb-1 font-semibold text-raff-primary">
-                      {t("info.address")}
-                    </h3>
-                    <p className="text-raff-neutral-700">{t("info.addressValue")}</p>
+                    <p className="text-raff-neutral-700">{t("info.locationValue")}</p>
                   </div>
                 </div>
               </div>

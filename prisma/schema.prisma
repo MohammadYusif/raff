@@ -328,6 +328,30 @@ model VerificationToken {
 }
 
 // ============================================
+// EMAIL OTP MODEL
+// ============================================
+
+model EmailOTP {
+  id        String   @id @default(cuid())
+  email     String
+  otp       String
+  type      OTPType  @default(REGISTRATION)
+  attempts  Int      @default(0)
+  isUsed    Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email, type])
+  @@index([expiresAt])
+}
+
+enum OTPType {
+  REGISTRATION
+  PASSWORD_RESET
+  EMAIL_CHANGE
+}
+
+// ============================================
 // CLICK TRACKING MODEL
 // ============================================
 

@@ -835,6 +835,31 @@
       "and": "and",
       "privacyPolicy": "Privacy Policy",
       "termsRequired": "You must accept the terms and privacy policy",
+      "verifyEmail": "Verify Email",
+      "enterOtp": "Enter the 6-digit code sent to",
+      "otpPlaceholder": "Enter 6-digit code",
+      "verifyOtp": "Verify Code",
+      "verifying": "Verifying...",
+      "sendingOtp": "Sending code...",
+      "resendOtp": "Resend Code",
+      "resendIn": "Resend in {seconds}s",
+      "otpSent": "Verification code sent!",
+      "otpSentDesc": "Check your email for the code",
+      "otpVerified": "Email verified!",
+      "changeEmail": "Change email",
+      "errors": {
+        "nameRequired": "Name is required",
+        "emailRequired": "Email is required",
+        "emailInvalid": "Invalid email address",
+        "passwordRequired": "Password is required",
+        "confirmPasswordRequired": "Please confirm your password",
+        "emailExists": "This email is already registered",
+        "otpRequired": "Verification code is required",
+        "otpInvalid": "Invalid verification code",
+        "otpExpired": "Code expired. Please request a new one",
+        "tooManyAttempts": "Too many attempts. Please request a new code",
+        "sendOtpFailed": "Failed to send verification code"
+      },
       "success": "Account created successfully!",
       "successDescription": "Redirecting you to login...",
       "error": "Something went wrong. Please try again."
@@ -1149,17 +1174,15 @@
     "info": {
       "title": "Contact Information",
       "email": "Email",
-      "phone": "Phone",
-      "phoneValue": "+966 XX XXX XXXX",
-      "address": "Address",
-      "addressValue": "Riyadh, Saudi Arabia"
+      "location": "Location",
+      "locationValue": "Online Business - Saudi Arabia"
     },
     "hours": {
-      "title": "Business Hours",
+      "title": "Response Time",
       "weekdays": "Sunday - Thursday",
-      "weekdaysValue": "9:00 AM - 6:00 PM",
+      "weekdaysValue": "Within 24 hours",
       "weekend": "Friday - Saturday",
-      "weekendValue": "Closed"
+      "weekendValue": "Within 48 hours"
     }
   }
 }

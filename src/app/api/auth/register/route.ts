@@ -10,6 +10,7 @@ const registerSchema = z.object({
   name: z.string().min(2).max(100),
   email: z.string().email(),
   password: z.string().min(8).max(72),
+  emailVerified: z.boolean().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -59,6 +60,7 @@ export async function POST(request: NextRequest) {
         email,
         passwordHash,
         role: UserRole.CUSTOMER,
+        emailVerified: parsed.data.emailVerified ? new Date() : null,
       },
     });
 
