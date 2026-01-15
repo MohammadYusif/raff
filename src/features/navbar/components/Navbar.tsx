@@ -165,10 +165,8 @@ export function Navbar({ variant = "main" }: NavbarProps) {
             {showAuth && isAuthReady && (
               <>
                 {isAuthenticated ? (
-                  // Show User Menu when logged in - ONLY on desktop (hidden on mobile to prevent duplication)
-                  <div className="hidden sm:block">
-                    <UserMenu />
-                  </div>
+                  // Show User Menu when logged in - Always visible
+                  <UserMenu />
                 ) : (
                   // Show Login button when not logged in
                   <Link href="/auth/login" className="hidden sm:inline-flex">
@@ -245,29 +243,20 @@ export function Navbar({ variant = "main" }: NavbarProps) {
                 </Link>
               )}
 
-              {showAuth && isAuthReady && (
-                <>
-                  {isAuthenticated ? (
-                    // Show User Menu in mobile - ONLY on mobile (hidden on desktop to prevent duplication)
-                    <div className="border-t border-raff-neutral-200 pt-4 sm:hidden">
-                      <UserMenu isMobile={true} />
-                    </div>
-                  ) : (
-                    // Show Login button when not logged in
-                    <Link
-                      href="/auth/login"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <AnimatedButton
-                        variant="outline"
-                        size="sm"
-                        className="w-full border-raff-primary text-raff-primary"
-                      >
-                        {t("common.actions.login")}
-                      </AnimatedButton>
-                    </Link>
-                  )}
-                </>
+              {/* Show Login button in mobile menu when not logged in */}
+              {showAuth && isAuthReady && !isAuthenticated && (
+                <Link
+                  href="/auth/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <AnimatedButton
+                    variant="outline"
+                    size="sm"
+                    className="w-full border-raff-primary text-raff-primary"
+                  >
+                    {t("common.actions.login")}
+                  </AnimatedButton>
+                </Link>
               )}
             </div>
           </Container>
