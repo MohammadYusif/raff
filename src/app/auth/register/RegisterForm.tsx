@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import { Input } from "@/shared/components/ui";
 import { toast } from "sonner";
 import { Loader2, AlertCircle, CheckCircle, Mail } from "lucide-react";
@@ -233,14 +234,29 @@ export function RegisterForm() {
         return;
       }
 
-      toast.success(t("success"), {
-        description: t("successDescription"),
-        duration: 3000,
+      // Auto-login after successful registration
+      const signInResult = await signIn("credentials", {
+        redirect: false,
+        email: formData.email,
+        password: formData.password,
       });
 
-      setTimeout(() => {
+      if (signInResult?.error) {
+        // If auto-login fails, redirect to login page
+        toast.success(t("success"), {
+          description: t("successDescription"),
+        });
         router.push("/auth/login");
-      }, 1000);
+        return;
+      }
+
+      toast.success(t("success"), {
+        description: t("successDescription"),
+      });
+
+      // Redirect to home page after successful auto-login
+      router.push("/");
+      router.refresh();
     } catch (error) {
       console.error("Registration error:", error);
       toast.error(t("error"));
