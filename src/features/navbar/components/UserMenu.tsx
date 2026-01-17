@@ -89,21 +89,21 @@ export function UserMenu({ isMobile = false }: UserMenuProps) {
       <AnimatedButton
         onClick={() => setIsOpen(!isOpen)}
         unstyled
-        className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-raff-neutral-100"
+        className="flex items-center gap-1 rounded-lg px-1 py-1.5 transition-colors hover:bg-raff-neutral-100 sm:gap-2 sm:px-2"
       >
         {/* User Avatar Circle */}
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-raff-primary text-white transition-transform hover:scale-105">
           <span className="text-sm font-semibold">{userInitial}</span>
         </div>
 
-        {/* User Name - Always visible but truncated on mobile */}
-        <span className="truncate text-sm font-medium text-raff-neutral-700">
+        {/* User Name - Hidden on mobile, visible on sm+ */}
+        <span className="hidden truncate text-sm font-medium text-raff-neutral-700 sm:block">
           {displayName}
         </span>
 
-        {/* Dropdown Icon */}
+        {/* Dropdown Icon - Hidden on mobile, visible on sm+ */}
         <ChevronDown
-          className={`h-4 w-4 shrink-0 text-raff-neutral-500 transition-transform ${
+          className={`hidden h-4 w-4 shrink-0 text-raff-neutral-500 transition-transform sm:block ${
             isOpen ? "rotate-180" : ""
           }`}
         />

@@ -113,7 +113,7 @@ export function Navbar({ variant = "main" }: NavbarProps) {
           )}
 
           {/* Right Section */}
-          <div className="flex shrink-0 items-center gap-3">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-3">
             {/* Mobile Search Icon - Show on tablet and mobile (below lg) */}
             {showSearch && (
               <AnimatedButton
