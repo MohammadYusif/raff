@@ -51,13 +51,12 @@ export async function GET(request: NextRequest) {
     scopes: config.scopes,
   });
 
+  // Build OAuth URL exactly like Zid's Flask example
+  // Only: client_id, redirect_uri, response_type (no scope)
   const url = new URL(config.authUrl);
-  url.searchParams.set("response_type", "code");
   url.searchParams.set("client_id", config.clientId);
   url.searchParams.set("redirect_uri", redirectUri);
-  if (config.scopes.length) {
-    url.searchParams.set("scope", config.scopes.join(" "));
-  }
+  url.searchParams.set("response_type", "code");
   url.searchParams.set("state", state);
 
   const response = NextResponse.redirect(url.toString());
