@@ -16,7 +16,7 @@ import { getZidConfig } from "@/lib/platform/config";
 import { normalizeStoreUrl } from "@/lib/platform/store";
 import { registerZidWebhooks } from "@/lib/platform/webhook-register";
 import { verifyOAuthState } from "@/lib/platform/oauth";
-import { ZidService } from "@/lib/services/zid.service";
+import { zidFetchManagerProfile } from "@/lib/services/zidApi";
 import { createRegistrationToken } from "@/lib/registrationToken";
 import { getZidRedirectUri } from "@/lib/zid/getZidRedirectUri";
 import { isZidConnected } from "@/lib/zid/isZidConnected";
@@ -299,26 +299,61 @@ async function handleJoinFlow(
   let storeUrl = normalizeStoreUrl(zidStoreUrl);
 
   try {
-    const service = new ZidService({
-      accessToken: authorizationToken,
-      storeId: zidStoreId,
-      managerToken,
+    // Use zidFetchManagerProfile which doesn't require Store-Id
+    const profileRaw = await zidFetchManagerProfile({
+      id: "oauth-join",
+      zidAccessToken: authorizationToken,
+      zidManagerToken: managerToken,
+      zidStoreId: null, // Not available yet
     });
-    const profile = await service.fetchStoreProfile();
-    console.info("[zid-oauth-callback] join flow profile fetched", {
-      hasProfile: Boolean(profile),
-      profileId: profile?.id,
-      profileName: profile?.name,
+
+    console.info("[zid-oauth-callback] join flow profile response", {
+      hasResponse: Boolean(profileRaw),
+      responseKeys: profileRaw && typeof profileRaw === 'object' ? Object.keys(profileRaw) : null,
     });
-    if (profile) {
-      storeName = profile.name || storeName;
-      storeEmail = profile.email || null;
-      if (!zidStoreId && profile.id) {
-        zidStoreId = String(profile.id);
-      }
-      const profileStoreUrl = profile.domain || null;
-      if (profileStoreUrl) {
-        storeUrl = normalizeStoreUrl(profileStoreUrl);
+
+    if (profileRaw && typeof profileRaw === 'object') {
+      const profileData = profileRaw as Record<string, unknown>;
+      // Response might have manager or user or store object
+      const profile =
+        (profileData.manager as Record<string, unknown>) ||
+        (profileData.user as Record<string, unknown>) ||
+        (profileData.store as Record<string, unknown>) ||
+        profileData;
+
+      console.info("[zid-oauth-callback] join flow profile fetched", {
+        hasProfile: Boolean(profile),
+        profileKeys: profile ? Object.keys(profile) : null,
+      });
+
+      if (profile) {
+        // Extract store info - it might be nested
+        const store = (profile.store as Record<string, unknown>) || profile;
+        const storeId = toStringOrNull(store.id) || toStringOrNull(profile.id);
+        const profileName = toStringOrNull(profile.name) ||
+          toStringOrNull(store.title as unknown) ||
+          toStringOrNull(profile.title as unknown);
+        const profileEmail = toStringOrNull(profile.email);
+        const profileDomain = toStringOrNull(store.domain as unknown) ||
+          toStringOrNull(store.url as unknown) ||
+          toStringOrNull(profile.domain as unknown) ||
+          toStringOrNull(profile.url as unknown);
+
+        console.info("[zid-oauth-callback] extracted profile info", {
+          storeId,
+          profileName,
+          profileEmail,
+          profileDomain,
+        });
+
+        if (profileName) storeName = profileName;
+        if (profileEmail) storeEmail = profileEmail;
+        if (!zidStoreId && storeId) {
+          zidStoreId = storeId;
+        }
+        if (profileDomain) {
+          storeUrl = normalizeStoreUrl(profileDomain);
+        }
       }
     }
   } catch (error) {
@@ -576,18 +611,36 @@ async function handleRegularFlow(
   let storeUrl = normalizeStoreUrl(zidStoreUrl);
 
   try {
-    const service = new ZidService({
-      accessToken: authorizationToken,
-      storeId: zidStoreId,
-      managerToken,
+    // Use zidFetchManagerProfile which doesn't require Store-Id
+    const profileRaw = await zidFetchManagerProfile({
+      id: payload.merchantId,
+      zidAccessToken: authorizationToken,
+      zidManagerToken: managerToken,
+      zidStoreId: null, // Not available yet
     });
-    const profile = await service.fetchStoreProfile();
-    if (profile) {
-      if (!zidStoreId && profile.id) {
-        zidStoreId = String(profile.id);
-      }
-      if (profile.domain) {
-        storeUrl = normalizeStoreUrl(profile.domain);
+
+    if (profileRaw && typeof profileRaw === 'object') {
+      const profileData = profileRaw as Record<string, unknown>;
+      const profile =
+        (profileData.manager as Record<string, unknown>) ||
+        (profileData.user as Record<string, unknown>) ||
+        (profileData.store as Record<string, unknown>) ||
+        profileData;
+
+      if (profile) {
+        const store = (profile.store as Record<string, unknown>) || profile;
+        const storeId = toStringOrNull(store.id) || toStringOrNull(profile.id);
+        const profileDomain = toStringOrNull(store.domain as unknown) ||
+          toStringOrNull(store.url as unknown) ||
+          toStringOrNull(profile.domain as unknown) ||
+          toStringOrNull(profile.url as unknown);
+
+        if (!zidStoreId && storeId) {
+          zidStoreId = storeId;
+        }
+        if (profileDomain) {
+          storeUrl = normalizeStoreUrl(profileDomain);
+        }
       }
     }
   } catch (error) {
