@@ -3,7 +3,7 @@ type OptionalString = string | undefined | null;
 const parseScopes = (value: OptionalString): string[] => {
   if (!value) return [];
   return value
-    .split(/[,\s]+/)
+    .split(/\s+/)
     .map((scope) => scope.trim())
     .filter(Boolean);
 };
