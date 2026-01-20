@@ -257,6 +257,16 @@ async function handleJoinFlow(
   }
 
   const tokenData = (await tokenResponse.json()) as Record<string, unknown>;
+
+  // Log the full token response to understand what Zid returns
+  console.info("[zid-oauth-callback] token response keys", {
+    keys: Object.keys(tokenData),
+    hasStore: "store" in tokenData,
+    hasStoreId: "store_id" in tokenData || "storeId" in tokenData,
+    hasStoreUrl: "store_url" in tokenData || "storeUrl" in tokenData,
+    storeData: tokenData.store ? Object.keys(tokenData.store as object) : null,
+  });
+
   const { authorizationToken, managerToken, refreshToken, expiresIn } =
     extractZidTokens(tokenData);
 
