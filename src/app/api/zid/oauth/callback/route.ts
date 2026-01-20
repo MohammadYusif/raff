@@ -173,15 +173,14 @@ export async function GET(request: NextRequest) {
     return redirectWithStatus(config, "error", error);
   }
 
-  if (!code || !state) {
-    console.error("[zid-oauth-callback] missing code or state");
-    return redirectWithStatus(config, "error");
-  }
-
-  // Handle join flow (new merchant registration)
+  // Handle join flow (new merchant registration) - doesn't require state
   if (isJoinFlow) {
+    if (!code) {
+      console.error("[zid-oauth-callback] join flow missing code");
+      return redirectWithStatus(config, "error");
+    }
     try {
-      return await handleJoinFlow(request, code, state, config);
+      return await handleJoinFlow(request, code, config);
     } catch (error) {
       console.error("Zid join flow failed:", error);
       const errorCode =
@@ -190,6 +189,12 @@ export async function GET(request: NextRequest) {
           : undefined;
       return redirectWithStatus(config, "error", errorCode);
     }
+  }
+
+  // Regular flow requires both code and state
+  if (!code || !state) {
+    console.error("[zid-oauth-callback] missing code or state");
+    return redirectWithStatus(config, "error");
   }
 
   // Handle regular flow (existing merchant connecting store)
@@ -207,28 +212,25 @@ export async function GET(request: NextRequest) {
 
 /**
  * Handle new merchant registration flow
+ * Note: Join flow doesn't use state parameter since we follow Zid's simple OAuth example
  */
 async function handleJoinFlow(
   request: NextRequest,
   code: string,
-  state: string,
   config: ReturnType<typeof getZidConfig>
 ) {
-  const cookieState = request.cookies.get("raff_zid_join_state")?.value;
+  // Verify join flow cookie exists (our CSRF protection for join flow)
+  const joinFlowCookie = request.cookies.get("raff_zid_join_flow")?.value;
 
   console.info("[zid-oauth-callback] handleJoinFlow", {
-    hasCookieState: Boolean(cookieState),
-    statesMatch: cookieState === state,
+    hasJoinFlowCookie: Boolean(joinFlowCookie),
   });
 
-  if (!cookieState || cookieState !== state) {
-    console.error("[zid-oauth-callback] state mismatch or missing", {
-      hasCookieState: Boolean(cookieState),
-      receivedState: state?.substring(0, 10) + "...",
-    });
+  if (!joinFlowCookie) {
+    console.error("[zid-oauth-callback] join flow cookie missing");
     return redirectWithStatus(config, "error");
   }
-  const stateVerified = true;
+  const stateVerified = true; // Cookie presence is our verification
 
   // Exchange code for tokens
   const tokenBody = new URLSearchParams({
