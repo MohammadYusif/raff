@@ -5,6 +5,7 @@ import { getZidConfig } from "@/lib/platform/config";
 import { createOAuthState } from "@/lib/platform/oauth";
 import { requireMerchant } from "@/lib/auth/guards";
 import { getZidRedirectUri } from "@/lib/zid/getZidRedirectUri";
+import { getZidOAuthScopes } from "@/lib/zid/getZidOAuthScopes";
 
 export async function GET(request: NextRequest) {
   const auth = await requireMerchant("api");
@@ -43,25 +44,21 @@ export async function GET(request: NextRequest) {
   );
 
   const redirectUri = getZidRedirectUri(request);
-  console.info("[zid-oauth-start] initiating OAuth", {
-    merchantId: merchant.id,
-    redirectUri,
-    configuredRedirectUri: config.redirectUri,
-    clientId: config.clientId,
-    scopes: config.scopes,
+  const scopes = getZidOAuthScopes();
+  console.info("[zid-oauth-start] scopes", {
+    scopes,
+    hasScopes: scopes.length > 0,
   });
 
   // Build OAuth URL exactly like Zid's Flask example
-  // Only: client_id, redirect_uri, response_type (no scope)
+  // Only add scope when explicitly configured; otherwise rely on dashboard permissions.
   const url = new URL(config.authUrl);
   url.searchParams.set("client_id", config.clientId);
   url.searchParams.set("redirect_uri", redirectUri);
   url.searchParams.set("response_type", "code");
   url.searchParams.set("state", state);
-  if (config.scopes.length > 0) {
-    url.searchParams.set("scope", config.scopes.join(" "));
-  } else {
-    // TODO: If Zid requires OAuth scopes, set ZID_SCOPES or configure scopes in the Zid dashboard.
+  if (scopes.length > 0) {
+    url.searchParams.set("scope", scopes.join(" "));
   }
 
   const response = NextResponse.redirect(url.toString());

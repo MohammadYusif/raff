@@ -15,6 +15,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getZidConfig } from "@/lib/platform/config";
 import { getZidRedirectUri } from "@/lib/zid/getZidRedirectUri";
+import { getZidOAuthScopes } from "@/lib/zid/getZidOAuthScopes";
 import crypto from "crypto";
 
 export async function GET(request: NextRequest) {
@@ -33,23 +34,20 @@ export async function GET(request: NextRequest) {
   const state = crypto.randomBytes(32).toString("hex");
 
   const redirectUri = getZidRedirectUri(request);
-  console.info("[zid-oauth-join] initiating OAuth", {
-    redirectUri,
-    configuredRedirectUri: config.redirectUri,
-    clientId: config.clientId,
-    scopes: config.scopes,
+  const scopes = getZidOAuthScopes();
+  console.info("[zid-oauth-join] scopes", {
+    scopes,
+    hasScopes: scopes.length > 0,
   });
 
   // Build OAuth URL exactly like Zid's Flask example
-  // Only: client_id, redirect_uri, response_type (no scope)
+  // Only add scope when explicitly configured; otherwise rely on dashboard permissions.
   const url = new URL(config.authUrl);
   url.searchParams.set("client_id", config.clientId);
   url.searchParams.set("redirect_uri", redirectUri);
   url.searchParams.set("response_type", "code");
-  if (config.scopes.length > 0) {
-    url.searchParams.set("scope", config.scopes.join(" "));
-  } else {
-    // TODO: If Zid requires OAuth scopes, set ZID_SCOPES or configure scopes in the Zid dashboard.
+  if (scopes.length > 0) {
+    url.searchParams.set("scope", scopes.join(" "));
   }
 
   const response = NextResponse.redirect(url.toString());
