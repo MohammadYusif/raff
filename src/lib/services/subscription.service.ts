@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { SubscriptionStatus } from "@prisma/client";
 import { createLogger } from "@/lib/utils/logger";
+import { normalizeZidAuthorizationToken } from "@/lib/zid/tokens";
 
 const logger = createLogger("subscription-service");
 
@@ -148,6 +149,19 @@ export async function checkZidSubscription(
     };
   }
 
+  const authorizationToken = normalizeZidAuthorizationToken(
+    merchant.zidAccessToken
+  );
+  if (!authorizationToken) {
+    logger.warn("Merchant has invalid Zid authorization token", { merchantId });
+    return {
+      isSubscribed: false,
+      status: SubscriptionStatus.INACTIVE,
+      plan: null,
+      endsAt: null,
+    };
+  }
+
   try {
     const appId = process.env.ZID_APP_ID!;
 
@@ -160,7 +174,7 @@ export async function checkZidSubscription(
       {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${merchant.zidAccessToken}`,
+          Authorization: `Bearer ${authorizationToken}`,
           "X-Manager-Token": merchant.zidManagerToken,
           Accept: "application/json",
           "Accept-Language": "en",

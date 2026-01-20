@@ -86,10 +86,7 @@ export function getZidConfig() {
     "ZID_APP_BASE_URL",
     getOptionalHttpsUrl("NEXT_PUBLIC_APP_URL")
   );
-  const redirectUri = requireEnv(
-    "ZID_REDIRECT_URI",
-    process.env.ZID_OAUTH_REDIRECT_URI
-  );
+  const redirectUri = requireEnv("ZID_REDIRECT_URI");
   requireHttpsUrl("ZID_APP_BASE_URL", appBaseUrl);
   requireHttpsUrl("ZID_REDIRECT_URI", redirectUri);
 

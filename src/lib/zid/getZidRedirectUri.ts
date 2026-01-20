@@ -47,6 +47,7 @@ const getRequestOrigin = (request: NextRequest): string | null => {
   }
 };
 
+// NOTE: This helper is for building authorize URLs, not for token exchange in production.
 export function getZidRedirectUri(request?: NextRequest): string {
   const config = getZidConfig();
   const requestOrigin = request ? getRequestOrigin(request) : null;

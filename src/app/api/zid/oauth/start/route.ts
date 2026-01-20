@@ -58,6 +58,11 @@ export async function GET(request: NextRequest) {
   url.searchParams.set("redirect_uri", redirectUri);
   url.searchParams.set("response_type", "code");
   url.searchParams.set("state", state);
+  if (config.scopes.length > 0) {
+    url.searchParams.set("scope", config.scopes.join(" "));
+  } else {
+    // TODO: If Zid requires OAuth scopes, set ZID_SCOPES or configure scopes in the Zid dashboard.
+  }
 
   const response = NextResponse.redirect(url.toString());
   response.cookies.set("raff_zid_oauth_state", state, {

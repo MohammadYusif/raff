@@ -14,6 +14,7 @@ import { prisma } from "@/lib/prisma";
 import { getZidConfig } from "@/lib/platform/config";
 import { fetchWithTimeout } from "@/lib/platform/fetch";
 import { createLogger } from "@/lib/utils/logger";
+import { normalizeZidAuthorizationToken } from "@/lib/zid/tokens";
 
 const logger = createLogger("zid-service");
 
@@ -187,7 +188,9 @@ export class ZidService {
   constructor(config: ZidConfig) {
     const zidConfig = getZidConfig();
     this.baseUrl = zidConfig.apiBaseUrl;
-    this.authorizationToken = config.authorizationToken;
+    this.authorizationToken =
+      normalizeZidAuthorizationToken(config.authorizationToken) ??
+      config.authorizationToken;
     this.managerToken = config.managerToken;
     this.refreshAccessToken = config.refreshAccessToken;
     this.onRateLimit = config.onRateLimit;
@@ -614,12 +617,13 @@ export class ZidService {
     // - authorization/Authorization → Bearer token for Authorization header
     // - access_token → X-Manager-Token header
     return {
-      authorizationToken:
+      authorizationToken: normalizeZidAuthorizationToken(
         data.Authorization ||
-        data.authorization ||
-        data.authorization_token ||
-        data.authorizationToken ||
-        null,
+          data.authorization ||
+          data.authorization_token ||
+          data.authorizationToken ||
+          null
+      ),
       managerToken:
         data.access_token ||
         data.manager_token ||
@@ -637,9 +641,12 @@ function isTokenExpired(tokenExpiry: Date | null): boolean {
 }
 
 export async function ensureZidAccessToken(merchant: ZidMerchantAuth) {
+  const normalizedExistingAuth = normalizeZidAuthorizationToken(
+    merchant.zidAccessToken
+  );
   if (!isTokenExpired(merchant.zidTokenExpiry)) {
     return {
-      authorizationToken: merchant.zidAccessToken,
+      authorizationToken: normalizedExistingAuth,
       managerToken: merchant.zidManagerToken,
       refreshToken: merchant.zidRefreshToken,
       tokenExpiry: merchant.zidTokenExpiry,
@@ -653,7 +660,9 @@ export async function ensureZidAccessToken(merchant: ZidMerchantAuth) {
   const refreshed = await ZidService.refreshToken(merchant.zidRefreshToken);
   const tokenExpiry = new Date(Date.now() + refreshed.expiresIn * 1000);
   const authorizationToken =
-    refreshed.authorizationToken ?? merchant.zidAccessToken;
+    normalizeZidAuthorizationToken(
+      refreshed.authorizationToken ?? merchant.zidAccessToken
+    ) ?? merchant.zidAccessToken;
   const managerToken = refreshed.managerToken ?? merchant.zidManagerToken;
   const refreshToken = refreshed.refreshToken ?? merchant.zidRefreshToken;
 

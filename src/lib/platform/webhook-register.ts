@@ -1,5 +1,6 @@
 // src/lib/platform/webhook-register.ts
 import { getSallaConfig, getZidConfig } from "@/lib/platform/config";
+import { normalizeZidAuthorizationToken } from "@/lib/zid/tokens";
 
 type RegisterResult =
   | { status: "skipped"; reason: string }
@@ -28,6 +29,89 @@ function ensureHttpsUrl(url: string): string {
   }
   return parsed.toString();
 }
+
+const LOG_BODY_LIMIT = 500;
+
+const formatBodySnippet = (raw: string): string => {
+  const trimmed = raw.trim();
+  if (!trimmed) return "empty";
+  const truncated =
+    trimmed.length > LOG_BODY_LIMIT ? trimmed.slice(0, LOG_BODY_LIMIT) : trimmed;
+  if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+    try {
+      return JSON.stringify(JSON.parse(trimmed)).slice(0, LOG_BODY_LIMIT);
+    } catch {
+      return truncated;
+    }
+  }
+  return truncated;
+};
+
+const readResponseBody = async (
+  response: Response
+): Promise<{ raw: string; formatted: string }> => {
+  const raw = await response.text().catch(() => "");
+  return { raw, formatted: formatBodySnippet(raw) };
+};
+
+const isDuplicateWebhookError = (raw: string): boolean => {
+  const trimmed = raw.trim();
+  if (!trimmed) return false;
+  const lower = trimmed.toLowerCase();
+  if (
+    lower.includes("already") &&
+    (lower.includes("exist") ||
+      lower.includes("registered") ||
+      lower.includes("duplicate"))
+  ) {
+    return true;
+  }
+
+  if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+    try {
+      const json = JSON.parse(trimmed) as Record<string, unknown>;
+      const errorObj = (json.error as Record<string, unknown>) || json;
+      const code =
+        (errorObj.code as string) ||
+        (json.code as string) ||
+        (json.error_code as string) ||
+        undefined;
+      const message =
+        (errorObj.message as string) ||
+        (json.message as string) ||
+        (json.error as string) ||
+        (json.detail as string) ||
+        undefined;
+
+      if (typeof code === "string") {
+        const codeLower = code.toLowerCase();
+        if (
+          codeLower.includes("already") ||
+          codeLower.includes("duplicate") ||
+          codeLower.includes("exists")
+        ) {
+          return true;
+        }
+      }
+
+      if (typeof message === "string") {
+        const messageLower = message.toLowerCase();
+        if (
+          messageLower.includes("already") &&
+          (messageLower.includes("exist") ||
+            messageLower.includes("registered") ||
+            messageLower.includes("duplicate"))
+        ) {
+          return true;
+        }
+      }
+    } catch {
+      return false;
+    }
+  }
+
+  return false;
+};
 
 async function postJson(
   url: string,
@@ -99,7 +183,8 @@ export async function registerZidWebhooks(params: {
       appendTokenToUrl(baseUrl, process.env.ZID_WEBHOOK_TOKEN)
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Invalid webhook URL";
+    const message =
+      error instanceof Error ? error.message : "Invalid webhook URL";
     return { status: "skipped", reason: message };
   }
   const logTargetUrl = redactTokenFromUrl(targetUrl);
@@ -121,8 +206,13 @@ export async function registerZidWebhooks(params: {
     return { status: "skipped", reason: "Missing ZID_APP_ID" };
   }
 
+  const authorizationToken = normalizeZidAuthorizationToken(params.accessToken);
+  if (!authorizationToken) {
+    return { status: "skipped", reason: "Missing Zid authorization token" };
+  }
+
   const headers: Record<string, string> = {
-    Authorization: `Bearer ${params.accessToken}`,
+    Authorization: `Bearer ${authorizationToken}`,
     Accept: "application/json",
   };
 
@@ -161,13 +251,16 @@ export async function registerZidWebhooks(params: {
         status: response.status,
       });
       if (!response.ok) {
-        const text = await response.text();
+        const { raw, formatted } = await readResponseBody(response);
+        console.warn("[zid-webhook] registration failed", {
+          event,
+          status: response.status,
+          body: formatted,
+        });
 
-        // Check if error is due to duplicate webhook (idempotency)
-        // Zid returns 400 with Arabic error message when limit is exceeded
+        // Only treat as idempotent if the response clearly indicates a duplicate
         const isDuplicate =
-          response.status === 400 &&
-          (text.includes("الحد الأقصى") || text.includes("وهو 1"));
+          response.status === 400 && isDuplicateWebhookError(raw);
 
         if (isDuplicate) {
           console.info(`[zid-webhook] ${event} already registered (idempotent)`);
@@ -176,7 +269,7 @@ export async function registerZidWebhooks(params: {
         }
 
         throw new Error(
-          `Webhook registration failed: ${response.status} - ${text}`
+          `Webhook registration failed: ${response.status} - ${formatted}`
         );
       }
       results.push({ event, success: true });

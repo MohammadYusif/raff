@@ -14,6 +14,7 @@
 
 import { getZidConfig } from "@/lib/platform/config";
 import { fetchWithTimeout } from "@/lib/platform/fetch";
+import { normalizeZidAuthorizationToken } from "@/lib/zid/tokens";
 
 type ZidRole = "Manager" | "Customer";
 type QueryValue = string | number | boolean | undefined | null;
@@ -51,8 +52,25 @@ const debugLog = (message: string, details?: Record<string, unknown>) => {
   console.debug("[zid-api]", message);
 };
 
+const LOG_BODY_LIMIT = 500;
+
 const tokenPrefix = (value: string | null | undefined) =>
   value ? value.slice(0, 6) : null;
+
+const formatBodySnippet = (raw: string): string => {
+  const trimmed = raw.trim();
+  if (!trimmed) return "empty";
+  const truncated =
+    trimmed.length > LOG_BODY_LIMIT ? trimmed.slice(0, LOG_BODY_LIMIT) : trimmed;
+  if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+    try {
+      return JSON.stringify(JSON.parse(trimmed)).slice(0, LOG_BODY_LIMIT);
+    } catch {
+      return truncated;
+    }
+  }
+  return truncated;
+};
 
 const requireValue = (value: string | null | undefined, label: string) => {
   if (!value) {
@@ -91,7 +109,7 @@ const buildZidHeaders = (
 ): Record<string, string> => {
   // Authorization token (Bearer) - REQUIRED
   const authorizationToken = requireValue(
-    merchant.zidAccessToken,
+    normalizeZidAuthorizationToken(merchant.zidAccessToken),
     "authorization token (zidAccessToken)"
   );
 
@@ -134,8 +152,8 @@ const buildZidHeaders = (
   debugLog("headers", {
     role: options?.role ?? null,
     method,
-    hasAuthorizationToken: Boolean(merchant.zidAccessToken),
-    authorizationTokenPrefix: tokenPrefix(merchant.zidAccessToken),
+    hasAuthorizationToken: Boolean(authorizationToken),
+    authorizationTokenPrefix: tokenPrefix(authorizationToken),
     hasManagerToken: Boolean(merchant.zidManagerToken),
     managerTokenPrefix: tokenPrefix(merchant.zidManagerToken),
     storeId: merchant.zidStoreId ?? null,
@@ -165,19 +183,24 @@ const parseErrorBody = async (
   response: Response
 ): Promise<{ text: string; code?: string; message?: string }> => {
   const bodyText = await response.text().catch(() => "");
-  const snippet = bodyText.substring(0, 500) || "empty";
+  const text = formatBodySnippet(bodyText);
 
   try {
     const json = JSON.parse(bodyText) as Record<string, unknown>;
     // Zid may return { error: { code, message } } or { code, message } or { error: "..." }
     const errorObj = (json.error as Record<string, unknown>) || json;
     return {
-      text: snippet,
-      code: (errorObj.code as string) || (json.error_code as string) || undefined,
-      message: (errorObj.message as string) || (json.error as string) || (json.detail as string) || undefined,
+      text,
+      code:
+        (errorObj.code as string) || (json.error_code as string) || undefined,
+      message:
+        (errorObj.message as string) ||
+        (json.error as string) ||
+        (json.detail as string) ||
+        undefined,
     };
   } catch {
-    return { text: snippet };
+    return { text };
   }
 };
 
@@ -275,9 +298,30 @@ const zidFetchJson = async (args: {
       return parseJsonBody(response);
     }
 
+    const errorBody = await parseErrorBody(response);
+    if (
+      response.status === 401 ||
+      response.status === 403 ||
+      args.path === "/managers/account/profile"
+    ) {
+      console.error("[zid-api] request failed", {
+        status: response.status,
+        path: args.path,
+        baseUrl: getZidConfig().apiBaseUrl,
+        hasAuthorizationHeader: Boolean(headers.Authorization),
+        hasManagerTokenHeader: Boolean(
+          headers["X-Manager-Token"] || headers["Access-Token"]
+        ),
+        authorizationTokenPrefix: tokenPrefix(
+          normalizeZidAuthorizationToken(args.merchant.zidAccessToken)
+        ),
+        managerTokenPrefix: tokenPrefix(args.merchant.zidManagerToken),
+        error: errorBody.text,
+      });
+    }
+
     // Handle 429 - Rate limiting
     if (response.status === 429) {
-      const errorBody = await parseErrorBody(response);
       const errorDetail = errorBody.message || errorBody.code || errorBody.text;
       lastError = new Error(`Zid API rate limited (429): ${errorDetail}`);
 
@@ -304,7 +348,6 @@ const zidFetchJson = async (args: {
 
     // Handle 5xx - Server errors
     if (response.status >= 500) {
-      const errorBody = await parseErrorBody(response);
       const errorDetail = errorBody.message || errorBody.code || errorBody.text;
       lastError = new Error(`Zid API server error (${response.status}): ${errorDetail}`);
 
@@ -332,7 +375,6 @@ const zidFetchJson = async (args: {
     }
 
     // For other errors (4xx except 429), don't retry
-    const errorBody = await parseErrorBody(response);
     const errorDetail = errorBody.message || errorBody.code || errorBody.text;
     lastError = new Error(`Zid API error ${response.status}: ${errorDetail}`);
 
