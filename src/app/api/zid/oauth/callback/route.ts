@@ -110,11 +110,21 @@ const logZidOAuthSaved = (params: {
 };
 
 export async function GET(request: NextRequest) {
+  const userAgent = request.headers.get("user-agent") || "";
+
   // TRIPWIRE: Log immediately to confirm endpoint is reached
   console.info("[zid-oauth-callback] TRIPWIRE - Endpoint hit", {
     timestamp: new Date().toISOString(),
     url: request.url,
+    userAgent,
   });
+
+  // Zid's server verification check (Ruby user agent, no browser)
+  // Return 200 OK so Zid knows the endpoint is reachable
+  if (userAgent.toLowerCase().includes("ruby") || (!userAgent && !request.nextUrl.searchParams.get("code"))) {
+    console.info("[zid-oauth-callback] Zid server verification check - returning OK");
+    return NextResponse.json({ status: "ok" });
+  }
 
   const config = getZidConfig();
   const code = request.nextUrl.searchParams.get("code");

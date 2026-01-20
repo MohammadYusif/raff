@@ -18,6 +18,15 @@ import { getZidRedirectUri } from "@/lib/zid/getZidRedirectUri";
 import crypto from "crypto";
 
 export async function GET(request: NextRequest) {
+  const userAgent = request.headers.get("user-agent") || "";
+
+  // Zid's server verification check (Ruby user agent, no browser)
+  // Return 200 OK so Zid knows the endpoint is reachable
+  if (userAgent.toLowerCase().includes("ruby") || !userAgent) {
+    console.info("[zid-oauth-join] Zid server verification check - returning OK");
+    return NextResponse.json({ status: "ok" });
+  }
+
   const config = getZidConfig();
 
   // Generate a random state for CSRF protection
