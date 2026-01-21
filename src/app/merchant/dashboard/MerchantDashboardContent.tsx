@@ -465,7 +465,9 @@ export function MerchantDashboardContent() {
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   {storePlatform && (
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
+                    <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${
+                      storePlatform === "zid" ? "bg-raff-zid/10" : "bg-raff-salla/10"
+                    }`}>
                       <Image
                         src={`/images/brands/${storePlatform}.svg`}
                         alt={platformLabel}
