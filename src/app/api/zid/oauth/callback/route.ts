@@ -43,24 +43,73 @@ const LOG_BODY_LIMIT = 500;
 const tokenPrefix = (value: string | null | undefined) =>
   value ? value.slice(0, 6) : null;
 
-const formatLogBody = (raw: string): string => {
+const getRawBodySnippet = (raw: string): string => {
   const trimmed = raw.trim();
   if (!trimmed) return "empty";
-  const truncated =
-    trimmed.length > LOG_BODY_LIMIT ? trimmed.slice(0, LOG_BODY_LIMIT) : trimmed;
-  if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
-    try {
-      return JSON.stringify(JSON.parse(trimmed)).slice(0, LOG_BODY_LIMIT);
-    } catch {
-      return truncated;
-    }
-  }
-  return truncated;
+  return trimmed.length > LOG_BODY_LIMIT
+    ? trimmed.slice(0, LOG_BODY_LIMIT)
+    : trimmed;
 };
 
-const readResponseBody = async (response: Response): Promise<string> => {
-  const text = await response.text().catch(() => "");
-  return formatLogBody(text);
+const parseJsonRecord = (raw: string): Record<string, unknown> | null => {
+  if (!raw.trim()) return null;
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    return isRecord(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+};
+
+const getTokenErrorDescription = (
+  tokenData: Record<string, unknown> | null
+): string | null => {
+  if (!tokenData) return null;
+  const message = tokenData.message;
+  if (typeof message === "string") return message;
+  if (isRecord(message)) {
+    const description = message.description;
+    if (typeof description === "string") return description;
+    const nestedMessage = message.message;
+    if (typeof nestedMessage === "string") return nestedMessage;
+  }
+  const error = tokenData.error;
+  if (isRecord(error)) {
+    const description = error.description;
+    if (typeof description === "string") return description;
+    const nestedMessage = error.message;
+    if (typeof nestedMessage === "string") return nestedMessage;
+  }
+  return null;
+};
+
+const isTokenErrorPayload = (
+  tokenData: Record<string, unknown> | null,
+  raw: string
+): boolean => {
+  const status = tokenData?.status;
+  const statusValue =
+    typeof status === "string" ? status.toLowerCase() : null;
+  if (statusValue === "error") return true;
+  const description = getTokenErrorDescription(tokenData);
+  if (description && description.toLowerCase().includes("invalid scope")) {
+    return true;
+  }
+  return raw.toLowerCase().includes("invalid scope");
+};
+
+const readTokenResponse = async (response: Response) => {
+  const raw = await response.text().catch(() => "");
+  const tokenData = parseJsonRecord(raw);
+  const errorDescription = getTokenErrorDescription(tokenData);
+  const isErrorPayload = isTokenErrorPayload(tokenData, raw);
+  return {
+    raw,
+    rawSnippet: getRawBodySnippet(raw),
+    tokenData,
+    errorDescription,
+    isErrorPayload,
+  };
 };
 
 const formatErrorMessage = (error: unknown): string => {
@@ -321,16 +370,29 @@ async function handleJoinFlow(
     body: tokenBody,
   });
 
-  if (!tokenResponse.ok) {
-    const errorBody = await readResponseBody(tokenResponse);
+  const tokenResult = await readTokenResponse(tokenResponse);
+  console.info("[zid-oauth-callback] token exchange", {
+    status: tokenResponse.status,
+    ok: tokenResponse.ok,
+    errorDescription: tokenResult.errorDescription,
+  });
+  if (tokenResult.isErrorPayload) {
+    console.error("[zid-oauth-callback] token exchange returned error payload", {
+      status: tokenResponse.status,
+      errorDescription: tokenResult.errorDescription,
+      raw: tokenResult.rawSnippet,
+    });
+    return redirectWithStatus(config, "error", "invalid_scopes");
+  }
+  if (!tokenResponse.ok || !tokenResult.tokenData) {
     console.error("[zid-oauth-callback] join flow token exchange failed", {
       status: tokenResponse.status,
-      error: errorBody,
+      error: tokenResult.rawSnippet,
     });
     return redirectWithStatus(config, "error");
   }
 
-  const tokenData = (await tokenResponse.json()) as Record<string, unknown>;
+  const tokenData = tokenResult.tokenData;
 
   // Log the full token response to understand what Zid returns
   console.info("[zid-oauth-callback] token response keys", {
@@ -645,16 +707,29 @@ async function handleRegularFlow(
     body: tokenBody,
   });
 
-  if (!tokenResponse.ok) {
-    const errorBody = await readResponseBody(tokenResponse);
+  const tokenResult = await readTokenResponse(tokenResponse);
+  console.info("[zid-oauth-callback] token exchange", {
+    status: tokenResponse.status,
+    ok: tokenResponse.ok,
+    errorDescription: tokenResult.errorDescription,
+  });
+  if (tokenResult.isErrorPayload) {
+    console.error("[zid-oauth-callback] token exchange returned error payload", {
+      status: tokenResponse.status,
+      errorDescription: tokenResult.errorDescription,
+      raw: tokenResult.rawSnippet,
+    });
+    return redirectWithStatus(config, "error", "invalid_scopes");
+  }
+  if (!tokenResponse.ok || !tokenResult.tokenData) {
     console.error("[zid-oauth-callback] token exchange failed", {
       status: tokenResponse.status,
-      error: errorBody,
+      error: tokenResult.rawSnippet,
     });
     return redirectWithStatus(config, "error");
   }
 
-  const tokenData = (await tokenResponse.json()) as Record<string, unknown>;
+  const tokenData = tokenResult.tokenData;
   const { authorizationToken, managerToken, refreshToken, expiresIn } =
     extractZidTokens(tokenData);
   const tokenExpiry =

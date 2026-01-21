@@ -15,8 +15,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getZidConfig } from "@/lib/platform/config";
 import { getZidRedirectUri } from "@/lib/zid/getZidRedirectUri";
-import { getZidOAuthScopes } from "@/lib/zid/getZidOAuthScopes";
+import { parseZidOAuthScopes } from "@/lib/zid/getZidOAuthScopes";
 import crypto from "crypto";
+
+const redirectInvalidScopes = (config: ReturnType<typeof getZidConfig>) => {
+  const url = new URL("/merchant/join", config.appBaseUrl);
+  url.searchParams.set("zid", "error");
+  url.searchParams.set("error", "invalid_scopes");
+  return NextResponse.redirect(url);
+};
 
 export async function GET(request: NextRequest) {
   const userAgent = request.headers.get("user-agent") || "";
@@ -34,11 +41,16 @@ export async function GET(request: NextRequest) {
   const state = crypto.randomBytes(32).toString("hex");
 
   const redirectUri = getZidRedirectUri(request);
-  const scopes = getZidOAuthScopes();
+  const { scopes, invalid } = parseZidOAuthScopes();
   console.info("[zid-oauth-join] scopes", {
     scopes,
+    invalid,
     hasScopes: scopes.length > 0,
   });
+  if (invalid.length > 0) {
+    console.error("[zid-oauth-join] invalid scopes", { invalid, scopes });
+    return redirectInvalidScopes(config);
+  }
 
   // Build OAuth URL exactly like Zid's Flask example
   // Only add scope when explicitly configured; otherwise rely on dashboard permissions.
