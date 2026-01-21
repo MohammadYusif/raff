@@ -303,7 +303,7 @@ export function AdminDashboardContent() {
                 </div>
                 <div className="h-2 w-full overflow-hidden rounded-full bg-raff-neutral-200">
                   <div
-                    className="h-full bg-raff-salla"
+                    className="h-full bg-green-500"
                     style={{
                       width: `${(platformDistribution.salla / platformDistribution.total) * 100}%`,
                     }}
@@ -319,7 +319,7 @@ export function AdminDashboardContent() {
                 </div>
                 <div className="h-2 w-full overflow-hidden rounded-full bg-raff-neutral-200">
                   <div
-                    className="h-full bg-raff-zid"
+                    className="h-full bg-blue-500"
                     style={{
                       width: `${(platformDistribution.zid / platformDistribution.total) * 100}%`,
                     }}

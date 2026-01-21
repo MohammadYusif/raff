@@ -165,7 +165,7 @@ export function MerchantIntegrationsContent() {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-raff-salla/10">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#00C48C]/10">
                         <Image
                           src="/images/brands/salla.svg"
                           alt={t("platforms.salla.name")}
@@ -259,7 +259,7 @@ export function MerchantIntegrationsContent() {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-raff-zid/10">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-raff-accent/10">
                         <Image
                           src="/images/brands/zid.svg"
                           alt={t("platforms.zid.name")}

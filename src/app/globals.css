@@ -57,10 +57,6 @@
   --color-raff-warning: #ed8936;
   --color-raff-error: #f56565;
   --color-raff-info: #4299e1;
-
-  /* Platform Brand Colors */
-  --color-raff-salla: #00C48C;
-  --color-raff-zid: #6366F1;
 }
 
 :root {
