@@ -16,6 +16,10 @@
   --raff-accent-light: #1abc9c;
   --raff-accent-dark: #138d75;
 
+  /* Platform Brand Colors */
+  --raff-salla: #00C48C;
+  --raff-zid: #6366F1;
+
   /* Neutral Palette */
   --raff-neutral-50: #f8f9fa;
   --raff-neutral-100: #f1f3f5;

@@ -77,7 +77,7 @@ export function MerchantJoinContent() {
                   onClick={() => handleConnectStore("salla")}
                   disabled={isConnecting}
                   unstyled
-                  className="group relative w-full overflow-hidden rounded-lg border-2 border-transparent bg-[#00C48C] p-6 text-white shadow-md transition-all hover:scale-[1.02] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
+                  className="group relative w-full overflow-hidden rounded-lg border-2 border-transparent bg-raff-salla p-6 text-white shadow-md transition-all hover:scale-[1.02] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -102,7 +102,7 @@ export function MerchantJoinContent() {
                     <ArrowForward className="h-6 w-6 transition-transform ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
                   </div>
                   {connectingPlatform === "salla" && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-[#00C48C]/90">
+                    <div className="absolute inset-0 flex items-center justify-center bg-raff-salla/90">
                       <div className="flex items-center gap-3 text-white">
                         <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                         <span className="font-semibold">
@@ -118,7 +118,7 @@ export function MerchantJoinContent() {
                   onClick={() => handleConnectStore("zid")}
                   disabled={isConnecting}
                   unstyled
-                  className="group relative w-full overflow-hidden rounded-lg border-2 border-transparent bg-[#8B5CF6] p-6 text-white shadow-md transition-all hover:scale-[1.02] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
+                  className="group relative w-full overflow-hidden rounded-lg border-2 border-transparent bg-raff-zid p-6 text-white shadow-md transition-all hover:scale-[1.02] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -143,7 +143,7 @@ export function MerchantJoinContent() {
                     <ArrowForward className="h-6 w-6 transition-transform ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
                   </div>
                   {connectingPlatform === "zid" && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-[#8B5CF6]/90">
+                    <div className="absolute inset-0 flex items-center justify-center bg-raff-zid/90">
                       <div className="flex items-center gap-3 text-white">
                         <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                         <span className="font-semibold">
