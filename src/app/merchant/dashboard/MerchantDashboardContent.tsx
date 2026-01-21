@@ -438,7 +438,7 @@ export function MerchantDashboardContent() {
                           alt={integrationsT("platforms.zid.name")}
                           width={20}
                           height={20}
-                          className="h-5 w-5"
+                          className="h-5 w-5 rounded"
                           onError={(e) => {
                             e.currentTarget.style.display = "none";
                           }}
@@ -465,15 +465,15 @@ export function MerchantDashboardContent() {
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   {storePlatform && (
-                    <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${
-                      storePlatform === "zid" ? "bg-raff-zid/10" : "bg-raff-salla/10"
+                    <div className={`flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full ${
+                      storePlatform === "salla" ? "bg-[#00C48C]/10" : ""
                     }`}>
                       <Image
                         src={`/images/brands/${storePlatform}.svg`}
                         alt={platformLabel}
-                        width={32}
-                        height={32}
-                        className="h-8 w-8"
+                        width={storePlatform === "zid" ? 48 : 32}
+                        height={storePlatform === "zid" ? 48 : 32}
+                        className={storePlatform === "zid" ? "h-12 w-12 rounded-full object-contain" : "h-8 w-8"}
                         onError={(e) => {
                           e.currentTarget.style.display = "none";
                         }}

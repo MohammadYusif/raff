@@ -259,13 +259,13 @@ export function MerchantIntegrationsContent() {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-raff-accent/10">
+                      <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg">
                         <Image
                           src="/images/brands/zid.svg"
                           alt={t("platforms.zid.name")}
-                          width={32}
-                          height={32}
-                          className="h-8 w-8"
+                          width={48}
+                          height={48}
+                          className="h-12 w-12 object-contain"
                           onError={(e) => {
                             e.currentTarget.style.display = "none";
                           }}

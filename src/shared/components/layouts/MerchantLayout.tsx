@@ -143,7 +143,7 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
                       alt={platformName}
                       width={28}
                       height={28}
-                      className="h-7 w-7 object-contain"
+                      className="h-7 w-7 rounded object-contain"
                       priority
                       unoptimized
                     />
@@ -162,7 +162,7 @@ export function MerchantLayout({ children }: MerchantLayoutProps) {
             {platformName && platformLogo && (
               <div className="rounded-lg border border-raff-neutral-200 bg-raff-neutral-50 p-3">
                 <div className="mb-2 flex items-center gap-2">
-                  <div className="flex h-5 w-5 items-center justify-center">
+                  <div className="flex h-5 w-5 items-center justify-center overflow-hidden rounded">
                     <Image
                       src={platformLogo}
                       alt={platformName}

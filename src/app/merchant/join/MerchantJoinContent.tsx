@@ -113,22 +113,22 @@ export function MerchantJoinContent() {
                   )}
                 </AnimatedButton>
 
-                {/* Zid Button - Purple */}
+                {/* Zid Button - Purple (SVG has built-in background) */}
                 <AnimatedButton
                   onClick={() => handleConnectStore("zid")}
                   disabled={isConnecting}
                   unstyled
-                  className="group relative w-full overflow-hidden rounded-lg border-2 border-transparent bg-[#8B5CF6] p-6 text-white shadow-md transition-all hover:scale-[1.02] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
+                  className="group relative w-full overflow-hidden rounded-lg border-2 border-transparent bg-[#7C3AED] p-6 text-white shadow-md transition-all hover:scale-[1.02] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white/10">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg overflow-hidden">
                         <Image
                           src="/images/brands/zid.svg"
                           alt={t("buttons.zidSubtitle")}
-                          width={28}
-                          height={28}
-                          className="h-7 w-7 brightness-0 invert"
+                          width={48}
+                          height={48}
+                          className="h-12 w-12 object-contain"
                         />
                       </div>
                       <div className="text-start">
@@ -143,7 +143,7 @@ export function MerchantJoinContent() {
                     <ArrowForward className="h-6 w-6 transition-transform ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
                   </div>
                   {connectingPlatform === "zid" && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-[#8B5CF6]/90">
+                    <div className="absolute inset-0 flex items-center justify-center bg-[#7C3AED]/90">
                       <div className="flex items-center gap-3 text-white">
                         <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                         <span className="font-semibold">
