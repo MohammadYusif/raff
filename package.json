@@ -20,7 +20,8 @@
     "db:reset": "prisma migrate reset && npm run db:seed",
     "cleanup:webhooks": "node scripts/cleanup-webhook-events.mjs",
     "cleanup:webhooks:dry-run": "node scripts/cleanup-webhook-events.mjs --dry-run",
-    "calculate:trending": "tsx scripts/calculate-trending-scores.ts"
+    "calculate:trending": "tsx scripts/calculate-trending-scores.ts",
+    "cron:service": "tsx scripts/cron-service.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",

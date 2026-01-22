@@ -7,12 +7,46 @@ interface LogContext {
 }
 
 interface LogEntry {
+  id: string;
   timestamp: string;
   level: LogLevel;
   namespace: string;
   message: string;
   context?: LogContext;
 }
+
+// In-memory log store for admin console viewer
+// Uses a ring buffer pattern to limit memory usage
+class LogStore {
+  private logs: LogEntry[] = [];
+  private maxSize: number = 500;
+  private counter: number = 0;
+
+  add(entry: Omit<LogEntry, "id">): void {
+    this.counter++;
+    const logWithId: LogEntry = {
+      ...entry,
+      id: `log-${this.counter}-${Date.now()}`,
+    };
+    this.logs.push(logWithId);
+
+    // Trim to max size
+    if (this.logs.length > this.maxSize) {
+      this.logs = this.logs.slice(-this.maxSize);
+    }
+  }
+
+  getAll(limit: number = 100): LogEntry[] {
+    return this.logs.slice(-limit);
+  }
+
+  clear(): void {
+    this.logs = [];
+  }
+}
+
+// Singleton log store instance
+export const logStore = new LogStore();
 
 class Logger {
   private namespace: string;
@@ -36,7 +70,7 @@ class Logger {
     );
   }
 
-  private formatEntry(level: LogLevel, message: string, context?: LogContext): LogEntry {
+  private formatEntry(level: LogLevel, message: string, context?: LogContext): Omit<LogEntry, "id"> {
     return {
       timestamp: new Date().toISOString(),
       level,
@@ -48,6 +82,9 @@ class Logger {
 
   private write(level: LogLevel, message: string, context?: LogContext): void {
     const entry = this.formatEntry(level, message, context);
+
+    // Store in memory for admin console viewer
+    logStore.add(entry);
 
     // In production, write as JSON for log aggregation
     if (process.env.NODE_ENV === "production") {

@@ -1197,5 +1197,93 @@
       "weekend": "Friday - Saturday",
       "weekendValue": "Within 48 hours"
     }
+  },
+  "adminDashboard": {
+    "title": "Admin Dashboard",
+    "subtitle": "Monitor platform performance and manage merchants",
+    "loading": "Loading...",
+    "backToHome": "Back to Home",
+    "timeRange": {
+      "7d": "Last 7 Days",
+      "30d": "Last 30 Days",
+      "90d": "Last 90 Days"
+    },
+    "stats": {
+      "totalMerchants": "Total Merchants",
+      "activeMerchants": "Active Merchants",
+      "totalProducts": "Total Products",
+      "totalUsers": "Total Users",
+      "totalRevenue": "Total Revenue",
+      "totalOrders": "Total Orders",
+      "totalViews": "Total Views",
+      "totalClicks": "Total Clicks",
+      "fromLastPeriod": "from last period"
+    },
+    "metrics": {
+      "ctr": "Click-Through Rate",
+      "ctrDescription": "{clicks} clicks from {views} views",
+      "conversionRate": "Conversion Rate",
+      "conversionDescription": "{orders} orders from {clicks} clicks"
+    },
+    "platformDistribution": {
+      "title": "Platform Distribution"
+    },
+    "clickQuality": {
+      "title": "Click Quality",
+      "qualityRate": "Quality Rate",
+      "qualifiedDescription": "{qualified} qualified of {total} total clicks",
+      "disqualifiedReasons": "Disqualified Reasons"
+    },
+    "topMerchants": {
+      "title": "Top Merchants",
+      "merchant": "Merchant",
+      "email": "Email",
+      "products": "Products",
+      "clicks": "Clicks",
+      "orders": "Orders",
+      "revenue": "Revenue"
+    },
+    "pendingMerchants": "{count} merchants pending approval",
+    "console": {
+      "title": "System Console",
+      "entries": "entries",
+      "pause": "Pause",
+      "resume": "Resume",
+      "clear": "Clear",
+      "noLogs": "No log entries yet",
+      "filters": {
+        "all": "All",
+        "errors": "Errors",
+        "warnings": "Warnings",
+        "info": "Info",
+        "sync": "Sync"
+      }
+    },
+    "health": {
+      "title": "System Health",
+      "loading": "Checking system health...",
+      "allGood": "All Systems OK",
+      "issues": "Issues Detected",
+      "database": "Database",
+      "failedSyncs": "{count} failed syncs",
+      "oauthErrors": "{count} OAuth errors",
+      "pendingMerchants": "{count} pending"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "refresh": "Refresh",
+      "refreshSuccess": "Data refreshed",
+      "syncAll": "Sync All",
+      "syncAllSuccess": "Sync started for all merchants",
+      "calculateTrending": "Calc Trending",
+      "trendingSuccess": "Trending scores recalculated",
+      "clearCache": "Clear Cache",
+      "cacheCleared": "Cache cleared successfully",
+      "error": "Action failed. Please try again."
+    },
+    "alerts": {
+      "title": "Alerts",
+      "noAlerts": "No alerts - all systems running smoothly"
+    }
   }
 }

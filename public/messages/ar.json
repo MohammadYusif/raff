@@ -1189,5 +1189,93 @@
       "weekend": "الجمعة - السبت",
       "weekendValue": "خلال 48 ساعة"
     }
+  },
+  "adminDashboard": {
+    "title": "لوحة تحكم المدير",
+    "subtitle": "مراقبة أداء المنصة وإدارة التجار",
+    "loading": "جاري التحميل...",
+    "backToHome": "العودة للرئيسية",
+    "timeRange": {
+      "7d": "آخر 7 أيام",
+      "30d": "آخر 30 يوم",
+      "90d": "آخر 90 يوم"
+    },
+    "stats": {
+      "totalMerchants": "إجمالي التجار",
+      "activeMerchants": "التجار النشطين",
+      "totalProducts": "إجمالي المنتجات",
+      "totalUsers": "إجمالي المستخدمين",
+      "totalRevenue": "إجمالي الإيرادات",
+      "totalOrders": "إجمالي الطلبات",
+      "totalViews": "إجمالي المشاهدات",
+      "totalClicks": "إجمالي النقرات",
+      "fromLastPeriod": "من الفترة السابقة"
+    },
+    "metrics": {
+      "ctr": "معدل النقر إلى الظهور",
+      "ctrDescription": "{clicks} نقرة من {views} مشاهدة",
+      "conversionRate": "معدل التحويل",
+      "conversionDescription": "{orders} طلب من {clicks} نقرة"
+    },
+    "platformDistribution": {
+      "title": "توزيع المنصات"
+    },
+    "clickQuality": {
+      "title": "جودة النقرات",
+      "qualityRate": "معدل الجودة",
+      "qualifiedDescription": "{qualified} مؤهلة من {total} نقرة",
+      "disqualifiedReasons": "أسباب الاستبعاد"
+    },
+    "topMerchants": {
+      "title": "أفضل التجار",
+      "merchant": "التاجر",
+      "email": "البريد الإلكتروني",
+      "products": "المنتجات",
+      "clicks": "النقرات",
+      "orders": "الطلبات",
+      "revenue": "الإيرادات"
+    },
+    "pendingMerchants": "{count} تاجر بانتظار الموافقة",
+    "console": {
+      "title": "وحدة تحكم النظام",
+      "entries": "سجل",
+      "pause": "إيقاف مؤقت",
+      "resume": "استئناف",
+      "clear": "مسح",
+      "noLogs": "لا توجد سجلات بعد",
+      "filters": {
+        "all": "الكل",
+        "errors": "الأخطاء",
+        "warnings": "التحذيرات",
+        "info": "معلومات",
+        "sync": "المزامنة"
+      }
+    },
+    "health": {
+      "title": "حالة النظام",
+      "loading": "جارٍ فحص حالة النظام...",
+      "allGood": "كل الأنظمة تعمل",
+      "issues": "توجد مشاكل",
+      "database": "قاعدة البيانات",
+      "failedSyncs": "{count} مزامنة فاشلة",
+      "oauthErrors": "{count} أخطاء OAuth",
+      "pendingMerchants": "{count} بانتظار الموافقة"
+    },
+    "quickActions": {
+      "title": "إجراءات سريعة",
+      "refresh": "تحديث",
+      "refreshSuccess": "تم تحديث البيانات",
+      "syncAll": "مزامنة الكل",
+      "syncAllSuccess": "بدأت المزامنة لجميع التجار",
+      "calculateTrending": "حساب الرائج",
+      "trendingSuccess": "تم إعادة حساب نقاط الرواج",
+      "clearCache": "مسح الذاكرة",
+      "cacheCleared": "تم مسح الذاكرة المؤقتة بنجاح",
+      "error": "فشل الإجراء. حاول مرة أخرى."
+    },
+    "alerts": {
+      "title": "التنبيهات",
+      "noAlerts": "لا توجد تنبيهات - جميع الأنظمة تعمل بشكل سليم"
+    }
   }
 }
