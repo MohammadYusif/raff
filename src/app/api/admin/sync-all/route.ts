@@ -72,13 +72,17 @@ export async function POST() {
       }
 
       try {
-        logger.info(`Syncing merchant ${merchant.name}`, { merchantId: merchant.id, platform });
+        logger.info(`[${platform.toUpperCase()}] Syncing merchant ${merchant.name}`, { merchantId: merchant.id, platform });
 
         if (platform === "zid") {
+          logger.info(`[ZID] Starting categories sync for ${merchant.name}`, { merchantId: merchant.id });
           await syncZidCategories(merchant.id);
+          logger.info(`[ZID] Starting products sync for ${merchant.name}`, { merchantId: merchant.id });
           await syncZidProducts(merchant.id);
         } else {
+          logger.info(`[SALLA] Starting store info sync for ${merchant.name}`, { merchantId: merchant.id });
           await syncSallaStoreInfo(merchant.id);
+          logger.info(`[SALLA] Starting products sync for ${merchant.name}`, { merchantId: merchant.id });
           await syncSallaProductsForMerchant(merchant.id);
         }
 
@@ -88,10 +92,10 @@ export async function POST() {
           data: { lastSyncAt: new Date() },
         });
 
-        logger.info(`Synced merchant ${merchant.name} successfully`, { merchantId: merchant.id, platform });
+        logger.info(`[${platform.toUpperCase()}] Synced merchant ${merchant.name} successfully`, { merchantId: merchant.id, platform });
         results.push({ merchantId: merchant.id, name: merchant.name, success: true });
       } catch (error) {
-        logger.error(`Failed to sync merchant ${merchant.name}`, {
+        logger.error(`[${platform.toUpperCase()}] Failed to sync merchant ${merchant.name}`, {
           merchantId: merchant.id,
           platform,
           error: error instanceof Error ? error.message : "Unknown error",
