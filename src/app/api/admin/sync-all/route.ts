@@ -3,6 +3,10 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdminAuth } from "@/lib/auth/admin-guard";
 import { createLogger } from "@/lib/utils/logger";
+import { syncZidCategories, syncZidProducts } from "@/lib/sync/zidProducts";
+import { syncSallaProductsForMerchant } from "@/lib/sync/sallaProducts";
+import { syncSallaStoreInfo } from "@/lib/sync/sallaStore";
+import { isZidConnected } from "@/lib/zid/isZidConnected";
 
 const logger = createLogger("admin-sync-all");
 
@@ -27,48 +31,82 @@ export async function POST() {
         id: true,
         name: true,
         sallaStoreId: true,
+        sallaAccessToken: true,
         zidStoreId: true,
+        zidStoreUrl: true,
+        zidAccessToken: true,
+        zidRefreshToken: true,
+        zidTokenExpiry: true,
+        zidManagerToken: true,
+        lastSyncAt: true,
       },
     });
 
     logger.info(`Found ${merchants.length} merchants to sync`);
 
-    // Queue sync jobs for each merchant (in production, this would use a job queue)
-    const syncResults = await Promise.allSettled(
-      merchants.map(async (merchant) => {
-        const platform = merchant.sallaStoreId ? "salla" : "zid";
-        try {
-          // Trigger the merchant sync endpoint
-          const response = await fetch(
-            `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/merchant/sync`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ merchantId: merchant.id }),
-            }
-          );
+    // Sync each merchant directly (sequentially to avoid overwhelming APIs)
+    const results: { merchantId: string; name: string; success: boolean; error?: string }[] = [];
 
-          if (!response.ok) {
-            throw new Error(`Sync failed for merchant ${merchant.id}`);
-          }
+    for (const merchant of merchants) {
+      const isZid = isZidConnected(merchant);
+      const isSalla = !!merchant.sallaAccessToken;
+      const platform = isZid ? "zid" : isSalla ? "salla" : null;
 
-          logger.info(`Synced merchant ${merchant.name}`, { merchantId: merchant.id, platform });
-          return { merchantId: merchant.id, success: true };
-        } catch (error) {
-          logger.error(`Failed to sync merchant ${merchant.name}`, {
-            merchantId: merchant.id,
-            platform,
-            error: error instanceof Error ? error.message : "Unknown error",
-          });
-          return { merchantId: merchant.id, success: false };
+      if (!platform) {
+        logger.warn(`Skipping merchant ${merchant.name} - no valid connection`, {
+          merchantId: merchant.id,
+        });
+        results.push({ merchantId: merchant.id, name: merchant.name, success: false, error: "No valid connection" });
+        continue;
+      }
+
+      // Check rate limit (5 min between syncs)
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+      if (merchant.lastSyncAt && merchant.lastSyncAt > fiveMinutesAgo) {
+        logger.info(`Skipping merchant ${merchant.name} - recently synced`, {
+          merchantId: merchant.id,
+          lastSyncAt: merchant.lastSyncAt.toISOString(),
+        });
+        results.push({ merchantId: merchant.id, name: merchant.name, success: true, error: "Recently synced" });
+        continue;
+      }
+
+      try {
+        logger.info(`Syncing merchant ${merchant.name}`, { merchantId: merchant.id, platform });
+
+        if (platform === "zid") {
+          await syncZidCategories(merchant.id);
+          await syncZidProducts(merchant.id);
+        } else {
+          await syncSallaStoreInfo(merchant.id);
+          await syncSallaProductsForMerchant(merchant.id);
         }
-      })
-    );
 
-    const successful = syncResults.filter(
-      (r) => r.status === "fulfilled" && r.value.success
-    ).length;
-    const failed = syncResults.length - successful;
+        // Update lastSyncAt
+        await prisma.merchant.update({
+          where: { id: merchant.id },
+          data: { lastSyncAt: new Date() },
+        });
+
+        logger.info(`Synced merchant ${merchant.name} successfully`, { merchantId: merchant.id, platform });
+        results.push({ merchantId: merchant.id, name: merchant.name, success: true });
+      } catch (error) {
+        logger.error(`Failed to sync merchant ${merchant.name}`, {
+          merchantId: merchant.id,
+          platform,
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
+        results.push({
+          merchantId: merchant.id,
+          name: merchant.name,
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
+      }
+    }
+
+    const successful = results.filter((r) => r.success).length;
+    const failed = results.filter((r) => !r.success).length;
 
     logger.info("Sync-all operation completed", { successful, failed });
 
@@ -78,6 +116,7 @@ export async function POST() {
       total: merchants.length,
       successful,
       failed,
+      results,
     });
   } catch (error) {
     logger.error("Sync-all operation failed", {
