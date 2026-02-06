@@ -25,6 +25,25 @@ export type ProductWithCartFields = ProductWithRelations & {
 };
 
 /**
+ * Serialized product safe for passing from Server to Client Components.
+ * Decimal fields are converted to numbers so they cross the RSC boundary.
+ */
+export type SerializedProduct<T = ProductWithRelations> = Omit<
+  T,
+  "price" | "originalPrice"
+> & {
+  price: number;
+  originalPrice: number | null;
+};
+
+export type SerializedProductWithCartFields = SerializedProduct<
+  ProductWithRelations & {
+    imageUrl: string | null;
+    externalUrl: string;
+  }
+>;
+
+/**
  * Pagination metadata
  */
 export interface PaginationMeta {

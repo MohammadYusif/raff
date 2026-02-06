@@ -7,7 +7,7 @@ import { fetchProductsServer } from "@/lib/server/products";
 import { MerchantDetailContent } from "./MerchantDetailContent";
 import { PageTransition } from "@/shared/components/PageTransition";
 import { getLocalizedText } from "@/lib/utils";
-import { addCartFields } from "@/lib/products/cart";
+import { addCartFields, serializeProduct } from "@/lib/products/cart";
 
 const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 const NOT_FOUND_TITLES = {
@@ -161,7 +161,7 @@ export default async function MerchantPage({
       ? parseFloat(searchParamsResolved.maxPrice)
       : undefined,
   });
-  const productsWithCartFields = products.map(addCartFields);
+  const productsWithCartFields = products.map((p) => serializeProduct(addCartFields(p)));
 
   return (
     <PageTransition>

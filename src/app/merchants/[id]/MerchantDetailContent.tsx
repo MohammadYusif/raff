@@ -17,7 +17,7 @@ import { ProductCard } from "@/shared/components/ProductCard";
 import { Search, ExternalLink, Store, Package } from "lucide-react";
 import { ArrowBackward } from "@/core/i18n";
 import { getMerchantStoreUrlFromObject } from "@/lib/platform/store";
-import type { MerchantWithCount, ProductWithCartFields } from "@/types";
+import type { MerchantWithCount, SerializedProductWithCartFields } from "@/types";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
 import { getLocalizedText } from "@/lib/utils";
 
@@ -32,7 +32,7 @@ interface Pagination {
 
 interface MerchantDetailContentProps {
   merchant: MerchantWithCount;
-  initialProducts: ProductWithCartFields[];
+  initialProducts: SerializedProductWithCartFields[];
   pagination: Pagination;
 }
 

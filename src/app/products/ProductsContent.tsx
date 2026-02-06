@@ -20,7 +20,7 @@ import {
   X,
 } from "lucide-react";
 import { ArrowForward, ArrowBackward } from "@/core/i18n";
-import type { ProductWithCartFields } from "@/types";
+import type { SerializedProductWithCartFields } from "@/types";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
 import { StaggerContainer } from "@/shared/components/PageTransition";
 import { getLocalizedText } from "@/lib/utils";
@@ -46,7 +46,7 @@ interface Pagination {
 }
 
 interface ProductsContentProps {
-  initialProducts: ProductWithCartFields[];
+  initialProducts: SerializedProductWithCartFields[];
   pagination: Pagination;
   categories: Category[];
 }

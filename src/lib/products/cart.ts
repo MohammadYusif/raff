@@ -62,3 +62,21 @@ export function addCartFields<T extends ProductCartInput>(
     externalUrl: getExternalUrl(product),
   };
 }
+
+/**
+ * Serialize a product for passing from Server Components to Client Components.
+ * Converts Prisma Decimal fields (price, originalPrice) to plain numbers,
+ * and Date fields to ISO strings so they can cross the RSC boundary.
+ */
+export function serializeProduct<
+  T extends { price?: unknown; originalPrice?: unknown },
+>(product: T): Omit<T, "price" | "originalPrice"> & {
+  price: number;
+  originalPrice: number | null;
+} {
+  return {
+    ...product,
+    price: Number(product.price ?? 0),
+    originalPrice: product.originalPrice ? Number(product.originalPrice) : null,
+  };
+}

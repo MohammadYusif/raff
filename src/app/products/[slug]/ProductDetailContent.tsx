@@ -25,11 +25,11 @@ import { getMerchantStoreUrl } from "@/lib/platform/store";
 import { useProductClick } from "@/lib/hooks/useProductClick"; // ✅ NEW
 import { useCart } from "@/lib/hooks/useCart";
 import { toast } from "sonner";
-import type { ProductWithCartFields } from "@/types";
+import type { SerializedProductWithCartFields } from "@/types";
 import { AnimatedButton } from "@/shared/components/AnimatedButton";
 
 interface ProductDetailContentProps {
-  product: ProductWithCartFields;
+  product: SerializedProductWithCartFields;
 }
 
 export function ProductDetailContent({ product }: ProductDetailContentProps) {

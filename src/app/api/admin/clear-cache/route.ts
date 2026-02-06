@@ -44,7 +44,7 @@ export async function POST() {
     // Revalidate tags
     for (const tag of tagsToRevalidate) {
       try {
-        revalidateTag(tag);
+        revalidateTag(tag, "max");
         logger.info(`Revalidated tag: ${tag}`);
       } catch {
         logger.warn(`Failed to revalidate tag: ${tag}`);

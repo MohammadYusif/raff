@@ -4,7 +4,7 @@ import { Metadata } from "next";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { ProductDetailContent } from "./ProductDetailContent";
-import { addCartFields } from "@/lib/products/cart";
+import { addCartFields, serializeProduct } from "@/lib/products/cart";
 import { PageTransition } from "@/shared/components/PageTransition";
 import { getLocalizedText } from "@/lib/utils";
 
@@ -117,7 +117,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     if (!data) {
       notFound();
     }
-    product = addCartFields(data);
+    product = serializeProduct(addCartFields(data));
   } catch {
     notFound();
   }

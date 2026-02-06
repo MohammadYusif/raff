@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { TrendingContent } from "./TrendingContent";
 import { PageTransition } from "@/shared/components/PageTransition";
+import { serializeProduct } from "@/lib/products/cart";
 
 const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 const TITLES = {
@@ -62,9 +63,11 @@ export default async function TrendingPage() {
     },
   });
 
+  const serializedProducts = products.map(serializeProduct);
+
   return (
     <PageTransition>
-      <TrendingContent products={products} />
+      <TrendingContent products={serializedProducts} />
     </PageTransition>
   );
 }

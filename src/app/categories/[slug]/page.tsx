@@ -7,6 +7,7 @@ import { fetchProductsServer } from "@/lib/server/products";
 import { CategoryDetailContent } from "./CategoryDetailContent";
 import { PageTransition } from "@/shared/components/PageTransition";
 import { getLocalizedText } from "@/lib/utils";
+import { serializeProduct } from "@/lib/products/cart";
 
 const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 const NOT_FOUND_TITLES = {
@@ -167,7 +168,7 @@ export default async function CategoryPage({
     <PageTransition>
       <CategoryDetailContent
         category={category}
-        initialProducts={products}
+        initialProducts={products.map(serializeProduct)}
         pagination={pagination}
       />
     </PageTransition>

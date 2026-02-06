@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { fetchProductsServer } from "@/lib/server/products";
 import { ProductsContent } from "./ProductsContent";
-import { addCartFields } from "@/lib/products/cart";
+import { addCartFields, serializeProduct } from "@/lib/products/cart";
 import { PageTransition } from "@/shared/components/PageTransition";
 
 interface ProductsPageProps {
@@ -99,7 +99,7 @@ export default async function ProductsPage({
     },
   });
 
-  const productsWithCartFields = products.map(addCartFields);
+  const productsWithCartFields = products.map((p) => serializeProduct(addCartFields(p)));
 
   return (
     <PageTransition>
