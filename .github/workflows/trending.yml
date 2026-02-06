@@ -1,18 +1,18 @@
 name: Calculate Trending Scores
 
 on:
-  schedule:
-    # Every 3 hours: 00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00 UTC
-    - cron: "0 */3 * * *"
+  # schedule:
+  #   # Every 3 hours: 00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00 UTC
+  #   - cron: "0 */3 * * *"
 
-  workflow_dispatch: # Allow manual trigger from GitHub UI
+  workflow_dispatch: # Allows you to manually trigger the script from the Actions tab
 
   push:
     branches:
-      - production # Your active branch
-      - main # Default branch
+      - production
+      - main
     paths:
-      - ".github/workflows/trending.yml" # Only run when workflow is updated
+      - ".github/workflows/trending.yml"
 
 jobs:
   calculate-trending:
@@ -26,7 +26,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "20" # Updated to meet Next.js 16 / Resend 6 requirements
           cache: "npm"
 
       - name: Install dependencies
@@ -37,6 +37,7 @@ jobs:
 
       - name: Calculate trending scores
         env:
+          # Note: These secrets must be added to GitHub Settings > Secrets > Actions
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
           NODE_ENV: production
@@ -46,4 +47,4 @@ jobs:
         if: failure()
         run: |
           echo "❌ Trending calculation failed!"
-          echo "Check the logs above for details"
+          echo "Check the logs above for details. Ensure DATABASE_URL secret is active."
