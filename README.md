@@ -18,7 +18,8 @@ Raff is a product discovery and aggregation layer built on top of existing Saudi
 | Email            | Resend 6                                            |
 | Validation       | Zod 3, React Hook Form 7                            |
 | i18n             | next-intl 4 (Arabic default, English)               |
-| Deployment       | Docker, Railway                                     |
+| Cache            | Redis 7                                             |
+| Deployment       | Docker, Docker Compose, Railway                     |
 
 ---
 
@@ -237,6 +238,11 @@ raff/
 ├── prisma/                 # Schema, migrations, seed
 ├── scripts/                # Cron jobs, trending calculation, cleanup
 ├── public/messages/        # i18n translations (ar.json, en.json)
+├── docs/                   # Platform integration guides
+│   ├── SALLA_*.md          # Salla API, webhooks, setup
+│   ├── ZID_*.md            # Zid API, webhooks, setup
+│   ├── COMMISSION_TRACKING_SYSTEM.md
+│   └── TRENDING-SYSTEM.md
 ├── src/
 │   ├── app/                # Next.js App Router (pages + API routes)
 │   │   ├── admin/          # Admin dashboard
@@ -254,7 +260,8 @@ raff/
 │   ├── shared/             # Shared UI components
 │   ├── core/               # i18n infrastructure
 │   └── types/              # TypeScript definitions
-├── docker-compose.yml
+├── Dockerfile              # Multi-stage production build
+├── docker-compose.yml      # Full stack: app + PostgreSQL + Redis
 └── railway.json
 ```
 
@@ -262,28 +269,43 @@ raff/
 
 ## Getting Started
 
-### Prerequisites
+### Option 1: Docker (Recommended)
 
-- Node.js 20+
-- PostgreSQL 14+ (or use the included `docker-compose.yml`)
-- A [Salla Developer](https://salla.dev) account and/or a [Zid Developer](https://web.zid.sa) account
-
-### Installation
+The fastest way to run Raff — no local Node.js, PostgreSQL, or Redis required.
 
 ```bash
-git clone https://github.com/your-username/raff.git
+git clone https://github.com/MohammadYusif/raff.git
+cd raff
+
+# Copy environment template and fill in your credentials
+cp .env.example .env
+
+# Start everything (app + PostgreSQL + Redis)
+docker compose up --build
+```
+
+Open [http://localhost:3000](http://localhost:3000). The app runs Prisma migrations automatically on startup.
+
+### Option 2: Local Development
+
+For hot-reload development with Turbopack.
+
+**Prerequisites**: Node.js 20+, Docker (for database services)
+
+```bash
+git clone https://github.com/MohammadYusif/raff.git
 cd raff
 npm install
 
-# Copy environment template and fill in your values
-cp .env.example .env.local
+# Copy environment template and fill in your credentials
+cp .env.example .env
 
-# Start PostgreSQL (if using Docker)
-docker compose up -d
+# Start PostgreSQL and Redis
+docker compose up postgres redis -d
 
 # Generate Prisma client and apply migrations
 npm run db:generate
-npm run db:push
+npx prisma migrate deploy
 
 # Start the development server
 npm run dev
@@ -324,6 +346,22 @@ See [`prisma/schema.prisma`](prisma/schema.prisma) for the complete schema.
 
 ---
 
+## Documentation
+
+| Guide | Description |
+|-------|-------------|
+| [Salla API](docs/SALLA_API.md) | Salla API endpoints, auth, rate limits |
+| [Salla Integration](docs/SALLA_INTEGRATION_SETUP.md) | OAuth flow, webhook setup, troubleshooting |
+| [Salla Webhooks](docs/SALLA_WEBHOOKS.md) | Webhook events, payloads, processing logic |
+| [Zid API](docs/ZID_API.md) | Zid API endpoints, dual-token auth, rate limits |
+| [Zid Integration](docs/ZID_INTEGRATION_SETUP.md) | OAuth flow (connect + join), webhook setup |
+| [Zid Webhooks](docs/ZID_WEBHOOKS.md) | Webhook events, signature modes, commission flow |
+| [Trending System](docs/TRENDING-SYSTEM.md) | Scoring algorithm, configuration, monitoring |
+| [Commission Tracking](docs/COMMISSION_TRACKING_SYSTEM.md) | Click attribution, fraud detection, payouts |
+| [Database Setup](DATABASE_SETUP_GUIDE.md) | Docker, Supabase, and local PostgreSQL options |
+
+---
+
 ## License
 
-Proprietary — All rights reserved.
+MIT — see [LICENSE](LICENSE).
