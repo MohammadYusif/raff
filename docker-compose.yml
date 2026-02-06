@@ -1,44 +1,65 @@
 # docker-compose.yml
-# Easy PostgreSQL setup for Raff development
-
-version: '3.8'
+# Full-stack Raff environment: App + PostgreSQL + Redis
 
 services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:16-alpine
-    container_name: raff-postgres
+  # ── Next.js Application ──
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: raff-app
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://raff:raff_dev_password_2024@postgres:5432/raff
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
+
+  # ── PostgreSQL Database ──
+  postgres:
+    image: postgres:17-alpine
+    container_name: raff-postgres
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_USER: raff
       POSTGRES_PASSWORD: raff_dev_password_2024
       POSTGRES_DB: raff
-    ports:
-      - "5432:5432"
     volumes:
       - raff_postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U raff"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
-  # Prisma Studio (Database GUI)
-  # Uncomment to run Prisma Studio in Docker
-  # prisma-studio:
-  #   image: node:20-alpine
-  #   container_name: raff-prisma-studio
-  #   working_dir: /app
-  #   command: npx prisma studio
-  #   ports:
-  #     - "5555:5555"
-  #   volumes:
-  #     - ./prisma:/app/prisma
-  #   depends_on:
-  #     - postgres
+  # ── Redis Cache ──
+  redis:
+    image: redis:7-alpine
+    container_name: raff-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - raff_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
 volumes:
   raff_postgres_data:
+    driver: local
+  raff_redis_data:
     driver: local
 
 networks:
