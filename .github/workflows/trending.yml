@@ -7,12 +7,12 @@ on:
 
   workflow_dispatch: # Allows you to manually trigger the script from the Actions tab
 
-  push:
-    branches:
-      - production
-      - main
-    paths:
-      - ".github/workflows/trending.yml"
+ # push:
+ #   branches:
+  #    - production
+   #   - main
+   # paths:
+   #   - ".github/workflows/trending.yml"
 
 jobs:
   calculate-trending:
