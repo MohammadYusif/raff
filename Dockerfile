@@ -16,6 +16,11 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Dummy build-time env vars (overridden at runtime via .env)
+ENV NEXTAUTH_SECRET="build-placeholder"
+ENV NEXTAUTH_URL="http://localhost:3000"
+ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder"
+
 RUN npx prisma generate
 RUN npm run build
 
@@ -34,8 +39,9 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy Prisma schema and migrations for runtime migrate
+# Copy Prisma CLI, engine, and migrations for runtime migrate
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
@@ -46,4 +52,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["sh", "-c", "npx prisma migrate deploy && node server.js"]
+CMD ["sh", "-c", "node node_modules/prisma/build/index.js migrate deploy && node server.js"]
