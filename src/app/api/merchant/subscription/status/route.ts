@@ -6,6 +6,9 @@ import {
   checkMerchantSubscription,
   isSubscriptionExpiringSoon,
 } from "@/lib/services/subscription.service";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-merchant-subscription-status");
 
 /**
  * GET /api/merchant/subscription/status
@@ -87,7 +90,7 @@ export async function GET() {
       lastChecked: new Date(),
     });
   } catch (error) {
-    console.error("Subscription status check failed:", error);
+    logger.error("Subscription status check failed", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       {
         error: "Failed to check subscription status",
@@ -141,7 +144,7 @@ export async function POST() {
       lastChecked: new Date(),
     });
   } catch (error) {
-    console.error("Subscription refresh failed:", error);
+    logger.error("Subscription refresh failed", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       {
         error: "Failed to refresh subscription",

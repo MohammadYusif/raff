@@ -3,6 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireMerchant } from "@/lib/auth/guards";
 import { isZidConnected } from "@/lib/zid/isZidConnected";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-merchant-profile");
+
 
 export async function GET(_request: NextRequest) {
   void _request;
@@ -140,7 +144,7 @@ export async function GET(_request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error fetching merchant profile:", error);
+    logger.error("Error fetching merchant profile", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to fetch merchant profile" },
       { status: 500 }
@@ -210,7 +214,7 @@ export async function PATCH(request: NextRequest) {
       merchant: updatedMerchant,
     });
   } catch (error) {
-    console.error("Error updating merchant profile:", error);
+    logger.error("Error updating merchant profile", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to update merchant profile" },
       { status: 500 }

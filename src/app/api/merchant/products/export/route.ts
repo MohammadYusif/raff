@@ -2,6 +2,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireMerchant } from "@/lib/auth/guards";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-merchant-products-export");
+
 
 export async function GET(request: NextRequest) {
   try {
@@ -132,7 +136,7 @@ export async function GET(request: NextRequest) {
       { status: 400 }
     );
   } catch (error) {
-    console.error("Error exporting products:", error);
+    logger.error("Error exporting products", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to export products" },
       { status: 500 }

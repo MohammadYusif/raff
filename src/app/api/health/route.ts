@@ -3,6 +3,10 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-health");
+
 
 export async function GET() {
   try {
@@ -16,7 +20,7 @@ export async function GET() {
       version: process.env.npm_package_version || "unknown",
     });
   } catch (error) {
-    console.error("Health check failed:", error);
+    logger.error("Health check failed", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       {
         ok: false,

@@ -1,6 +1,10 @@
 // src/lib/platform/webhook-register.ts
 import { getSallaConfig, getZidConfig } from "@/lib/platform/config";
 import { normalizeZidAuthorizationToken } from "@/lib/zid/tokens";
+import { createLogger } from "@/lib/utils/logger";
+
+
+const logger = createLogger("webhook-register");
 
 type RegisterResult =
   | { status: "skipped"; reason: string }
@@ -275,7 +279,7 @@ export async function registerZidWebhooks(params: {
       results.push({ event, success: true });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
-      console.error(`Zid webhook registration failed for ${event}:`, message);
+      logger.error(`Zid webhook registration failed for ${event}`, { error: message });
       results.push({ event, success: false, error: message });
     }
   }
@@ -368,7 +372,7 @@ export async function registerSallaWebhooks(params: {
       results.push({ event, success: true });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
-      console.error(`Salla webhook registration failed for ${event}:`, message);
+      logger.error(`Salla webhook registration failed for ${event}`, { error: message });
       results.push({ event, success: false, error: message });
     }
   }

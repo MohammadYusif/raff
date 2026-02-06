@@ -3,6 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-notifications");
+
 
 export async function GET(request: NextRequest) {
   try {
@@ -44,7 +48,7 @@ export async function GET(request: NextRequest) {
       hasMore: notifications.length === limit,
     });
   } catch (error) {
-    console.error("Error fetching notifications:", error);
+    logger.error("Error fetching notifications", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to fetch notifications" },
       { status: 500 }
@@ -107,7 +111,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ notification });
   } catch (error) {
-    console.error("Error creating notification:", error);
+    logger.error("Error creating notification", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to create notification" },
       { status: 500 }

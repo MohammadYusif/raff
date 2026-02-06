@@ -5,6 +5,10 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, getRequestIp } from "@/lib/rateLimit";
 import { UserRole } from "@prisma/client";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-auth-register");
+
 
 const registerSchema = z.object({
   name: z.string().min(2).max(100),
@@ -66,7 +70,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {
-    console.error("Registration error:", error);
+    logger.error("Registration error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to register" },
       { status: 500 }

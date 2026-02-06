@@ -5,6 +5,10 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
 import { UserRole } from "@prisma/client";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-admin-backfill-product-slugs");
+
 
 type Platform = "salla" | "zid";
 
@@ -139,7 +143,7 @@ async function handleBackfill(request: NextRequest, defaultDryRun: boolean) {
       changesSample,
     });
   } catch (error) {
-    console.error("Error backfilling product slugs:", error);
+    logger.error("Error backfilling product slugs", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to backfill product slugs" },
       { status: 500 }

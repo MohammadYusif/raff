@@ -4,6 +4,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-user-update");
+
 
 const updateUserSchema = z.object({
   name: z.string().min(1, "Name is required").optional(),
@@ -67,7 +71,7 @@ export async function PATCH(request: NextRequest) {
       user: updatedUser,
     });
   } catch (error) {
-    console.error("Error updating user:", error);
+    logger.error("Error updating user", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to update user" },
       { status: 500 }

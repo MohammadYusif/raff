@@ -3,6 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-notifications-id");
+
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -53,7 +57,7 @@ export async function PATCH(
 
     return NextResponse.json({ notification: updatedNotification });
   } catch (error) {
-    console.error("Error updating notification:", error);
+    logger.error("Error updating notification", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to update notification" },
       { status: 500 }
@@ -99,7 +103,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting notification:", error);
+    logger.error("Error deleting notification", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to delete notification" },
       { status: 500 }

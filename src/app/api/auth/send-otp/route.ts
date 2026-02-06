@@ -4,6 +4,10 @@ import { createOTP } from "@/lib/services/otp.service";
 import { sendOTPEmail } from "@/lib/services/email.service";
 import { prisma } from "@/lib/prisma";
 import { OTPType } from "@prisma/client";
+import { createLogger } from "@/lib/utils/logger";
+
+
+const logger = createLogger("api-auth-send-otp");
 
 export async function POST(request: NextRequest) {
   try {
@@ -54,7 +58,7 @@ export async function POST(request: NextRequest) {
       message: "OTP sent successfully",
     });
   } catch (error) {
-    console.error("Send OTP error:", error);
+    logger.error("Send OTP error", { error: error instanceof Error ? error.message : String(error) });
 
     // Handle cooldown error
     if (error instanceof Error && error.message.startsWith("COOLDOWN:")) {

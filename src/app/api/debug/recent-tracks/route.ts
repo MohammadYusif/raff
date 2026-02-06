@@ -6,6 +6,10 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-debug-recent-tracks");
+
 
 export async function GET() {
   if (process.env.NODE_ENV === "production") {
@@ -72,7 +76,7 @@ export async function GET() {
       recentClickEvents: recentEvents,
     });
   } catch (error) {
-    console.error("Debug endpoint error:", error);
+    logger.error("Debug endpoint error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to fetch tracking data" },
       { status: 500 }

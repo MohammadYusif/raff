@@ -4,6 +4,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getUserCartItems } from "@/lib/cart/server";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-cart");
+
 
 /**
  * GET /api/cart
@@ -23,7 +27,7 @@ export async function GET() {
 
     return NextResponse.json({ items });
   } catch (error) {
-    console.error("Error fetching cart:", error);
+    logger.error("Error fetching cart", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to fetch cart" },
       { status: 500 }
@@ -95,7 +99,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error updating cart:", error);
+    logger.error("Error updating cart", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to update cart" },
       { status: 500 }

@@ -20,6 +20,10 @@ import { fetchSallaStoreInfo } from "@/lib/integrations/salla/store";
 import { syncSallaStoreInfo } from "@/lib/sync/sallaStore";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-salla-oauth-callback");
+
 
 export async function GET(request: NextRequest) {
   const config = getSallaConfig();
@@ -172,7 +176,7 @@ async function handleJoinFlow(
     try {
       await registerSallaWebhooks({ accessToken });
     } catch (error) {
-      console.error("Salla webhook registration failed:", error);
+      logger.error("Salla webhook registration failed", { error: error instanceof Error ? error.message : String(error) });
     }
 
     const response = NextResponse.redirect(
@@ -239,7 +243,7 @@ async function handleJoinFlow(
   try {
     await registerSallaWebhooks({ accessToken });
   } catch (error) {
-    console.error("Salla webhook registration failed:", error);
+    logger.error("Salla webhook registration failed", { error: error instanceof Error ? error.message : String(error) });
   }
 
   // Create registration token
@@ -358,7 +362,7 @@ async function handleRegularFlow(
   try {
     await registerSallaWebhooks({ accessToken });
   } catch (error) {
-    console.error("Salla webhook registration failed:", error);
+    logger.error("Salla webhook registration failed", { error: error instanceof Error ? error.message : String(error) });
   }
 
   const response = NextResponse.redirect(

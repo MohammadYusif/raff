@@ -3,6 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
 import { requireAdminAuth } from "@/lib/auth/admin-guard";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-admin-migrate-slugs");
+
 
 /**
  * Migrate existing product and category slugs to platform-independent format
@@ -100,7 +104,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error("Error migrating slugs:", error);
+    logger.error("Error migrating slugs", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       {
         error: "Failed to migrate slugs",

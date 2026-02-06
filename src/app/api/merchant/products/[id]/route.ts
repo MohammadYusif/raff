@@ -3,6 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireMerchant } from "@/lib/auth/guards";
 import { z } from "zod";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-merchant-products-id");
+
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -126,7 +130,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error("Error fetching product:", error);
+    logger.error("Error fetching product", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to fetch product" },
       { status: 500 }
@@ -237,7 +241,7 @@ export async function PATCH(
       product: updatedProduct,
     });
   } catch (error) {
-    console.error("Error updating product:", error);
+    logger.error("Error updating product", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to update product" },
       { status: 500 }
@@ -287,7 +291,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting product:", error);
+    logger.error("Error deleting product", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to delete product" },
       { status: 500 }

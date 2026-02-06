@@ -15,6 +15,10 @@
 import { getZidConfig } from "@/lib/platform/config";
 import { fetchWithTimeout } from "@/lib/platform/fetch";
 import { normalizeZidAuthorizationToken } from "@/lib/zid/tokens";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("zidApi");
+
 
 type ZidRole = "Manager" | "Customer";
 type QueryValue = string | number | boolean | undefined | null;
@@ -304,7 +308,7 @@ const zidFetchJson = async (args: {
       response.status === 403 ||
       args.path === "/managers/account/profile"
     ) {
-      console.error("[zid-api] request failed", {
+      logger.error("[zid-api] request failed", {
         status: response.status,
         path: args.path,
         baseUrl: getZidConfig().apiBaseUrl,

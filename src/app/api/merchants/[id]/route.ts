@@ -3,6 +3,10 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-merchants-id");
+
 
 export async function GET(
   request: NextRequest,
@@ -50,7 +54,7 @@ export async function GET(
 
     return NextResponse.json({ merchant });
   } catch (error) {
-    console.error("Error fetching merchant:", error);
+    logger.error("Error fetching merchant", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to fetch merchant" },
       { status: 500 }

@@ -5,6 +5,9 @@ import type {
   TrendingProductsResponse,
   ProductFilters,
 } from "@/types";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-products");
 
 // ✅ FIX: Use proper environment variable check
 function getApiBaseUrl(): string {
@@ -113,6 +116,6 @@ export async function trackProductClick(productId: string): Promise<void> {
       }),
     });
   } catch (error) {
-    console.error("Failed to track click:", error);
+    logger.error("Failed to track click", { error: error instanceof Error ? error.message : String(error) });
   }
 }

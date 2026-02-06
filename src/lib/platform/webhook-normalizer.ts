@@ -1,6 +1,10 @@
 // src/lib/platform/webhook-normalizer.ts
 import crypto from "crypto";
 import type { PrismaClient } from "@prisma/client";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("webhook-normalizer");
+
 
 /**
  * Normalized webhook payload structure
@@ -204,7 +208,7 @@ export function redactSensitiveFields(
 
     return sanitized;
   } catch (error) {
-    console.error("Failed to redact sensitive fields:", error);
+    logger.error("Failed to redact sensitive fields", { error: error instanceof Error ? error.message : String(error) });
     return null;
   }
 }
@@ -561,7 +565,7 @@ export async function logProcessedWebhook(
       try {
         sanitizedPayload = JSON.stringify(sanitized);
       } catch (error) {
-        console.error("Failed to stringify sanitized payload:", error);
+        logger.error("Failed to stringify sanitized payload", { error: error instanceof Error ? error.message : String(error) });
       }
     }
   }

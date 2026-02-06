@@ -4,6 +4,10 @@
 
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-categories");
+
 
 export async function GET() {
   try {
@@ -40,7 +44,7 @@ export async function GET() {
     // Categories now have platform-independent slugs, no grouping needed
     return NextResponse.json({ categories });
   } catch (error) {
-    console.error('Error fetching categories:', error);
+    logger.error("Error fetching categories", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: 'Failed to fetch categories' },
       { status: 500 }

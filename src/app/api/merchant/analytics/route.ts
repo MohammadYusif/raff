@@ -4,6 +4,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { UserRole } from "@prisma/client";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-merchant-analytics");
+
 
 export async function GET(request: NextRequest) {
   try {
@@ -272,7 +276,7 @@ export async function GET(request: NextRequest) {
       dailyStats: dailyStats.reverse(),
     });
   } catch (error) {
-    console.error("Error fetching merchant analytics:", error);
+    logger.error("Error fetching merchant analytics", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to fetch analytics" },
       { status: 500 }

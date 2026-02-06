@@ -2,6 +2,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdminAuth } from "@/lib/auth/admin-guard";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-admin-analytics");
+
 
 export async function GET(request: NextRequest) {
   const authError = await requireAdminAuth();
@@ -365,7 +369,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error fetching admin analytics:", error);
+    logger.error("Error fetching admin analytics", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to fetch analytics" },
       { status: 500 }

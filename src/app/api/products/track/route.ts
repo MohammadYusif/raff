@@ -5,6 +5,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getRequestIp, rateLimit } from "@/lib/rateLimit";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-products-track");
+
 
 const BOT_USER_AGENT_SNIPPETS = [
   "bot",
@@ -168,7 +172,7 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error tracking product event:", error);
+    logger.error("Error tracking product event", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to track event" },
       { status: 500 }

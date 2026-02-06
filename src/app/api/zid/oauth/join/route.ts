@@ -17,6 +17,10 @@ import { getZidConfig } from "@/lib/platform/config";
 import { getZidRedirectUri } from "@/lib/zid/getZidRedirectUri";
 import { parseZidOAuthScopes } from "@/lib/zid/getZidOAuthScopes";
 import crypto from "crypto";
+import { createLogger } from "@/lib/utils/logger";
+
+
+const logger = createLogger("api-zid-oauth-join");
 
 const redirectInvalidScopes = (config: ReturnType<typeof getZidConfig>) => {
   const url = new URL("/merchant/join", config.appBaseUrl);
@@ -48,7 +52,7 @@ export async function GET(request: NextRequest) {
     hasScopes: scopes.length > 0,
   });
   if (invalid.length > 0) {
-    console.error("[zid-oauth-join] invalid scopes", { invalid, scopes });
+    logger.error("[zid-oauth-join] invalid scopes", { invalid, scopes });
     return redirectInvalidScopes(config);
   }
 

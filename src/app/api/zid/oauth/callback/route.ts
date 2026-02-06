@@ -23,6 +23,10 @@ import { isZidConnected } from "@/lib/zid/isZidConnected";
 import { hasBearerPrefix, normalizeZidAuthorizationToken } from "@/lib/zid/tokens";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-zid-oauth-callback");
+
 
 const tokenString = (value: unknown): string | null =>
   typeof value === "string" ? value : null;
@@ -285,7 +289,7 @@ export async function GET(request: NextRequest) {
 
   // If Zid returned an error, log it and redirect
   if (error) {
-    console.error("[zid-oauth-callback] Zid returned error", {
+    logger.error("[zid-oauth-callback] Zid returned error", {
       error,
       errorDescription,
     });
@@ -295,13 +299,13 @@ export async function GET(request: NextRequest) {
   // Handle join flow (new merchant registration) - doesn't require state
   if (isJoinFlow) {
     if (!code) {
-      console.error("[zid-oauth-callback] join flow missing code");
+      logger.error("[zid-oauth-callback] join flow missing code");
       return redirectWithStatus(config, "error");
     }
     try {
       return await handleJoinFlow(request, code, config);
     } catch (error) {
-      console.error("[zid-oauth-callback] join flow failed", {
+      logger.error("[zid-oauth-callback] join flow failed", {
         error: formatErrorMessage(error),
       });
       const errorCode =
@@ -314,7 +318,7 @@ export async function GET(request: NextRequest) {
 
   // Regular flow requires both code and state
   if (!code || !state) {
-    console.error("[zid-oauth-callback] missing code or state");
+    logger.error("[zid-oauth-callback] missing code or state");
     return redirectWithStatus(config, "error");
   }
 
@@ -322,7 +326,7 @@ export async function GET(request: NextRequest) {
   try {
     return await handleRegularFlow(request, code, state, config);
   } catch (error) {
-    console.error("[zid-oauth-callback] regular flow failed", {
+    logger.error("[zid-oauth-callback] regular flow failed", {
       error: formatErrorMessage(error),
     });
     const errorCode =
@@ -350,7 +354,7 @@ async function handleJoinFlow(
   });
 
   if (!joinFlowCookie) {
-    console.error("[zid-oauth-callback] join flow cookie missing");
+    logger.error("[zid-oauth-callback] join flow cookie missing");
     return redirectWithStatus(config, "error");
   }
   const stateVerified = true; // Cookie presence is our verification
@@ -377,7 +381,7 @@ async function handleJoinFlow(
     errorDescription: tokenResult.errorDescription,
   });
   if (tokenResult.isErrorPayload) {
-    console.error("[zid-oauth-callback] token exchange returned error payload", {
+    logger.error("[zid-oauth-callback] token exchange returned error payload", {
       status: tokenResponse.status,
       errorDescription: tokenResult.errorDescription,
       raw: tokenResult.rawSnippet,
@@ -385,7 +389,7 @@ async function handleJoinFlow(
     return redirectWithStatus(config, "error", "invalid_scopes");
   }
   if (!tokenResponse.ok || !tokenResult.tokenData) {
-    console.error("[zid-oauth-callback] join flow token exchange failed", {
+    logger.error("[zid-oauth-callback] join flow token exchange failed", {
       status: tokenResponse.status,
       error: tokenResult.rawSnippet,
     });
@@ -493,7 +497,7 @@ async function handleJoinFlow(
       }
     }
   } catch (error) {
-    console.error("[zid-oauth-callback] failed to fetch Zid store info", {
+    logger.error("[zid-oauth-callback] failed to fetch Zid store info", {
       error: formatErrorMessage(error),
     });
   }
@@ -562,7 +566,7 @@ async function handleJoinFlow(
         managerToken,
       });
     } catch (error) {
-      console.error("Zid webhook registration failed:", error);
+      logger.error("Zid webhook registration failed", { error: error instanceof Error ? error.message : String(error) });
     }
 
     console.info("[zid-oauth-callback] redirecting to integrations page");
@@ -639,7 +643,7 @@ async function handleJoinFlow(
       managerToken,
     });
   } catch (error) {
-    console.error("[zid-oauth-callback] Zid webhook registration failed", {
+    logger.error("[zid-oauth-callback] Zid webhook registration failed", {
       error: formatErrorMessage(error),
     });
   }
@@ -714,7 +718,7 @@ async function handleRegularFlow(
     errorDescription: tokenResult.errorDescription,
   });
   if (tokenResult.isErrorPayload) {
-    console.error("[zid-oauth-callback] token exchange returned error payload", {
+    logger.error("[zid-oauth-callback] token exchange returned error payload", {
       status: tokenResponse.status,
       errorDescription: tokenResult.errorDescription,
       raw: tokenResult.rawSnippet,
@@ -722,7 +726,7 @@ async function handleRegularFlow(
     return redirectWithStatus(config, "error", "invalid_scopes");
   }
   if (!tokenResponse.ok || !tokenResult.tokenData) {
-    console.error("[zid-oauth-callback] token exchange failed", {
+    logger.error("[zid-oauth-callback] token exchange failed", {
       status: tokenResponse.status,
       error: tokenResult.rawSnippet,
     });
@@ -802,7 +806,7 @@ async function handleRegularFlow(
       }
     }
   } catch (error) {
-    console.error("[zid-oauth-callback] failed to fetch Zid profile", {
+    logger.error("[zid-oauth-callback] failed to fetch Zid profile", {
       error: formatErrorMessage(error),
     });
   }
@@ -834,7 +838,7 @@ async function handleRegularFlow(
       managerToken,
     });
   } catch (error) {
-    console.error("[zid-oauth-callback] Zid webhook registration failed", {
+    logger.error("[zid-oauth-callback] Zid webhook registration failed", {
       error: formatErrorMessage(error),
     });
   }

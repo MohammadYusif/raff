@@ -4,6 +4,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { UserRole } from "@prisma/client";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-merchant-products");
+
 
 export async function GET() {
   try {
@@ -97,7 +101,7 @@ export async function GET() {
       products: productsWithAnalytics,
     });
   } catch (error) {
-    console.error("Error fetching merchant products:", error);
+    logger.error("Error fetching merchant products", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to fetch products" },
       { status: 500 }

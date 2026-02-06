@@ -2,6 +2,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdminAuth } from "@/lib/auth/admin-guard";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-admin-alerts");
+
 
 interface Alert {
   id: string;
@@ -138,7 +142,7 @@ export async function GET() {
 
     return NextResponse.json({ alerts });
   } catch (error) {
-    console.error("Error fetching alerts:", error);
+    logger.error("Error fetching alerts", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to fetch alerts" },
       { status: 500 }

@@ -1,5 +1,9 @@
 // src/lib/services/email.service.ts
 import { Resend } from "resend";
+import { createLogger } from "@/lib/utils/logger";
+
+
+const logger = createLogger("email");
 
 // Lazy initialization to avoid build-time errors when env vars aren't available
 let resendClient: Resend | null = null;
@@ -35,13 +39,13 @@ async function sendEmail({ to, subject, html }: SendEmailOptions) {
     });
 
     if (error) {
-      console.error("Email send error:", error);
+      logger.error("Email send error", { error: error instanceof Error ? error.message : String(error) });
       throw new Error(error.message);
     }
 
     return { success: true, data };
   } catch (error) {
-    console.error("Failed to send email:", error);
+    logger.error("Failed to send email", { error: error instanceof Error ? error.message : String(error) });
     throw error;
   }
 }

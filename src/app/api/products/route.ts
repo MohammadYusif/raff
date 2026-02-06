@@ -6,6 +6,10 @@ import { NextRequest, NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-products");
+
 
 export async function GET(request: NextRequest) {
   try {
@@ -165,7 +169,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error fetching products:", error);
+    logger.error("Error fetching products", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to fetch products" },
       { status: 500 }

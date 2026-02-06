@@ -2,6 +2,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdminAuth } from "@/lib/auth/admin-guard";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-admin-repair-product-categories");
+
 
 /**
  * Repair products with null categoryId by matching category names from product slugs
@@ -120,7 +124,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error("Error repairing product categories:", error);
+    logger.error("Error repairing product categories", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       {
         error: "Failed to repair product categories",

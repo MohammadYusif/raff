@@ -3,6 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-cart-merge");
+
 
 /**
  * POST /api/cart/merge
@@ -127,7 +131,7 @@ export async function POST(request: NextRequest) {
       updated: itemsToUpdate.length,
     });
   } catch (error) {
-    console.error("Error merging cart:", error);
+    logger.error("Error merging cart", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to merge cart" },
       { status: 500 }

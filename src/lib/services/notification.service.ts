@@ -1,6 +1,10 @@
 // src/lib/services/notification.service.ts
 import { prisma } from "@/lib/prisma";
 import { NotificationType, NotificationPriority, Prisma } from "@prisma/client";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("notification");
+
 
 interface CreateNotificationParams {
   userId: string;
@@ -32,7 +36,7 @@ export async function createNotification(params: CreateNotificationParams) {
 
     return notification;
   } catch (error) {
-    console.error("Error creating notification:", error);
+    logger.error("Error creating notification", { error: error instanceof Error ? error.message : String(error) });
     throw error;
   }
 }
@@ -55,7 +59,7 @@ export async function createBulkNotifications(
       })),
     });
   } catch (error) {
-    console.error("Error creating bulk notifications:", error);
+    logger.error("Error creating bulk notifications", { error: error instanceof Error ? error.message : String(error) });
     throw error;
   }
 }

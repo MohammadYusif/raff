@@ -2,6 +2,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyOTP } from "@/lib/services/otp.service";
 import { OTPType } from "@prisma/client";
+import { createLogger } from "@/lib/utils/logger";
+
+
+const logger = createLogger("api-auth-verify-otp");
 
 export async function POST(request: NextRequest) {
   try {
@@ -58,7 +62,7 @@ export async function POST(request: NextRequest) {
       message: "Email verified successfully",
     });
   } catch (error) {
-    console.error("Verify OTP error:", error);
+    logger.error("Verify OTP error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Verification failed" },
       { status: 500 }

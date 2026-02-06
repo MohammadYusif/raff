@@ -9,6 +9,10 @@ import { syncSallaOrdersForMerchant } from "@/lib/sync/sallaOrders";
 import { syncSallaStoreInfo } from "@/lib/sync/sallaStore";
 import { syncZidCategories, syncZidProducts } from "@/lib/sync/zidProducts";
 import { isZidConnected } from "@/lib/zid/isZidConnected";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-admin-merchant-resync");
+
 
 type ResyncBody = {
   merchantId?: string;
@@ -105,7 +109,7 @@ export async function POST(request: NextRequest) {
       results,
     });
   } catch (error) {
-    console.error("Admin merchant resync failed:", error);
+    logger.error("Admin merchant resync failed", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to resync merchant" },
       { status: 500 }

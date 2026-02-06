@@ -1,6 +1,10 @@
 // src/app/api/products/[slug]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-products-slug");
+
 
 export async function GET(
   request: NextRequest,
@@ -107,7 +111,7 @@ export async function GET(
 
     return NextResponse.json({ product });
   } catch (error) {
-    console.error("Error fetching product:", error);
+    logger.error("Error fetching product", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to fetch product" },
       { status: 500 }

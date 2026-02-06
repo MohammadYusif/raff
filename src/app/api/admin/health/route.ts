@@ -2,6 +2,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdminAuth } from "@/lib/auth/admin-guard";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-admin-health");
+
 
 export async function GET() {
   const authError = await requireAdminAuth();
@@ -84,7 +88,7 @@ export async function GET() {
       pendingMerchants,
     });
   } catch (error) {
-    console.error("Error fetching system health:", error);
+    logger.error("Error fetching system health", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to fetch system health" },
       { status: 500 }

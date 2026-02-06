@@ -2,6 +2,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import * as bcrypt from "bcryptjs";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-admin-create-admin-user");
+
 
 /**
  * ONE-TIME endpoint to create the initial admin user
@@ -77,7 +81,7 @@ export async function POST(request: NextRequest) {
       warning: "⚠️  IMPORTANT: Change the password after first login!",
     });
   } catch (error) {
-    console.error("Error creating admin user:", error);
+    logger.error("Error creating admin user", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to create admin user" },
       { status: 500 }

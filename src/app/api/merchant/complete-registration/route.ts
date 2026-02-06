@@ -4,6 +4,10 @@ import { prisma } from "@/lib/prisma";
 import { verifyRegistrationToken } from "@/lib/registrationToken";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-merchant-complete-registration");
+
 
 const completeRegistrationSchema = z.object({
   token: z.string().min(1),
@@ -114,7 +118,7 @@ export async function POST(request: NextRequest) {
       message: "Registration completed successfully",
     });
   } catch (error) {
-    console.error("Complete registration error:", error);
+    logger.error("Complete registration error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to complete registration" },
       { status: 500 }

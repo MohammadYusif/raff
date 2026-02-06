@@ -4,6 +4,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-search");
+
 
 export async function GET(request: NextRequest) {
   try {
@@ -134,7 +138,7 @@ export async function GET(request: NextRequest) {
       });
     }
   } catch (error) {
-    console.error("Search API error:", error);
+    logger.error("Search API error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to perform search" },
       { status: 500 }

@@ -6,6 +6,10 @@ import { createOAuthState } from "@/lib/platform/oauth";
 import { requireMerchant } from "@/lib/auth/guards";
 import { getZidRedirectUri } from "@/lib/zid/getZidRedirectUri";
 import { parseZidOAuthScopes } from "@/lib/zid/getZidOAuthScopes";
+import { createLogger } from "@/lib/utils/logger";
+
+
+const logger = createLogger("api-zid-oauth-start");
 
 const redirectInvalidScopes = (config: ReturnType<typeof getZidConfig>) => {
   const url = new URL("/merchant/integrations", config.appBaseUrl);
@@ -58,7 +62,7 @@ export async function GET(request: NextRequest) {
     hasScopes: scopes.length > 0,
   });
   if (invalid.length > 0) {
-    console.error("[zid-oauth-start] invalid scopes", { invalid, scopes });
+    logger.error("[zid-oauth-start] invalid scopes", { invalid, scopes });
     return redirectInvalidScopes(config);
   }
 

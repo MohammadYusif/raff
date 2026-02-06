@@ -3,6 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyRegistrationToken } from "@/lib/registrationToken";
 import { z } from "zod";
+import { createLogger } from "@/lib/utils/logger";
+
+const logger = createLogger("api-merchant-complete-registration-check-email");
+
 
 const checkEmailSchema = z.object({
   token: z.string().min(1),
@@ -55,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ available: true });
   } catch (error) {
-    console.error("Check email availability error:", error);
+    logger.error("Check email availability error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to check email availability" },
       { status: 500 }
