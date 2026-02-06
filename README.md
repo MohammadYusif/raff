@@ -113,7 +113,7 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    A[Cron: Every 3 Hours] --> B[Query engagement data<br/>14-day lookback]
+    A[Cron: Configurable Schedule] --> B[Query engagement data<br/>14-day lookback]
     B --> C[Calculate weighted score]
     C --> D["Views x1 + Clicks x5<br/>+ Orders x50 + Recency x10"]
     D --> E[Normalize 0-100]
@@ -207,7 +207,7 @@ Merchants connect their **Salla** or **Zid** stores through a full OAuth 2.0 flo
 ### Automated Trending System
 A weighted scoring algorithm ranks products based on real engagement data:
 - **Views** (x1), **Clicks** (x5), **Orders** (x50), plus a **recency boost** (x10) for products added in the last 30 days.
-- Scores are recalculated every 3 hours via a cron service with a 14-day lookback window.
+- Scores are recalculated on a configurable schedule (default: every 3 hours, disabled until secrets are configured) with a 14-day lookback window.
 - All engagement events are logged to `TrendingLog` for auditability.
 
 ### Conversion Tracking & Commissions
